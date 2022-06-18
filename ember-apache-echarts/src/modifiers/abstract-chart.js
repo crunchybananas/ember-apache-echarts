@@ -1,13 +1,14 @@
+import merge from 'lodash/merge';
+import transform from 'lodash/transform';
+import { registerDestructor } from '@ember/destroyable';
+import Modifier from 'ember-modifier';
 import * as echarts from 'echarts';
 import computeInnerBox from '../utils/layout/compute-inner-box';
 import computeTextHeight from '../utils/layout/compute-text-height';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import layoutCells from '../utils/layout/layout-cells';
-import merge from 'lodash/merge';
-import mergeAt from '../utils/merge-at';
 import resolveStyle from '../utils/style/resolve-style';
-import transform from 'lodash/transform';
-import { registerDestructor } from '@ember/destroyable';
+import mergeAt from '../utils/merge-at';
 
 // These should be composite properties so they can be overridden either by
 // composite properties or individual constituent properties

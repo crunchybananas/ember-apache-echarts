@@ -3,7 +3,7 @@
 ## Installation
 
 * `git clone <repository-url>`
-* `cd ember-echarts`
+* `cd ember-apache-echarts`
 * `yarn install`
 
 ## Linting

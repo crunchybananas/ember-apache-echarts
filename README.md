@@ -1,4 +1,4 @@
-ember-echarts
+ember-apache-echarts
 ==============================================================================
 
 [Short description of the addon.]
@@ -16,7 +16,7 @@ Installation
 ------------------------------------------------------------------------------
 
 ```
-ember install ember-echarts
+ember install ember-apache-echarts
 ```
 
 

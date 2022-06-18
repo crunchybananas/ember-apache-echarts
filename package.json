@@ -1,5 +1,5 @@
 {
-  "name": "ember-echarts",
+  "name": "ember-apache-echarts",
   "version": "0.0.1",
   "description": "The default blueprint for ember-cli addons.",
   "keywords": [
@@ -12,6 +12,15 @@
     "doc": "doc",
     "test": "tests"
   },
+  "files": [
+    "addon/",
+    "app/",
+    "blueprints/",
+    "addon-test-support/",
+    "test-support/",
+    "index.js",
+    "vendor"
+  ],
   "scripts": {
     "build": "ember build --environment=production",
     "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",

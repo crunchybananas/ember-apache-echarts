@@ -99,7 +99,8 @@
   "peerDependencies": {
     "@glimmer/component": "^1.1.2",
     "@glimmer/tracking": "^1.1.2",
-    "ember-source": "^4.0.0"
+    "ember-source": "^4.0.0",
+    "echarts": "^5.3.2"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

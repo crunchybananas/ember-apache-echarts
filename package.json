@@ -15,9 +15,6 @@
   "files": [
     "addon/",
     "app/",
-    "blueprints/",
-    "addon-test-support/",
-    "test-support/",
     "index.js",
     "vendor"
   ],

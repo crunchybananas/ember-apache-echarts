@@ -1,0 +1,19 @@
+<div {{did-insert this.setup}}>
+  <div
+    ...attributes
+    {{style width=(css-size @width "100%") height=(css-size @height 400)}}
+    {{pie-chart
+      this.args
+      tooltipFormatter=(if (has-block "itemTooltip") this.tooltipFormatter)
+    }}
+  ></div>
+
+  {{#if (has-block "itemTooltip")}}
+    <div
+      data-role="itemTooltip"
+      style={{html-safe (if this.tooltipItem "" "display: none")}}
+    >
+      {{yield this.tooltipItem to="itemTooltip"}}
+    </div>
+  {{/if}}
+</div>

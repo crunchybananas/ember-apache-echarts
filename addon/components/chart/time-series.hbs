@@ -1,0 +1,25 @@
+<div {{did-insert this.setup}}>
+  <div
+    ...attributes
+    {{style width=(css-size @width "100%") height=(css-size @height 400)}}
+    {{time-series-chart this.args tooltipFormatter=this.tooltipFormatter}}
+  ></div>
+
+  {{#if (has-block "itemTooltip")}}
+    <div
+      data-role="itemTooltip"
+      style={{html-safe (if this.tooltipItem "" "display: none")}}
+    >
+      {{yield this.tooltipItem to="itemTooltip"}}
+    </div>
+  {{/if}}
+
+  {{#if (has-block "axisTooltip")}}
+    <div
+      data-role="axisTooltip"
+      style={{html-safe (if this.tooltipItems "" "display: none")}}
+    >
+      {{yield this.tooltipItems this.tooltipAxis to="axisTooltip"}}
+    </div>
+  {{/if}}
+</div>

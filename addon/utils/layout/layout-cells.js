@@ -1,5 +1,5 @@
 import pickBy from 'lodash/pickBy';
-import resolveStyle from 'tio-admin/utils/style/resolve-style';
+import resolveStyle from '../style/resolve-style';
 
 /**
  * Computes layout information about the chart.

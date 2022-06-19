@@ -11,27 +11,25 @@
   "exports": {
     ".": "./dist/index.js",
     "./*": "./dist/*",
-    "./addon-main.js": "./addon-main.cjs"
+    "./addon-main.js": "./addon-main.js"
   },
   "files": [
     "dist",
-    "addon-main.cjs",
+    "addon-main.js",
     "CHANGELOG.md",
     "README.md"
   ],
   "scripts": {
-    "start": "concurrently 'npm:watch:*'",
-    "build": "concurrently 'npm:build:*'",
-    "build:js": "rollup -c ./rollup.config.js",
-    "build:docs": "cp ../README.md ./README.md",
-    "watch:js": "rollup -c --watch --no-watch.clearScreen",
-    "lint": "concurrently 'npm:lint:js'",
-    "lint:fix": "concurrently 'npm:lint:js:fix'",
+    "build": "rollup --config",
+    "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",
+    "lint:fix": "npm-run-all --aggregate-output --continue-on-error --parallel lint:*:fix",
+    "lint:hbs": "ember-template-lint .",
+    "lint:hbs:fix": "ember-template-lint . --fix",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
+    "start": "rollup --config --watch",
     "test": "echo 'Addon does not have tests, run tests in test-app'",
-    "prepare": "yarn run build",
-    "prepublishOnly": "yarn run build"
+    "prepare": "yarn build"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.8",
@@ -39,13 +37,12 @@
     "@embroider/macros": "^1.2.0",
     "@glimmer/component": "^1.1.2",
     "echarts": "^5.3.2",
+    "ember-lodash": "^4.19.5",
     "ember-modifier": "^3.2.7",
-    "inputmask": "^5.0.7",
-    "lodash": "^4.17.21",
-    "ember-source": "4.3.0"
+    "ember-source": "4.3.0",
+    "inputmask": "^5.0.7"
   },
   "devDependencies": {
-    "ember-source": "4.3.0",
     "@babel/core": "7.18.5",
     "@embroider/addon-dev": "^1.8.0",
     "@glimmer/tracking": "^1.1.2",
@@ -53,6 +50,7 @@
     "@rollup/plugin-babel": "^5.3.1",
     "concurrently": "7.2.2",
     "ember-cli": "^4.4.0",
+    "ember-source": "4.3.0",
     "ember-template-lint": "^4.10.0",
     "ember-test-selectors": "^6.0.0",
     "eslint": "^7.27.0",
@@ -73,11 +71,11 @@
   },
   "peerDependencies": {
     "@glimmer/component": "^1.1.2",
-    "@glimmer/tracking": "^1.1.2",
-    "ember-source": "^4.0.0",
     "@glimmer/manager": "^0.77.6",
     "@glimmer/owner": "^0.77.6",
-    "@glimmer/runtime": "^0.77.6"
+    "@glimmer/runtime": "^0.77.6",
+    "@glimmer/tracking": "^1.1.2",
+    "ember-source": "^4.0.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
@@ -88,7 +86,7 @@
   "ember-addon": {
     "version": 2,
     "type": "addon",
-    "main": "addon-main.cjs",
+    "main": "addon-main.js",
     "app-js": {
       "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
       "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",

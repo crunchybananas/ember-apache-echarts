@@ -8,7 +8,19 @@
   "license": "MIT",
   "author": "crunchybananas",
   "scripts": {
-    "build": "yarn workspace ember-apache-echarts build"
+    "prepare": "yarn workspace ember-apache-echarts run prepare",
+    "start": "npm-run-all --parallel start:*",
+    "start:addon": "yarn workspace ember-apache-echarts run start",
+    "start:test-app": "yarn workspace test-app run start",
+    "lint": "npm-run-all --aggregate-output --continue-on-error --parallel lint:*",
+    "lint:addon": "yarn workspace ember-apache-echarts run lint",
+    "lint:test-app": "yarn workspace test-app run lint",
+    "lint:fix": "npm-run-all --aggregate-output --continue-on-error --parallel lint:fix:*",
+    "lint:fix:addon": "yarn workspace ember-apache-echarts run lint:fix",
+    "lint:fix:test-app": "yarn workspace test-app run lint:fix",
+    "test": "npm-run-all --aggregate-output --continue-on-error --parallel test:*",
+    "test:addon": "yarn workspace ember-apache-echarts run test",
+    "test:test-app": "yarn workspace test-app run test"
   },
   "engines": {
     "node": "14.* || >= 16"

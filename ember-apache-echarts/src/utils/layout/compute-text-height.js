@@ -1,4 +1,4 @@
-import computeTextMetrics from '../layout/compute-text-metrics';
+import computeTextMetrics from './compute-text-metrics';
 
 const stringToMeasure = 'ABCDEFGHIJKLMNOPQRSTUVWYXZabcdefghijklmnopqrstuvwxyz';
 

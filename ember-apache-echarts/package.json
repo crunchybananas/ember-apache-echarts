@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.8",
+    "@ember/render-modifiers": "^2.0.4",
     "@embroider/addon-shim": "^1.2.0",
     "@embroider/macros": "^1.2.0",
     "@glimmer/component": "^1.1.2",
@@ -40,6 +41,7 @@
     "ember-lodash": "^4.19.5",
     "ember-modifier": "^3.2.7",
     "ember-source": "4.3.0",
+    "ember-style-modifier": "^0.8.0",
     "inputmask": "^5.0.7"
   },
   "devDependencies": {
@@ -90,6 +92,7 @@
     "app-js": {
       "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
       "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",
+      "./helpers/css-size.js": "./dist/_app_/helpers/css-size.js",
       "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
       "./modifiers/inputmask.js": "./dist/_app_/modifiers/inputmask.js",
       "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",

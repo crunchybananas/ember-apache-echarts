@@ -17,7 +17,9 @@ export default {
     addon.publicEntrypoints([
       'components/**/*.js',
       'services/**/*.js',
-      'modifiers/**/*.js'
+      'modifiers/**/*.js',
+            'helpers/**/*.js'
+
     ]),
 
     // These are the modules that should get reexported into the traditional
@@ -27,7 +29,8 @@ export default {
       'components/**/*.js',
       'services/**/*.js',
       'utils/**/*.js',
-      'modifiers/**/*.js'
+      'modifiers/**/*.js',
+      'helpers/**/*.js'
     ]),
 
     // Follow the V2 Addon rules about dependencies. Your code can import from

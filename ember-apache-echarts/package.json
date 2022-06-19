@@ -9,6 +9,7 @@
     "ember-addon"
   ],
   "exports": {
+   " ./chart/pie": "./dist/component/chart/pie.js",
     ".": "./dist/index.js",
     "./*": "./dist/*",
     "./addon-main.js": "./addon-main.cjs"

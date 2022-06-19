@@ -4,9 +4,9 @@
     "ember-apache-echarts",
     "test-app"
   ],
-  "repository": "",
+  "repository": "https://github.com/crunchybananas/ember-apache-echarts/",
   "license": "MIT",
-  "author": "",
+  "author": "crunchybananas",
   "scripts": {
     "build": "yarn workspace ember-apache-echarts build"
   },

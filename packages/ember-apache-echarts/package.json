@@ -1,0 +1,103 @@
+{
+  "name": "ember-apache-echarts",
+  "version": "0.0.5",
+  "description": "Echarts for Ember",
+  "keywords": [
+    "ember-addon"
+  ],
+  "repository": "https://github.com/kaliber5/ember-apache-echarts",
+  "license": "MIT",
+  "author": "Simon Ihmig <simon.ihmig@kaliber5.de>",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "files": [
+    "addon-main.js",
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*",
+    "./addon-main.js": "./addon-main.js"
+  },
+  "scripts": {
+    "build": "rollup --config",
+    "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",
+    "lint:fix": "npm-run-all --aggregate-output --continue-on-error --parallel lint:*:fix",
+    "lint:hbs": "ember-template-lint .",
+    "lint:hbs:fix": "ember-template-lint . --fix",
+    "lint:js": "eslint . --cache",
+    "lint:js:fix": "eslint . --fix",
+    "start": "rollup --config --watch",
+    "test": "echo 'Addon does not have tests, run tests in test-app'",
+    "prepare": "yarn build"
+  },
+  "dependencies": {
+    "@ember/render-modifiers": "^2.0.0",
+    "@embroider/addon-shim": "^1.0.0",
+    "@glimmer/component": "^1.1.2",
+    "ember-style-modifier": "^0.8.0",
+    "echarts": "^5.3.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^5.3.1",
+    "@babel/core": "7.18.5",
+    "@babel/preset-typescript": "7.17.12",
+    "@babel/plugin-proposal-class-properties": "7.17.12",
+    "@babel/plugin-proposal-decorators": "7.18.2",
+    "@embroider/addon-dev": "1.8.0",
+    "@glint/core": "0.8.3",
+    "@glint/environment-ember-loose": "0.8.3",
+    "@types/ember": "4.0.0",
+    "@types/ember__test-helpers": "2.6.1",
+    "@typescript-eslint/eslint-plugin": "5.28.0",
+    "@typescript-eslint/parser": "5.28.0",
+    "babel-eslint": "10.1.0",
+    "ember-modifier": "3.2.7",
+    "ember-template-lint": "4.10.0",
+    "eslint": "7.32.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-ember": "10.6.1",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "eslint-plugin-qunit": "7.3.0",
+    "npm-run-all": "4.1.5",
+    "rollup": "2.75.6"
+  },
+  "engines": {
+    "node": ">= 14"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "ember": {
+    "edition": "octane"
+  },
+  "ember-addon": {
+    "version": 2,
+    "type": "addon",
+    "main": "addon-main.js",
+    "app-js": {
+      "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
+      "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",
+      "./helpers/css-size.js": "./dist/_app_/helpers/css-size.js",
+      "./index.js": "./dist/_app_/index.js",
+      "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
+      "./modifiers/inputmask.js": "./dist/_app_/modifiers/inputmask.js",
+      "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",
+      "./modifiers/time-series-chart.js": "./dist/_app_/modifiers/time-series-chart.js",
+      "./utils/catch-errors.js": "./dist/_app_/utils/catch-errors.js",
+      "./utils/create-lookup.js": "./dist/_app_/utils/create-lookup.js",
+      "./utils/layout/compute-inner-box.js": "./dist/_app_/utils/layout/compute-inner-box.js",
+      "./utils/layout/compute-text-height.js": "./dist/_app_/utils/layout/compute-text-height.js",
+      "./utils/layout/compute-text-metrics.js": "./dist/_app_/utils/layout/compute-text-metrics.js",
+      "./utils/layout/layout-cells.js": "./dist/_app_/utils/layout/layout-cells.js",
+      "./utils/merge-at.js": "./dist/_app_/utils/merge-at.js",
+      "./utils/style/format-css-style-value.js": "./dist/_app_/utils/style/format-css-style-value.js",
+      "./utils/style/parse-css-style-value.js": "./dist/_app_/utils/style/parse-css-style-value.js",
+      "./utils/style/resolve-style.js": "./dist/_app_/utils/style/resolve-style.js",
+      "./_rollupPluginBabelHelpers-2eca8644.js": "./dist/_app_/_rollupPluginBabelHelpers-2eca8644.js"
+    }
+  }
+}

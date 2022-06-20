@@ -61,8 +61,6 @@ export default class TimeSeriesChartComponent extends Component {
 
   @action
   setup(element) {
-    alert(1);
-
     this.axisTooltipElement = element.querySelector('[data-role=axisTooltip]');
     this.itemTooltipElement = element.querySelector('[data-role=itemTooltip]');
   }

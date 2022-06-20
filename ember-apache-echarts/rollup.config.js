@@ -18,7 +18,7 @@ export default {
       'components/**/*.js',
       'services/**/*.js',
       'modifiers/**/*.js',
-            'helpers/**/*.js'
+      'helpers/**/*.js'
 
     ]),
 

@@ -19,22 +19,20 @@ export default {
       'modifiers/**/*.js',
       'utils/**/*.js',
       'helpers/**/*.js',
-      'index.js'
+      'index.js',
     ]),
 
     // These are the modules that should get reexported into the traditional
     // "app" tree. Things in here should also be in publicEntrypoints above, but
     // not everything in publicEntrypoints necessarily needs to go here.
-    addon.appReexports([
-      '**/*.js'
-      ]),
+    addon.appReexports(['**/*.js']),
 
     // compile TypeScript
     babel({
       plugins: [
         '@embroider/addon-dev/template-colocation-plugin',
-        ["@babel/plugin-proposal-decorators", { "legacy": true }],
-        "@babel/plugin-proposal-class-properties"
+        ['@babel/plugin-proposal-decorators', { legacy: true }],
+        '@babel/plugin-proposal-class-properties',
       ],
       babelHelpers: 'bundled',
     }),

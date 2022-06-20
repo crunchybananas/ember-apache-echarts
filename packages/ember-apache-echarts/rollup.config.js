@@ -27,7 +27,6 @@ export default {
     // not everything in publicEntrypoints necessarily needs to go here.
     addon.appReexports(['**/*.js']),
 
-    // compile TypeScript
     babel({
       plugins: [
         '@embroider/addon-dev/template-colocation-plugin',

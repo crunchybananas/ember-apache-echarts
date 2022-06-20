@@ -2,9 +2,9 @@
 
 module.exports = {
   root: true,
-  parser: '@typescript-eslint/parser',
+  parser: 'babel-eslint',
   parserOptions: {
-    ecmaVersion: 2021,
+    ecmaVersion: 2018,
     sourceType: 'module',
     ecmaFeatures: {
       legacyDecorators: true,
@@ -19,24 +19,9 @@ module.exports = {
   env: {
     browser: true,
   },
+  ignorePatterns: ['dist/**'],
   rules: {},
   overrides: [
-    // ts files
-    {
-      files: ['**/*.ts'],
-      extends: [
-        'plugin:@typescript-eslint/eslint-recommended',
-        'plugin:@typescript-eslint/recommended',
-      ],
-      rules: {
-        '@typescript-eslint/explicit-module-boundary-types': 'error', // We want to be strict with types
-        '@typescript-eslint/explicit-function-return-type': 'error', // We want to be strict with types
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          { argsIgnorePattern: '^_' },
-        ],
-      },
-    },
     // node files
     {
       files: [
@@ -44,7 +29,7 @@ module.exports = {
         '.prettierrc.js',
         '.template-lintrc.js',
         'ember-cli-build.js',
-        'addon-main.js',
+        'index.js',
         'testem.js',
         'blueprints/*/index.js',
         'config/**/*.js',

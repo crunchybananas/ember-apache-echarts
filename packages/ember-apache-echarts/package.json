@@ -5,9 +5,9 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "https://github.com/kaliber5/ember-apache-echarts",
+  "repository": "https://github.com/crunchybananas/ember-apache-echarts",
   "license": "MIT",
-  "author": "Simon Ihmig <simon.ihmig@kaliber5.de>",
+  "author": "crunchy bananas",
   "directories": {
     "doc": "doc",
     "test": "tests"
@@ -17,7 +17,6 @@
     "dist"
   ],
   "exports": {
-    ".": "./dist/index.js",
     "./*": "./dist/*",
     "./addon-main.js": "./addon-main.js"
   },
@@ -37,17 +36,20 @@
     "@ember/render-modifiers": "^2.0.0",
     "@embroider/addon-shim": "^1.0.0",
     "@glimmer/component": "^1.1.2",
+    "echarts": "^5.3.2",
+    "ember-lodash": "^4.19.5",
+    "ember-modifier": "^3.2.7",
     "ember-style-modifier": "^0.8.0",
-    "echarts": "^5.3.2"
+    "inputmask": "^5.0.7",
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
-    "@rollup/plugin-babel": "^5.3.1",
     "@babel/core": "7.18.5",
     "@babel/plugin-proposal-class-properties": "7.17.12",
     "@babel/plugin-proposal-decorators": "7.18.2",
     "@embroider/addon-dev": "1.8.0",
+    "@rollup/plugin-babel": "^5.3.1",
     "babel-eslint": "10.1.0",
-    "ember-modifier": "3.2.7",
     "ember-template-lint": "4.10.0",
     "eslint": "7.32.0",
     "eslint-config-prettier": "8.5.0",
@@ -75,7 +77,6 @@
       "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
       "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",
       "./helpers/css-size.js": "./dist/_app_/helpers/css-size.js",
-      "./index.js": "./dist/_app_/index.js",
       "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
       "./modifiers/inputmask.js": "./dist/_app_/modifiers/inputmask.js",
       "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",

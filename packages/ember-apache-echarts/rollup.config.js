@@ -18,8 +18,7 @@ export default {
       'components/**/*.js',
       'modifiers/**/*.js',
       'utils/**/*.js',
-      'helpers/**/*.js',
-      'index.js',
+      'helpers/**/*.js'
     ]),
 
     // These are the modules that should get reexported into the traditional
@@ -41,6 +40,7 @@ export default {
     // template colocation.
     // See `babel.config.json` for the actual Babel configuration!
     // babel({ babelHelpers: 'bundled' }),
+    addon.dependencies(),
 
     // Ensure that standalone .hbs files are properly integrated as Javascript.
     addon.hbs(),

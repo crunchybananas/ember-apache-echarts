@@ -26,7 +26,8 @@ const addPixelsToValue = (key, value) =>
  *
  * @param {object} style An object containing CSS properties
  *
- * @return {string} A string representation of the CSS properties suitable for a `style` attribute
+ * @return {string} A string representation of the CSS properties suitable for a
+ *                  `style` attribute
  */
 const formatCssStyleValue = (style) =>
   Object.keys(style).reduce(

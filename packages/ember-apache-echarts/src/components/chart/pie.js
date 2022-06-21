@@ -4,8 +4,8 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 
 /**
- * Converts an EChart tooltip param into a standardized & simplied object this component can yield
- * to custom tooltip components.
+ * Converts an EChart tooltip param into a standardized & simplied object this
+ * component can yield to custom tooltip components.
  *
  * The object returned from this function includes the following properties:
  *
@@ -25,14 +25,17 @@ import { tracked } from '@glimmer/tracking';
  * : The data object from the chart data for this item.
  *
  * `slice`
- * : An object representing the graphical properties of the slice: `color` and `percent` of circle.
+ * : An object representing the graphical properties of the slice: `color` and
+ *   `percent` of circle.
  */
 const toTooltipItem = (param) => ({
   ...pick(param, 'value', 'marker', 'data', 'dataIndex'),
   label: param.name,
   slice: pick(param, 'color', 'percent'),
 
-  // TODO: Think about how/if we need to support multiple series for pie charts. [twl 30.Apr.22]
+  // TODO: Think about how/if we need to support multiple series for pie charts.
+  //       [twl 30.Apr.22]
+  //
   // series: {
   //   ...dataset[param.seriesIndex],
   //   index: param.seriesIndex,

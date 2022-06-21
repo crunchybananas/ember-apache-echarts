@@ -6,9 +6,10 @@ import transform from 'lodash/transform';
  *
  * @param {string} styleString The CSS style string to parse
  *
- * @return {object} An object mapping CSS properties to their values, including constituent
- *                  properties that may not have been specified in `styleString` (e.g., `fontSize`
- *                  when only `font` was in `styleString`)
+ * @return {object} An object mapping CSS properties to their values, including
+ *                  constituent properties that may not have been specified in
+ *                  `styleString` (e.g., `fontSize` when only `font` was in
+ *                  `styleString`)
  */
 function parseCssStyleValue(styleString) {
   const div = document.createElement('div');

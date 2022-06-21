@@ -3,8 +3,8 @@ import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 
 /**
- * Converts an EChart tooltip param into a standardized & simplied object this component can yield
- * to custom tooltip components.
+ * Converts an EChart tooltip param into a standardized & simplied object this
+ * component can yield to custom tooltip components.
  *
  * The object returned from this function includes the following properties:
  *
@@ -24,8 +24,8 @@ import { tracked } from '@glimmer/tracking';
  * : The data object from the chart data for this item.
  *
  * `series`
- * : The series object for the series this item belongs to, plus the `index` of the series on the
- *   chart.
+ * : The series object for the series this item belongs to, plus the `index` of
+ *   the series on the chart.
  */
 const toTooltipItem = (param, dataset) => ({
   label: param.name,
@@ -40,7 +40,8 @@ const toTooltipItem = (param, dataset) => ({
 });
 
 /**
- * Converts an axis EChart tooltip param into an object describing the axis the tooltip is for.
+ * Converts an axis EChart tooltip param into an object describing the axis the
+ * tooltip is for.
  */
 const toTooltipAxis = ([firstParam]) => ({
   id: firstParam.axisId,

@@ -18,7 +18,7 @@ export default {
       'components/**/*.js',
       'modifiers/**/*.js',
       'utils/**/*.js',
-      'helpers/**/*.js'
+      'helpers/**/*.js',
     ]),
 
     // These are the modules that should get reexported into the traditional

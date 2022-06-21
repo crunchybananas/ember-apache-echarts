@@ -1,7 +1,7 @@
 ember-apache-echarts
 ==============================================================================
 
-[![CI](https://github.com/crunchybananas/ember-apache-echards/actions/workflows/ci.yml/badge.svg)](https://github.com/crunchybananas/ember-apache-echarts/actions/workflows/ci.yml)
+[![CI](https://github.com/crunchybananas/ember-apache-echarts/actions/workflows/ci.yml/badge.svg)](https://github.com/crunchybananas/ember-apache-echarts/actions/workflows/ci.yml)
 
 A modern take on using so-called "portals" to render things in a
 different place of the DOM tree than they are logically defined in the app.

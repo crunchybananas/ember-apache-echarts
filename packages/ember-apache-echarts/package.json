@@ -1,13 +1,13 @@
 {
   "name": "ember-apache-echarts",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Echarts for Ember",
   "keywords": [
     "ember-addon"
   ],
   "repository": "https://github.com/crunchybananas/ember-apache-echarts",
   "license": "MIT",
-  "author": "crunchy bananas",
+  "author": "Crunchy Bananas",
   "directories": {
     "doc": "doc",
     "test": "tests"

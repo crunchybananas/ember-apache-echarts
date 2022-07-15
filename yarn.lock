@@ -4495,17 +4495,6 @@ elliptic@^6.5.3:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-ember-apache-echarts@0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/ember-apache-echarts/-/ember-apache-echarts-0.0.5.tgz#b34b2a7dac0b3294e9a059613fd15380a76ac22b"
-  integrity sha512-HeZIXNBAEcJAwG+i9k/AigFFU9qPMZJNMXnYu7dFjHvn9T9bjPUthYT+wPhpXQB03NJd+G2rALGbUcAHPvbqGQ==
-  dependencies:
-    "@ember/render-modifiers" "^2.0.0"
-    "@embroider/addon-shim" "^1.0.0"
-    "@glimmer/component" "^1.1.2"
-    echarts "^5.3.2"
-    ember-style-modifier "^0.8.0"
-
 ember-auto-import@2.4.2, ember-auto-import@^2.2.0:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.4.2.tgz#d4d3bc6885a11cf124f606f5c37169bdf76e37ae"

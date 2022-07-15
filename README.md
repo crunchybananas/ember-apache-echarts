@@ -28,6 +28,11 @@ ember install ember-apache-echarts
 Why this addon?
 ------------------------------------------------------------------------------
 
+Development
+------------------------------------------------------------------------------
+
+Run `ember serve` from packages/test-app and navigate to http://localhost:4200
+in your browser.
 
 
 Contributing

@@ -171,13 +171,23 @@ export default class AbstractChartModifier extends Modifier {
         )),
       {}
     );
-    const series = args.series ?? [{ data: args.data }];
 
     return {
       layout,
       args,
       chart,
       styles,
+      data: this.createContextData(args, chart),
+    };
+  }
+
+  /**
+   * Generates the `data` section of the context used to construct this chart.
+   */
+  createContextData(args, chart) {
+    const series = args.series ?? [{ data: args.data }];
+
+    return {
       series,
     };
   }
@@ -230,7 +240,7 @@ export default class AbstractChartModifier extends Modifier {
   addCellBoxes(context, config) {
     mergeAtPaths(
       config,
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateBoxConfig(cell)
       )
     );
@@ -242,7 +252,7 @@ export default class AbstractChartModifier extends Modifier {
    * Add the titles to individual cells.
    */
   addCellTitles(context, config) {
-    const series = context.series;
+    const series = context.data.series;
 
     if (series.length === 1 && !series[0].label && !series[0].name) {
       return context.layout;
@@ -252,7 +262,7 @@ export default class AbstractChartModifier extends Modifier {
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateTitleConfig(
           info.label ?? info.name,
           {
@@ -284,8 +294,8 @@ export default class AbstractChartModifier extends Modifier {
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.series, (info, cell) =>
         this.generatePlotConfig(info, context.args, cell, style)
+      layoutCells(context, context.data.series, (info, cell) =>
       )
     );
 
@@ -304,7 +314,7 @@ export default class AbstractChartModifier extends Modifier {
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateTextOverlayConfig(info, context.args, cell, style)
       )
     );

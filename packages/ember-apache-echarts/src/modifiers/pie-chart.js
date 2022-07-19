@@ -81,6 +81,7 @@ export default class PieChartModifier extends AbstractChartModifier {
     return (!series.data || series.data.length == 0) && noDataText
       ? undefined
       : {
+          series: [{
           type: 'pie',
           ...(variant === 'donut' && {
             radius: [
@@ -95,6 +96,7 @@ export default class PieChartModifier extends AbstractChartModifier {
           // if this is changed, update the select handler below
           selectedMode: 'single',
           data: series.data,
+          }]
         };
   }
 

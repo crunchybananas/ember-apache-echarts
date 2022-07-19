@@ -8,7 +8,7 @@ import computeTextHeight from '../utils/layout/compute-text-height';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import layoutCells from '../utils/layout/layout-cells';
 import resolveStyle from '../utils/style/resolve-style';
-import mergeAt from '../utils/merge-at';
+import mergeAtPaths from '../utils/merge-at-paths';
 
 // These should be composite properties so they can be overridden either by
 // composite properties or individual constituent properties
@@ -186,12 +186,12 @@ export default class AbstractChartModifier extends Modifier {
    * Add the border and background of the chart.
    */
   addChartBox(context, config) {
-    mergeAt(config, 'graphic.elements', [
+    mergeAtPaths(config,
       this.generateBoxConfig({
         ...context.styles.chart,
         ...context.layout,
       }),
-    ]);
+    );
 
     return {
       ...context.layout,
@@ -211,7 +211,7 @@ export default class AbstractChartModifier extends Modifier {
       return context.layout;
     }
 
-    mergeAt(config, 'title', [
+    mergeAtPaths(config, [
       this.generateTitleConfig(title, context.layout, style),
     ]);
 
@@ -228,9 +228,8 @@ export default class AbstractChartModifier extends Modifier {
    * Add the border and background of the cells.
    */
   addCellBoxes(context, config) {
-    mergeAt(
+    mergeAtPaths(
       config,
-      'graphic.elements',
       layoutCells(context, context.series, (info, cell) =>
         this.generateBoxConfig(cell)
       )
@@ -251,9 +250,8 @@ export default class AbstractChartModifier extends Modifier {
 
     const style = resolveStyle(context.styles.cellTitle, context.layout);
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'title',
       layoutCells(context, context.series, (info, cell) =>
         this.generateTitleConfig(
           info.label ?? info.name,
@@ -284,9 +282,8 @@ export default class AbstractChartModifier extends Modifier {
   addCellPlots(context, config) {
     const style = resolveStyle(context.styles.cellTitle, context.layout);
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'series',
       layoutCells(context, context.series, (info, cell) =>
         this.generatePlotConfig(info, context.args, cell, style)
       )
@@ -305,9 +302,8 @@ export default class AbstractChartModifier extends Modifier {
 
     const style = resolveStyle(context.styles.cellTextOverlay, context.layout);
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'graphic.elements',
       layoutCells(context, context.series, (info, cell) =>
         this.generateTextOverlayConfig(info, context.args, cell, style)
       )
@@ -321,6 +317,7 @@ export default class AbstractChartModifier extends Modifier {
    */
   generateBoxConfig(box) {
     return {
+      'graphic.elements': [{
       type: 'rect',
       top: box.y + box.marginTop,
       left: box.x + box.marginLeft,
@@ -350,6 +347,7 @@ export default class AbstractChartModifier extends Modifier {
         lineWidth: box.borderTopWidth ?? 0,
       },
       silent: true,
+      }]
     };
   }
 
@@ -402,7 +400,9 @@ export default class AbstractChartModifier extends Modifier {
         break;
     }
 
-    return config;
+    return {
+      title: [config],
+    };
   }
 
   /**
@@ -477,6 +477,8 @@ export default class AbstractChartModifier extends Modifier {
         break;
     }
 
-    return config;
+    return {
+      'graphic.elements': [config],
+    };
   }
 }

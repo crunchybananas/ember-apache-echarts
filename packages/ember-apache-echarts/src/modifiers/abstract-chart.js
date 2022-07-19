@@ -290,12 +290,10 @@ export default class AbstractChartModifier extends Modifier {
    * Add the plots to individual cells.
    */
   addCellPlots(context, config) {
-    const style = resolveStyle(context.styles.cellTitle, context.layout);
-
     mergeAtPaths(
       config,
-        this.generatePlotConfig(info, context.args, cell, style)
       layoutCells(context, context.data.series, (info, cell) =>
+        this.generatePlotConfig(info, context.args, cell)
       )
     );
 

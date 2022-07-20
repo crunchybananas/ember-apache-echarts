@@ -277,7 +277,8 @@ export default class AbstractChartModifier extends Modifier {
       )
     );
 
-    const textHeight = computeTextHeight(style);
+    const textHeight = computeTextHeight(style) + style.marginTop +
+      style.marginBottom;
 
     return {
       ...context.layout,

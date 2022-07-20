@@ -18,7 +18,10 @@ const computeMaxTextMetrics = (array, style, maxWidth) =>
 
     // Wrap at the pixel level--not accurate, but good enough for now
     if (maxWidth && textMetrics.width > maxWidth) {
-      textMetrics.height *= Math.ceil(textMetrics.width / maxWidth);
+      const lineCount = Math.ceil(textMetrics.width / maxWidth);
+
+      // Assume 2px between lines
+      textMetrics.height = textMetrics.height * lineCount + (lineCount - 1) * 2;
     }
 
     maxMetrics.width = Math.max(maxMetrics.width, textMetrics.width);

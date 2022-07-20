@@ -42,7 +42,7 @@ export default class AbstractChartModifier extends Modifier {
       cellTitle: {
         font: 'bold 16px Montserrat',
         textAlign: 'left',
-        margin: 12,
+        margin: 8,
       },
       cellTextOverlay: {
         font: 'normal 16px Montserrat',

@@ -290,11 +290,21 @@ export default class AbstractChartModifier extends Modifier {
    * Add the plots to individual cells.
    */
   addCellPlots(context, config) {
+    // Ensure when using the `grid` config, the correct index is specified. This
+    // differs from `context.index` when a cell has no data (and so, no grid)
+    let gridIndex = 0;
+
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) =>
-        this.generatePlotConfig(info, context.args, cell)
-      )
+      layoutCells(context, context.data.series, (info, cell) => {
+        const config = this.generatePlotConfig(info, cell, context, gridIndex);
+
+        if (config) {
+          gridIndex++;
+        }
+
+        return config;
+      })
     );
 
     return context.layout;

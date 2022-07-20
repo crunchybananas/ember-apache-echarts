@@ -75,8 +75,8 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot config for a single plot on this chart.
    */
-  generatePlotConfig(series, args, layout) {
-    const { variant, noDataText } = args;
+  generatePlotConfig(series, layout, context) {
+    const { variant, noDataText } = context.args;
 
     return (!series.data || series.data.length == 0) && noDataText
       ? undefined

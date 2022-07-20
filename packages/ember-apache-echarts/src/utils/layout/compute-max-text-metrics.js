@@ -1,0 +1,33 @@
+import computeTextMetrics from './compute-text-metrics';
+
+/**
+ * Returns the width and height required to render the strings contained in
+ * `array` when rendered with `style`. If `maxWidth` is set, then wraps text
+ * that may be longer.
+ *
+ * @param {string[]} array    An array of strings to render as text
+ * @param {object}   style    An object containing CSS properties
+ * @param {number}   maxWidth The maximum width to render the text within
+ *
+ * @return {object} An object specifying the `width` and `height` that will
+ *                  contain all of the strings in `array` when rendered
+ */
+const computeMaxTextMetrics = (array, style, maxWidth) =>
+  array.reduce((maxMetrics, text) => {
+    const textMetrics = computeTextMetrics(text, style);
+
+    // Wrap at the pixel level--not accurate, but good enough for now
+    if (maxWidth && textMetrics.width > maxWidth) {
+      textMetrics.height *= Math.ceil(textMetrics.width / maxWidth);
+    }
+
+    maxMetrics.width = Math.max(maxMetrics.width, textMetrics.width);
+    maxMetrics.height = Math.max(maxMetrics.height, textMetrics.height);
+
+    return maxMetrics;
+  }, {
+    width: 0,
+    height: 0,
+  });
+
+export default computeMaxTextMetrics;

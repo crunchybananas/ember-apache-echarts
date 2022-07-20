@@ -78,10 +78,12 @@
     "type": "addon",
     "main": "addon-main.js",
     "app-js": {
+      "./components/chart/bar.js": "./dist/_app_/components/chart/bar.js",
       "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
       "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",
       "./helpers/css-size.js": "./dist/_app_/helpers/css-size.js",
       "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
+      "./modifiers/bar-chart.js": "./dist/_app_/modifiers/bar-chart.js",
       "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",
       "./modifiers/time-series-chart.js": "./dist/_app_/modifiers/time-series-chart.js",
       "./utils/create-lookup.js": "./dist/_app_/utils/create-lookup.js",

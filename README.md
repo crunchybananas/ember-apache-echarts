@@ -72,6 +72,11 @@ before linking and then reinstall the dependencies for the link to work.
 Why this addon?
 ------------------------------------------------------------------------------
 
+Development
+------------------------------------------------------------------------------
+
+Run `ember serve` from packages/test-app and navigate to http://localhost:4200
+in your browser.
 
 
 Contributing

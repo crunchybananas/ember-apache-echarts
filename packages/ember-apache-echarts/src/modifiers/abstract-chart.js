@@ -161,14 +161,11 @@ export default class AbstractChartModifier extends Modifier {
     const styles = transform(
       Object.keys(this.defaultStyles),
       (styles, type) =>
-        (styles[type] = resolveStyle(
-          {
-            ...baseStyle,
-            ...this.defaultStyles[type],
-            ...args[`${type}Style`],
-          },
-          layout
-        )),
+        styles[type] = {
+          ...baseStyle,
+          ...this.defaultStyles[type],
+          ...args[`${type}Style`],
+        },
       {}
     );
 
@@ -196,16 +193,18 @@ export default class AbstractChartModifier extends Modifier {
    * Add the border and background of the chart.
    */
   addChartBox(context, config) {
+    const style = resolveStyle(context.styles.chart, context.layout);
+
     mergeAtPaths(config,
       this.generateBoxConfig({
-        ...context.styles.chart,
+        ...style,
         ...context.layout,
       }),
     );
 
     return {
       ...context.layout,
-      ...computeInnerBox(context.layout, context.styles.chart),
+      ...computeInnerBox(context.layout, style),
     };
   }
 
@@ -215,11 +214,12 @@ export default class AbstractChartModifier extends Modifier {
    */
   addTitle(context, config) {
     const { title } = context.args;
-    const style = context.styles.chartTitle;
 
     if (!title) {
       return context.layout;
     }
+
+    const style = resolveStyle(context.styles.chartTitle, context.layout);
 
     mergeAtPaths(config, [
       this.generateTitleConfig(title, context.layout, style),

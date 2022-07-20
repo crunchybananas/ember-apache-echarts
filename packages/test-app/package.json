@@ -48,7 +48,7 @@
     "ember-sinon-qunit": "6.0.0",
     "ember-source": "~4.0.0",
     "ember-source-channel-url": "3.0.0",
-    "ember-apache-echarts": "0.0.5",
+    "ember-apache-echarts": "0.0.6",
     "ember-template-lint": "4.10.0",
     "ember-try": "2.0.0",
     "eslint": "7.32.0",

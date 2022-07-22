@@ -1,10 +1,11 @@
 /**
- * Converts an object into a CSS style string.
+ * Returns the width and height of the `text` when rendered with the `style`.
  *
+ * @param {string} text  A string to render as text
  * @param {object} style An object containing CSS properties
  *
- * @return {string} A string representation of the CSS properties suitable for a
- *                  `style` attribute
+ * @return {object} An object specifying the `width` and `height` of the
+ *                  rendered text in pixels
  */
 function computeTextMetrics(text, style) {
   const canvas = document.createElement('canvas');
@@ -22,7 +23,7 @@ function computeTextMetrics(text, style) {
   // Have to use a actual bounding box instead of font bounding box, since font
   // bounding box required turning on a flag in Firefox. Once
   // fontBoundingBoxAscent and fontBoundingBoxDescent are implemented on all our
-  // target borwsers, then this should be updated.
+  // target browsers, then this should be updated.
   const metrics = ctx.measureText(text);
 
   return {

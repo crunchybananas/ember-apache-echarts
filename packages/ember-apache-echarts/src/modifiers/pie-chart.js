@@ -75,26 +75,30 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot config for a single plot on this chart.
    */
-  generatePlotConfig(series, args, layout) {
-    const { variant, noDataText } = args;
+  generatePlotConfig(series, layout, context) {
+    const { variant, noDataText } = context.args;
 
     return (!series.data || series.data.length == 0) && noDataText
       ? undefined
       : {
-          type: 'pie',
-          ...(variant === 'donut' && {
-            radius: [
-              (layout.innerHeight * 0.3) / 2,
-              (layout.innerHeight * 0.7) / 2,
-            ],
-          }),
-          center: [
-            layout.innerX + layout.innerWidth / 2 - 0.5,
-            layout.innerY + layout.innerHeight / 2 - 0.5,
+          series: [
+            {
+              type: 'pie',
+              ...(variant === 'donut' && {
+                radius: [
+                  (layout.innerHeight * 0.3) / 2,
+                  (layout.innerHeight * 0.7) / 2,
+                ],
+              }),
+              center: [
+                layout.innerX + layout.innerWidth / 2 - 0.5,
+                layout.innerY + layout.innerHeight / 2 - 0.5,
+              ],
+              // if this is changed, update the select handler below
+              selectedMode: 'single',
+              data: series.data,
+            },
           ],
-          // if this is changed, update the select handler below
-          selectedMode: 'single',
-          data: series.data,
         };
   }
 

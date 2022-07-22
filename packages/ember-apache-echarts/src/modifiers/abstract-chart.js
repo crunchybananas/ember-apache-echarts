@@ -8,7 +8,7 @@ import computeTextHeight from '../utils/layout/compute-text-height';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import layoutCells from '../utils/layout/layout-cells';
 import resolveStyle from '../utils/style/resolve-style';
-import mergeAt from '../utils/merge-at';
+import mergeAtPaths from '../utils/merge-at-paths';
 
 // These should be composite properties so they can be overridden either by
 // composite properties or individual constituent properties
@@ -42,7 +42,7 @@ export default class AbstractChartModifier extends Modifier {
       cellTitle: {
         font: 'bold 16px Montserrat',
         textAlign: 'left',
-        margin: 12,
+        margin: 8,
       },
       cellTextOverlay: {
         font: 'normal 16px Montserrat',
@@ -161,23 +161,30 @@ export default class AbstractChartModifier extends Modifier {
     const styles = transform(
       Object.keys(this.defaultStyles),
       (styles, type) =>
-        (styles[type] = resolveStyle(
-          {
-            ...baseStyle,
-            ...this.defaultStyles[type],
-            ...args[`${type}Style`],
-          },
-          layout
-        )),
+        (styles[type] = {
+          ...baseStyle,
+          ...this.defaultStyles[type],
+          ...args[`${type}Style`],
+        }),
       {}
     );
-    const series = args.series ?? [{ data: args.data }];
 
     return {
       layout,
       args,
       chart,
       styles,
+      data: this.createContextData(args, chart),
+    };
+  }
+
+  /**
+   * Generates the `data` section of the context used to construct this chart.
+   */
+  createContextData(args /*, chart */) {
+    const series = args.series ?? [{ data: args.data }];
+
+    return {
       series,
     };
   }
@@ -186,16 +193,19 @@ export default class AbstractChartModifier extends Modifier {
    * Add the border and background of the chart.
    */
   addChartBox(context, config) {
-    mergeAt(config, 'graphic.elements', [
+    const style = resolveStyle(context.styles.chart, context.layout);
+
+    mergeAtPaths(
+      config,
       this.generateBoxConfig({
-        ...context.styles.chart,
+        ...style,
         ...context.layout,
-      }),
-    ]);
+      })
+    );
 
     return {
       ...context.layout,
-      ...computeInnerBox(context.layout, context.styles.chart),
+      ...computeInnerBox(context.layout, style),
     };
   }
 
@@ -205,13 +215,14 @@ export default class AbstractChartModifier extends Modifier {
    */
   addTitle(context, config) {
     const { title } = context.args;
-    const style = context.styles.chartTitle;
 
     if (!title) {
       return context.layout;
     }
 
-    mergeAt(config, 'title', [
+    const style = resolveStyle(context.styles.chartTitle, context.layout);
+
+    mergeAtPaths(config, [
       this.generateTitleConfig(title, context.layout, style),
     ]);
 
@@ -228,10 +239,9 @@ export default class AbstractChartModifier extends Modifier {
    * Add the border and background of the cells.
    */
   addCellBoxes(context, config) {
-    mergeAt(
+    mergeAtPaths(
       config,
-      'graphic.elements',
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateBoxConfig(cell)
       )
     );
@@ -243,7 +253,7 @@ export default class AbstractChartModifier extends Modifier {
    * Add the titles to individual cells.
    */
   addCellTitles(context, config) {
-    const series = context.series;
+    const series = context.data.series;
 
     if (series.length === 1 && !series[0].label && !series[0].name) {
       return context.layout;
@@ -251,10 +261,9 @@ export default class AbstractChartModifier extends Modifier {
 
     const style = resolveStyle(context.styles.cellTitle, context.layout);
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'title',
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateTitleConfig(
           info.label ?? info.name,
           {
@@ -269,7 +278,8 @@ export default class AbstractChartModifier extends Modifier {
       )
     );
 
-    const textHeight = computeTextHeight(style);
+    const textHeight =
+      computeTextHeight(style) + style.marginTop + style.marginBottom;
 
     return {
       ...context.layout,
@@ -282,14 +292,21 @@ export default class AbstractChartModifier extends Modifier {
    * Add the plots to individual cells.
    */
   addCellPlots(context, config) {
-    const style = resolveStyle(context.styles.cellTitle, context.layout);
+    // Ensure when using the `grid` config, the correct index is specified. This
+    // differs from `context.index` when a cell has no data (and so, no grid)
+    let gridIndex = 0;
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'series',
-      layoutCells(context, context.series, (info, cell) =>
-        this.generatePlotConfig(info, context.args, cell, style)
-      )
+      layoutCells(context, context.data.series, (info, cell) => {
+        const config = this.generatePlotConfig(info, cell, context, gridIndex);
+
+        if (config) {
+          gridIndex++;
+        }
+
+        return config;
+      })
     );
 
     return context.layout;
@@ -305,10 +322,9 @@ export default class AbstractChartModifier extends Modifier {
 
     const style = resolveStyle(context.styles.cellTextOverlay, context.layout);
 
-    mergeAt(
+    mergeAtPaths(
       config,
-      'graphic.elements',
-      layoutCells(context, context.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info, cell) =>
         this.generateTextOverlayConfig(info, context.args, cell, style)
       )
     );
@@ -321,35 +337,39 @@ export default class AbstractChartModifier extends Modifier {
    */
   generateBoxConfig(box) {
     return {
-      type: 'rect',
-      top: box.y + box.marginTop,
-      left: box.x + box.marginLeft,
-      shape: {
-        // The stroke is drawn on the outside of the width and height for the
-        // bottom and right sides, so we need to make the box smaller to make it
-        // appear as if it's drawing on the inside
-        width:
-          box.width -
-          box.marginLeft -
-          box.marginRight -
-          box.borderLeftWidth -
-          box.borderRightWidth,
-        height:
-          box.height -
-          box.marginTop -
-          box.marginBottom -
-          box.borderTopWidth -
-          box.borderBottomWidth,
-      },
-      style: {
-        // `fill` can be missing, but cannot be not be `undefined` or the box
-        // will render a few pixels to the right and down [twl 2.Jun.22]
-        fill: box.backgroundColor ?? '#fff',
-        // Safari only parses contituent values, so use "top" as a proxy for all
-        stroke: box.borderTopColor,
-        lineWidth: box.borderTopWidth ?? 0,
-      },
-      silent: true,
+      'graphic.elements': [
+        {
+          type: 'rect',
+          top: box.y + box.marginTop,
+          left: box.x + box.marginLeft,
+          shape: {
+            // The stroke is drawn on the outside of the width and height for the
+            // bottom and right sides, so we need to make the box smaller to make it
+            // appear as if it's drawing on the inside
+            width:
+              box.width -
+              box.marginLeft -
+              box.marginRight -
+              box.borderLeftWidth -
+              box.borderRightWidth,
+            height:
+              box.height -
+              box.marginTop -
+              box.marginBottom -
+              box.borderTopWidth -
+              box.borderBottomWidth,
+          },
+          style: {
+            // `fill` can be missing, but cannot be not be `undefined` or the box
+            // will render a few pixels to the right and down [twl 2.Jun.22]
+            fill: box.backgroundColor ?? '#fff',
+            // Safari only parses contituent values, so use "top" as a proxy for all
+            stroke: box.borderTopColor,
+            lineWidth: box.borderTopWidth ?? 0,
+          },
+          silent: true,
+        },
+      ],
     };
   }
 
@@ -402,7 +422,9 @@ export default class AbstractChartModifier extends Modifier {
         break;
     }
 
-    return config;
+    return {
+      title: [config],
+    };
   }
 
   /**
@@ -477,6 +499,8 @@ export default class AbstractChartModifier extends Modifier {
         break;
     }
 
-    return config;
+    return {
+      'graphic.elements': [config],
+    };
   }
 }

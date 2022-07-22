@@ -42,7 +42,7 @@ export default function mergeAtPaths(object, values) {
   }
 
   if (Array.isArray(values)) {
-    values.forEach(value => mergeAtPaths(object, value));
+    values.forEach((value) => mergeAtPaths(object, value));
   } else {
     Object.keys(values).forEach((path) => mergeAt(object, path, values[path]));
   }

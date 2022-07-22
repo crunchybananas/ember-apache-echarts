@@ -90,9 +90,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       // NOTE: `dataIndex` isn't actually the data index. It's the index of the
       //       category on the X axis. Thus we need to look up the value based
       //       on how the axis is being rendered. [twl 20.Jul.22]
-      const name = xAxisScale === 'shared'
-        ? context.data.categories[dataIndex]
-        : series.data[dataIndex] ? series.data[dataIndex].name : null;
+      const name =
+        xAxisScale === 'shared'
+          ? context.data.categories[dataIndex]
+          : series.data[dataIndex]
+          ? series.data[dataIndex].name
+          : null;
 
       if (name) {
         chart.dispatchAction({
@@ -114,12 +117,12 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     return {
       ...context,
-      ...xAxisScale === 'shared' && {
+      ...(xAxisScale === 'shared' && {
         categories: getUniqueDatasetValues(context.series, 'name'),
-      },
-      ...yAxisScale === 'shared' && {
+      }),
+      ...(yAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
-      },
+      }),
     };
   }
 
@@ -136,79 +139,102 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Analyze the data
     const lookup = createLookup(series.data, 'name', 'value');
-    const categories = xAxisScale === 'shared' ? data.categories :
-      getUniqueDatasetValues([series], 'name');
-    const values = categories.map(category => lookup[category]);
-    const maxValue = yAxisScale === 'shared' ? data.maxValue :
-      computeStatistic([series], 'max');
+    const categories =
+      xAxisScale === 'shared'
+        ? data.categories
+        : getUniqueDatasetValues([series], 'name');
+    const values = categories.map((category) => lookup[category]);
+    const maxValue =
+      yAxisScale === 'shared'
+        ? data.maxValue
+        : computeStatistic([series], 'max');
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = values.map(value => value != null ? `${value}` : '');
+    const yAxisLabels = values.map((value) =>
+      value != null ? `${value}` : ''
+    );
     const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
-    const yAxisWidth = yAxisMetrics.width + yAxisStyle.marginLeft +
-      yAxisStyle.marginRight;
+    const yAxisWidth =
+      yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
 
     // Only applies when the very top label is rendered; for now, assuming it's
     // always there, since I don't know how to determine this on the fly
-    const yAxisTopLabelMetrics = computeTextMetrics(`$maxValue}`, yAxisStyle);
+    const yAxisTopLabelMetrics = computeTextMetrics(`${maxValue}`, yAxisStyle);
     const yAxisOverflow = yAxisTopLabelMetrics.height / 2;
 
     // Configure the plot
-    const gridWidth = layout.innerWidth - yAxisWidth - layout.borderLeftWidth -
+    const gridWidth =
+      layout.innerWidth -
+      yAxisWidth -
+      layout.borderLeftWidth -
       layout.borderRightWidth;
 
     // Configure the X axis
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const xAxisLineWidth = 1;
     const xAxisLabelWidth = gridWidth / categories.length;
-    const xAxisMetrics = computeMaxTextMetrics(categories, xAxisStyle,
-      xAxisLabelWidth);
-    const xAxisHeight = xAxisMetrics.height + xAxisStyle.marginTop +
-      xAxisStyle.marginBottom + xAxisLineWidth;
+    const xAxisMetrics = computeMaxTextMetrics(
+      categories,
+      xAxisStyle,
+      xAxisLabelWidth
+    );
+    const xAxisHeight =
+      xAxisMetrics.height +
+      xAxisStyle.marginTop +
+      xAxisStyle.marginBottom +
+      xAxisLineWidth;
 
     return {
-      grid: [{
-        // Not sure why the 1px adjustment is needed to `x`, but it is
-        x: layout.innerX + yAxisWidth - 1,
-        y: layout.innerY + yAxisOverflow,
-        width: gridWidth,
-        height: layout.innerHeight - xAxisHeight - yAxisOverflow,
-      }],
-      yAxis: [{
-        gridIndex,
-        type: 'value',
-        max: yAxisScale === 'shared' ? data.maxValue : 'dataMax',
-        axisLabel: {
-          // margin between the axis label and the axis line
-          margin: yAxisStyle.marginRight,
-          ...this.generateAxisLabelConfig(layout, yAxisStyle),
+      grid: [
+        {
+          // Not sure why the 1px adjustment is needed to `x`, but it is
+          x: layout.innerX + yAxisWidth - 1,
+          y: layout.innerY + yAxisOverflow,
+          width: gridWidth,
+          height: layout.innerHeight - xAxisHeight - yAxisOverflow,
         },
-      }],
-      xAxis: [{
-        gridIndex,
-        type: 'category',
-        data: categories,
-        axisLabel: {
-          // Ensure every category is shown on the axis
-          interval: 0,
-          overflow: 'break',
-          width: xAxisLabelWidth,
-          // margin between the axis label and the axis line
-          margin: xAxisStyle.marginTop,
-          ...this.generateAxisLabelConfig(layout, xAxisStyle),
+      ],
+      yAxis: [
+        {
+          gridIndex,
+          type: 'value',
+          max: yAxisScale === 'shared' ? data.maxValue : 'dataMax',
+          axisLabel: {
+            // margin between the axis label and the axis line
+            margin: yAxisStyle.marginRight,
+            ...this.generateAxisLabelConfig(layout, yAxisStyle),
+          },
         },
-      }],
-      series: [{
-        type: 'bar',
-        colorBy: 'data',
-        xAxisIndex: gridIndex,
-        yAxisIndex: gridIndex,
-        // if this is changed, update the select handler in `configureChart`
-        selectedMode: 'single',
-        data: values,
-      }]
+      ],
+      xAxis: [
+        {
+          gridIndex,
+          type: 'category',
+          data: categories,
+          axisLabel: {
+            // Ensure every category is shown on the axis
+            interval: 0,
+            overflow: 'break',
+            width: xAxisLabelWidth,
+            // margin between the axis label and the axis line
+            margin: xAxisStyle.marginTop,
+            ...this.generateAxisLabelConfig(layout, xAxisStyle),
+          },
+        },
+      ],
+      series: [
+        {
+          type: 'bar',
+          colorBy: 'data',
+          xAxisIndex: gridIndex,
+          yAxisIndex: gridIndex,
+          // if this is changed, update the select handler in `configureChart`
+          selectedMode: 'single',
+          data: values,
+        },
+      ],
     };
   }
 

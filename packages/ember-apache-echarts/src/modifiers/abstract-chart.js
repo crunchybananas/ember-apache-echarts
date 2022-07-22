@@ -161,11 +161,11 @@ export default class AbstractChartModifier extends Modifier {
     const styles = transform(
       Object.keys(this.defaultStyles),
       (styles, type) =>
-        styles[type] = {
+        (styles[type] = {
           ...baseStyle,
           ...this.defaultStyles[type],
           ...args[`${type}Style`],
-        },
+        }),
       {}
     );
 
@@ -181,7 +181,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the `data` section of the context used to construct this chart.
    */
-  createContextData(args, chart) {
+  createContextData(args /*, chart */) {
     const series = args.series ?? [{ data: args.data }];
 
     return {
@@ -195,11 +195,12 @@ export default class AbstractChartModifier extends Modifier {
   addChartBox(context, config) {
     const style = resolveStyle(context.styles.chart, context.layout);
 
-    mergeAtPaths(config,
+    mergeAtPaths(
+      config,
       this.generateBoxConfig({
         ...style,
         ...context.layout,
-      }),
+      })
     );
 
     return {
@@ -277,8 +278,8 @@ export default class AbstractChartModifier extends Modifier {
       )
     );
 
-    const textHeight = computeTextHeight(style) + style.marginTop +
-      style.marginBottom;
+    const textHeight =
+      computeTextHeight(style) + style.marginTop + style.marginBottom;
 
     return {
       ...context.layout,
@@ -336,37 +337,39 @@ export default class AbstractChartModifier extends Modifier {
    */
   generateBoxConfig(box) {
     return {
-      'graphic.elements': [{
-      type: 'rect',
-      top: box.y + box.marginTop,
-      left: box.x + box.marginLeft,
-      shape: {
-        // The stroke is drawn on the outside of the width and height for the
-        // bottom and right sides, so we need to make the box smaller to make it
-        // appear as if it's drawing on the inside
-        width:
-          box.width -
-          box.marginLeft -
-          box.marginRight -
-          box.borderLeftWidth -
-          box.borderRightWidth,
-        height:
-          box.height -
-          box.marginTop -
-          box.marginBottom -
-          box.borderTopWidth -
-          box.borderBottomWidth,
-      },
-      style: {
-        // `fill` can be missing, but cannot be not be `undefined` or the box
-        // will render a few pixels to the right and down [twl 2.Jun.22]
-        fill: box.backgroundColor ?? '#fff',
-        // Safari only parses contituent values, so use "top" as a proxy for all
-        stroke: box.borderTopColor,
-        lineWidth: box.borderTopWidth ?? 0,
-      },
-      silent: true,
-      }]
+      'graphic.elements': [
+        {
+          type: 'rect',
+          top: box.y + box.marginTop,
+          left: box.x + box.marginLeft,
+          shape: {
+            // The stroke is drawn on the outside of the width and height for the
+            // bottom and right sides, so we need to make the box smaller to make it
+            // appear as if it's drawing on the inside
+            width:
+              box.width -
+              box.marginLeft -
+              box.marginRight -
+              box.borderLeftWidth -
+              box.borderRightWidth,
+            height:
+              box.height -
+              box.marginTop -
+              box.marginBottom -
+              box.borderTopWidth -
+              box.borderBottomWidth,
+          },
+          style: {
+            // `fill` can be missing, but cannot be not be `undefined` or the box
+            // will render a few pixels to the right and down [twl 2.Jun.22]
+            fill: box.backgroundColor ?? '#fff',
+            // Safari only parses contituent values, so use "top" as a proxy for all
+            stroke: box.borderTopColor,
+            lineWidth: box.borderTopWidth ?? 0,
+          },
+          silent: true,
+        },
+      ],
     };
   }
 

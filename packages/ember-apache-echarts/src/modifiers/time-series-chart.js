@@ -80,7 +80,11 @@ export default class TimeSeriesChartModifier extends AbstractChartModifier {
     };
     const isBarVariant = ['bar', 'stackedBar'].includes(variant);
     const isAreaVariant = ['area', 'stackedArea'].includes(variant);
-    const isStackedVariant = ['stackedLine', 'stackedArea', 'stackedBar'].includes(variant);
+    const isStackedVariant = [
+      'stackedLine',
+      'stackedArea',
+      'stackedBar',
+    ].includes(variant);
 
     chart.setOption(
       {

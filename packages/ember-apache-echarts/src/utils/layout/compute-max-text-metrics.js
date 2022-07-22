@@ -13,24 +13,28 @@ import computeTextMetrics from './compute-text-metrics';
  *                  contain all of the strings in `array` when rendered
  */
 const computeMaxTextMetrics = (array, style, maxWidth) =>
-  array.reduce((maxMetrics, text) => {
-    const textMetrics = computeTextMetrics(text, style);
+  array.reduce(
+    (maxMetrics, text) => {
+      const textMetrics = computeTextMetrics(text, style);
 
-    // Wrap at the pixel level--not accurate, but good enough for now
-    if (maxWidth && textMetrics.width > maxWidth) {
-      const lineCount = Math.ceil(textMetrics.width / maxWidth);
+      // Wrap at the pixel level--not accurate, but good enough for now
+      if (maxWidth && textMetrics.width > maxWidth) {
+        const lineCount = Math.ceil(textMetrics.width / maxWidth);
 
-      // Assume 2px between lines
-      textMetrics.height = textMetrics.height * lineCount + (lineCount - 1) * 2;
+        // Assume 2px between lines
+        textMetrics.height =
+          textMetrics.height * lineCount + (lineCount - 1) * 2;
+      }
+
+      maxMetrics.width = Math.max(maxMetrics.width, textMetrics.width);
+      maxMetrics.height = Math.max(maxMetrics.height, textMetrics.height);
+
+      return maxMetrics;
+    },
+    {
+      width: 0,
+      height: 0,
     }
-
-    maxMetrics.width = Math.max(maxMetrics.width, textMetrics.width);
-    maxMetrics.height = Math.max(maxMetrics.height, textMetrics.height);
-
-    return maxMetrics;
-  }, {
-    width: 0,
-    height: 0,
-  });
+  );
 
 export default computeMaxTextMetrics;

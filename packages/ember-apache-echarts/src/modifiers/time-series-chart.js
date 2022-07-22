@@ -38,7 +38,8 @@ function getSeriesData(data, categories, categoryProperty, valueProperty) {
  * Renders a time series chart.
  *
  * The `variant` argument determines the type of chart to render: `line`,
- * `area`, `stackedLine` or `stackedArea`. Defaults to `line`.
+ * `area`, `bar`, `stackedLine`, `stackedArea` or `stackedBar`. Defaults to
+ * `line`.
  *
  * The data passed should be an array of data series, with each series having:
  *
@@ -77,6 +78,9 @@ export default class TimeSeriesChartModifier extends AbstractChartModifier {
       height: chart.getHeight() - gridPadding.top - gridPadding.bottom,
       width: chart.getWidth() - gridPadding.left - gridPadding.right,
     };
+    const isBarVariant = ['bar', 'stackedBar'].includes(variant);
+    const isAreaVariant = ['area', 'stackedArea'].includes(variant);
+    const isStackedVariant = ['stackedLine', 'stackedArea', 'stackedBar'].includes(variant);
 
     chart.setOption(
       {
@@ -142,23 +146,30 @@ export default class TimeSeriesChartModifier extends AbstractChartModifier {
         series: series.map((info) => ({
           name: info.label,
           data: getSeriesData(info.data, categories, 'at', 'value'),
-          type: 'line',
-          ...(['stackedLine', 'stackedArea'].includes(variant) && {
+          type: isBarVariant ? 'bar' : 'line',
+          ...(isStackedVariant && {
             stack: 'Total',
           }),
-          ...(['area', 'stackedArea'].includes(variant) && {
+          ...(isAreaVariant && {
             areaStyle: {},
           }),
-          symbol: 'circle',
-          symbolSize: ['area', 'stackedArea'].includes(variant) ? 6 : 8,
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 3,
-              shadowColor: '#000000',
-              shadowOffsetX: 1,
-              shadowOffsetY: 1,
+          ...(!isBarVariant && {
+            symbol: 'circle',
+            symbolSize: isAreaVariant ? 6 : 8,
+          }),
+          // NOTE: I can't figure out right now how to emphasize a single bar.
+          //       It always highlights all the bars at that point in the axis.
+          //       [twl 22.Jul.22]
+          ...(!isBarVariant && {
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 3,
+                shadowColor: '#000000',
+                shadowOffsetX: 1,
+                shadowOffsetY: 1,
+              },
             },
-          },
+          }),
           triggerLineEvent: true,
         })),
         tooltip: {

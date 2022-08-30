@@ -10,10 +10,10 @@ import pick from 'lodash/pick';
  * The object returned from this function includes the following properties:
  *
  * `label`
- * : The label used for the pie slice.
+ * : The label used for the line info.
  *
  * `value`
- * : The value used for the pie slice.
+ * : The value used for the line info.
  *
  * `marker`
  * : Raw HTML that renders the marker used to identify the item on the chart.
@@ -33,7 +33,7 @@ const toTooltipItem = (param) => ({
   label: param.name,
   slice: pick(param, 'color', 'percent'),
 
-  // TODO: Think about how/if we need to support multiple series for pie charts.
+  // TODO: Think about how/if we need to support multiple series for line charts.
   //       [twl 30.Apr.22]
   //
   // series: {

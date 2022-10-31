@@ -158,13 +158,6 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Generates the plot config for a single plot on this chart.
    */
   generatePlotConfig(series, layout, context, gridIndex) {
-    console.log(
-      '\n### generating plot config',
-      series,
-      layout,
-      context,
-      gridIndex
-    );
     const { args, styles, data } = context;
     const { noDataText, xAxisScale, yAxisScale } = args;
 

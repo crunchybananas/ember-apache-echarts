@@ -255,6 +255,34 @@ export default class BarChartModifier extends AbstractChartModifier {
       // if this is changed, update the select handler in `configureChart`
       selectedMode: 'single',
     };
+    const valueAxisConfig = [
+      {
+        gridIndex,
+        type: 'value',
+        max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
+        axisLabel: {
+          // margin between the axis label and the axis line
+          margin: valueAxisStyle.marginRight,
+          ...this.generateAxisLabelConfig(layout, valueAxisStyle),
+        },
+      },
+    ];
+    const categoryAxisConfig = [
+      {
+        gridIndex,
+        type: 'category',
+        data: categories,
+        axisLabel: {
+          // Ensure every category is shown on the axis
+          interval: 0,
+          overflow: 'break',
+          width: categoryAxisLabelWidth,
+          // margin between the axis label and the axis line
+          margin: categoryAxisStyle.marginTop,
+          ...this.generateAxisLabelConfig(layout, categoryAxisStyle),
+        },
+      },
+    ];
 
     return {
       grid: [
@@ -266,34 +294,8 @@ export default class BarChartModifier extends AbstractChartModifier {
           height: layout.innerHeight - categoryAxisHeight - valueAxisOverflow,
         },
       ],
-      yAxis: [
-        {
-          gridIndex,
-          type: 'value',
-          max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
-          axisLabel: {
-            // margin between the axis label and the axis line
-            margin: valueAxisStyle.marginRight,
-            ...this.generateAxisLabelConfig(layout, valueAxisStyle),
-          },
-        },
-      ],
-      xAxis: [
-        {
-          gridIndex,
-          type: 'category',
-          data: categories,
-          axisLabel: {
-            // Ensure every category is shown on the axis
-            interval: 0,
-            overflow: 'break',
-            width: categoryAxisLabelWidth,
-            // margin between the axis label and the axis line
-            margin: categoryAxisStyle.marginTop,
-            ...this.generateAxisLabelConfig(layout, categoryAxisStyle),
-          },
-        },
-      ],
+      yAxis: valueAxisConfig,
+      xAxis: categoryAxisConfig,
       series: !isGroupedOrStacked
         ? [
             {

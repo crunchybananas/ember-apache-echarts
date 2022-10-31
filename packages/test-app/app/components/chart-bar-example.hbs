@@ -38,3 +38,59 @@
   @series={{this.seriesData}}
   @noDataText="No data"
 />
+
+<h2>Line Charts</h2>
+
+<h3>Simple</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="line"
+  @data={{this.chartData}}
+  @noDataText="No data"
+/>
+
+<h3>Series</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="line"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @yAxisScale="shared"
+/>
+
+<h2>Area Charts</h2>
+
+<h3>Simple</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="area"
+  @data={{this.chartData}}
+  @noDataText="No data"
+/>
+
+<h3>Series</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="area"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @yAxisScale="shared"
+/>
+
+<h3>Stacked</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="stackedArea"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+/>

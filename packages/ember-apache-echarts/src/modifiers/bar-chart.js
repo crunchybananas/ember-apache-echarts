@@ -56,6 +56,10 @@ import AbstractChartModifier from './abstract-chart';
  * `variant`
  * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
  *   `stackedBar` or `stackedArea`
+ *
+ * `orientation`
+ * : Which orientation to render the value axes: `vertical` (default) or
+ *   `horizontal`
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {
@@ -173,6 +177,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       return undefined;
     }
 
+    const isHorizontal = args.orientation === 'horizontal';
     const isBarVariant = this.isBarVariant(args.variant);
     const isAreaVariant = this.isAreaVariant(args.variant);
     const isStackedVariant = this.isStackedVariant(args.variant);
@@ -192,13 +197,12 @@ export default class BarChartModifier extends AbstractChartModifier {
     const values = isGroupedOrStacked
       ? getSeriesTotals(series.data, categories, 'name', 'value')
       : getSeriesData(series.data, categories, 'name', 'value');
+    const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = values.map((value) =>
-      value != null ? `${value}` : ''
-    );
+    const yAxisLabels = isHorizontal ? categories : valueTexts;
     const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
     const yAxisWidth =
       yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
@@ -217,10 +221,12 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Configure the X axis
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
-    const xAxisLineWidth = 1;
-    const xAxisLabelWidth = gridWidth / categories.length;
+    const xAxisLineWidth = isHorizontal ? 0 : 1;
+    // 10 is arbitrary number here, since we don't know how many divisions the
+    // chart will create if the X axis is a value axis
+    const xAxisLabelWidth = gridWidth / (isHorizontal ? 10 : categories.length);
     const xAxisMetrics = computeMaxTextMetrics(
-      categories,
+      isHorizontal ? valueTexts : categories,
       xAxisStyle,
       xAxisLabelWidth
     );
@@ -263,7 +269,10 @@ export default class BarChartModifier extends AbstractChartModifier {
         axisLabel: {
           // margin between the axis label and the axis line
           margin: yAxisStyle.marginRight,
-          ...this.generateAxisLabelConfig(layout, yAxisStyle),
+          ...this.generateAxisLabelConfig(
+            layout,
+            isHorizontal ? xAxisStyle : yAxisStyle
+          ),
         },
       },
     ];
@@ -279,7 +288,10 @@ export default class BarChartModifier extends AbstractChartModifier {
           width: xAxisLabelWidth,
           // margin between the axis label and the axis line
           margin: xAxisStyle.marginTop,
-          ...this.generateAxisLabelConfig(layout, xAxisStyle),
+          ...this.generateAxisLabelConfig(
+            layout,
+            isHorizontal ? yAxisStyle : xAxisStyle
+          ),
         },
       },
     ];
@@ -294,8 +306,8 @@ export default class BarChartModifier extends AbstractChartModifier {
           height: layout.innerHeight - xAxisHeight - yAxisOverflow,
         },
       ],
-      yAxis: valueAxisConfig,
-      xAxis: categoryAxisConfig,
+      yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
+      xAxis: isHorizontal ? valueAxisConfig : categoryAxisConfig,
       series: !isGroupedOrStacked
         ? [
             {

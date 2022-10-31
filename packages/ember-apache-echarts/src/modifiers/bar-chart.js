@@ -44,6 +44,10 @@ import AbstractChartModifier from './abstract-chart';
  *
  * `tooltipFormatter`
  * : The function used to generate the tool tip
+ *
+ * `variant`
+ * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
+ *   `stackedBar` or `stackedArea`
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {
@@ -66,12 +70,20 @@ export default class BarChartModifier extends AbstractChartModifier {
     };
   }
 
-  isGrouped(variant) {
+  isGroupedVariant(variant) {
     return ['groupedBar'].includes(variant);
   }
 
-  isStacked(variant) {
+  isStackedVariant(variant) {
     return ['stackedArea', 'stackedBar'].includes(variant);
+  }
+
+  isBarVariant(variant) {
+    return ['bar', 'groupedBar', 'stackedBar'].includes(variant ?? 'bar');
+  }
+
+  isAreaVariant(variant) {
+    return ['area', 'stackedArea'].includes(variant);
   }
 
   configureChart(args, chart) {
@@ -135,7 +147,8 @@ export default class BarChartModifier extends AbstractChartModifier {
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
       series:
-        this.isGrouped(args.variant) || this.isStacked(args.variant)
+        this.isGroupedVariant(args.variant) ||
+        this.isStackedVariant(args.variant)
           ? [{ data: context.series }]
           : context.series,
     };
@@ -159,8 +172,11 @@ export default class BarChartModifier extends AbstractChartModifier {
       return undefined;
     }
 
-    const isStacked = this.isStacked(args.variant);
-    const isGroupedOrStacked = this.isGrouped(args.variant) || isStacked;
+    const isBarVariant = this.isBarVariant(args.variant);
+    const isAreaVariant = this.isAreaVariant(args.variant);
+    const isStackedVariant = this.isStackedVariant(args.variant);
+    const isGroupedOrStacked =
+      this.isGroupedVariant(args.variant) || isStackedVariant;
     const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
@@ -215,9 +231,26 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Setup base configurations
     const seriesBaseConfig = {
-      type: 'bar',
       xAxisIndex: gridIndex,
       yAxisIndex: gridIndex,
+      type: isBarVariant ? 'bar' : 'line',
+      ...(isAreaVariant && {
+        areaStyle: {},
+      }),
+      ...(!isBarVariant && {
+        symbol: 'circle',
+        symbolSize: isAreaVariant ? 6 : 8,
+      }),
+      ...(!isBarVariant && {
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 3,
+            shadowColor: '#000000',
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+          },
+        },
+      }),
       // if this is changed, update the select handler in `configureChart`
       selectedMode: 'single',
     };
@@ -265,14 +298,16 @@ export default class BarChartModifier extends AbstractChartModifier {
             {
               ...seriesBaseConfig,
               data: values,
-              colorBy: 'data',
+              ...(isBarVariant && {
+                colorBy: 'data',
+              }),
             },
           ]
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
             data: getSeriesData(info.data, categories, 'name', 'value'),
-            ...(isStacked && {
+            ...(isStackedVariant && {
               stack: 'total',
             }),
           })),

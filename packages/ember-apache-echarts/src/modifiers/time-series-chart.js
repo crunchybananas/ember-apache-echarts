@@ -1,6 +1,6 @@
 import AbstractChartModifier from './abstract-chart';
 import countBy from 'lodash/countBy';
-import createLookup from '../utils/create-lookup';
+import getSeriesData from '../utils/data/get-series-data';
 import { tracked } from '@glimmer/tracking';
 
 // TODO: Import only the required components to keep the bundle size small. See
@@ -26,12 +26,6 @@ function getCategories(dataset, property) {
   }
 
   return Array.from(result.values()).sort();
-}
-
-function getSeriesData(data, categories, categoryProperty, valueProperty) {
-  const lookup = createLookup(data, categoryProperty, valueProperty);
-
-  return categories.map((category) => lookup[category]);
 }
 
 /**

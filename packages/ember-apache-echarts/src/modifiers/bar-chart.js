@@ -34,7 +34,7 @@ import AbstractChartModifier from './abstract-chart';
  * `maxColumns`
  * : The maximum number of columns to render when rendering more than one series
  *
- * `xAxisScale`, `yAxisScale`
+ * `categoryAxisScale`, `valueAxisScale`
  * : Whether to use a shared axis for all plots that accounts for the data
  *   across all series, or use a separate axis for each plot that only uses
  *   that plot's data. Valid values are: `shared`, `separate`
@@ -55,12 +55,12 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     return {
       ...styles,
-      xAxis: {
+      categoryAxis: {
         font: 'normal 12px Montserrat',
         textAlign: 'center',
         marginTop: 8,
       },
-      yAxis: {
+      valueAxis: {
         font: 'normal 12px Montserrat',
         textAlign: 'right',
         // Add extra margin to the left too, since the width calculation of the
@@ -88,7 +88,7 @@ export default class BarChartModifier extends AbstractChartModifier {
 
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
-    const { xAxisScale, tooltipFormatter, onSelect } = args;
+    const { categoryAxisScale, tooltipFormatter, onSelect } = args;
     const { config, context } = this.buildLayout(args, chart);
 
     chart.setOption({
@@ -112,7 +112,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       //       category on the X axis. Thus we need to look up the value based
       //       on how the axis is being rendered. [twl 20.Jul.22]
       const name =
-        xAxisScale === 'shared'
+        categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
           ? series.data[dataIndex].name
@@ -134,14 +134,14 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
-    const { xAxisScale, yAxisScale } = args;
+    const { categoryAxisScale, valueAxisScale } = args;
 
     return {
       ...context,
-      ...(xAxisScale === 'shared' && {
+      ...(categoryAxisScale === 'shared' && {
         categories: getUniqueDatasetValues(context.series, 'name'),
       }),
-      ...(yAxisScale === 'shared' && {
+      ...(valueAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
       }),
       // If grouped or stacked, render multple series on a single chart rather
@@ -159,7 +159,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText, xAxisScale, yAxisScale } = args;
+    const { noDataText, categoryAxisScale, valueAxisScale } = args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
@@ -174,11 +174,11 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Analyze the data
     const categories =
-      xAxisScale === 'shared'
+      categoryAxisScale === 'shared'
         ? data.categories
         : getUniqueDatasetValues(seriesData, 'name');
     const maxValue =
-      yAxisScale === 'shared'
+      valueAxisScale === 'shared'
         ? data.maxValue
         : computeStatistic(seriesData, 'max');
     const values = isGroupedOrStacked
@@ -187,40 +187,48 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
-    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = values.map((value) =>
+    const valueAxisStyle = resolveStyle(styles.valueAxis, context.layout);
+    const valueAxisLabels = values.map((value) =>
       value != null ? `${value}` : ''
     );
-    const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
-    const yAxisWidth =
-      yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
+    const valueAxisMetrics = computeMaxTextMetrics(
+      valueAxisLabels,
+      valueAxisStyle
+    );
+    const valueAxisWidth =
+      valueAxisMetrics.width +
+      valueAxisStyle.marginLeft +
+      valueAxisStyle.marginRight;
 
     // Only applies when the very top label is rendered; for now, assuming it's
     // always there, since I don't know how to determine this on the fly
-    const yAxisTopLabelMetrics = computeTextMetrics(`${maxValue}`, yAxisStyle);
-    const yAxisOverflow = yAxisTopLabelMetrics.height / 2;
+    const valueAxisTopLabelMetrics = computeTextMetrics(
+      `${maxValue}`,
+      valueAxisStyle
+    );
+    const valueAxisOverflow = valueAxisTopLabelMetrics.height / 2;
 
     // Configure the plot
     const gridWidth =
       layout.innerWidth -
-      yAxisWidth -
+      valueAxisWidth -
       layout.borderLeftWidth -
       layout.borderRightWidth;
 
     // Configure the X axis
-    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
-    const xAxisLineWidth = 1;
-    const xAxisLabelWidth = gridWidth / categories.length;
-    const xAxisMetrics = computeMaxTextMetrics(
+    const categoryAxisStyle = resolveStyle(styles.categoryAxis, context.layout);
+    const categoryAxisLineWidth = 1;
+    const categoryAxisLabelWidth = gridWidth / categories.length;
+    const categoryAxisMetrics = computeMaxTextMetrics(
       categories,
-      xAxisStyle,
-      xAxisLabelWidth
+      categoryAxisStyle,
+      categoryAxisLabelWidth
     );
-    const xAxisHeight =
-      xAxisMetrics.height +
-      xAxisStyle.marginTop +
-      xAxisStyle.marginBottom +
-      xAxisLineWidth;
+    const categoryAxisHeight =
+      categoryAxisMetrics.height +
+      categoryAxisStyle.marginTop +
+      categoryAxisStyle.marginBottom +
+      categoryAxisLineWidth;
 
     // Setup base configurations
     const seriesBaseConfig = {
@@ -252,21 +260,21 @@ export default class BarChartModifier extends AbstractChartModifier {
       grid: [
         {
           // Not sure why the 1px adjustment is needed to `x`, but it is
-          x: layout.innerX + yAxisWidth - 1,
-          y: layout.innerY + yAxisOverflow,
+          x: layout.innerX + valueAxisWidth - 1,
+          y: layout.innerY + valueAxisOverflow,
           width: gridWidth,
-          height: layout.innerHeight - xAxisHeight - yAxisOverflow,
+          height: layout.innerHeight - categoryAxisHeight - valueAxisOverflow,
         },
       ],
       yAxis: [
         {
           gridIndex,
           type: 'value',
-          max: yAxisScale === 'shared' ? data.maxValue : 'dataMax',
+          max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
           axisLabel: {
             // margin between the axis label and the axis line
-            margin: yAxisStyle.marginRight,
-            ...this.generateAxisLabelConfig(layout, yAxisStyle),
+            margin: valueAxisStyle.marginRight,
+            ...this.generateAxisLabelConfig(layout, valueAxisStyle),
           },
         },
       ],
@@ -279,10 +287,10 @@ export default class BarChartModifier extends AbstractChartModifier {
             // Ensure every category is shown on the axis
             interval: 0,
             overflow: 'break',
-            width: xAxisLabelWidth,
+            width: categoryAxisLabelWidth,
             // margin between the axis label and the axis line
-            margin: xAxisStyle.marginTop,
-            ...this.generateAxisLabelConfig(layout, xAxisStyle),
+            margin: categoryAxisStyle.marginTop,
+            ...this.generateAxisLabelConfig(layout, categoryAxisStyle),
           },
         },
       ],

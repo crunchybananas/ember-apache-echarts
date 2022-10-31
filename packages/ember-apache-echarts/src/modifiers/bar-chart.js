@@ -1,5 +1,6 @@
-import createLookup from '../utils/create-lookup';
 import computeStatistic from '../utils/data/compute-statistic';
+import getSeriesData from '../utils/data/get-series-data';
+import getSeriesTotals from '../utils/data/get-series-totals';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values';
 import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
@@ -65,6 +66,14 @@ export default class BarChartModifier extends AbstractChartModifier {
     };
   }
 
+  isGrouped(variant) {
+    return ['groupedBar'].includes(variant);
+  }
+
+  isStacked(variant) {
+    return ['stackedArea', 'stackedBar'].includes(variant);
+  }
+
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { xAxisScale, tooltipFormatter, onSelect } = args;
@@ -123,6 +132,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       ...(yAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
       }),
+      // If grouped or stacked, render multple series on a single chart rather
+      // than one chart per series
+      series:
+        this.isGrouped(args.variant) || this.isStacked(args.variant)
+          ? [{ data: context.series }]
+          : context.series,
     };
   }
 
@@ -130,6 +145,13 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Generates the plot config for a single plot on this chart.
    */
   generatePlotConfig(series, layout, context, gridIndex) {
+    console.log(
+      '\n### generating plot config',
+      series,
+      layout,
+      context,
+      gridIndex
+    );
     const { args, styles, data } = context;
     const { noDataText, xAxisScale, yAxisScale } = args;
 
@@ -137,17 +159,22 @@ export default class BarChartModifier extends AbstractChartModifier {
       return undefined;
     }
 
+    const isStacked = this.isStacked(args.variant);
+    const isGroupedOrStacked = this.isGrouped(args.variant) || isStacked;
+    const seriesData = isGroupedOrStacked ? series.data : [series];
+
     // Analyze the data
-    const lookup = createLookup(series.data, 'name', 'value');
     const categories =
       xAxisScale === 'shared'
         ? data.categories
-        : getUniqueDatasetValues([series], 'name');
-    const values = categories.map((category) => lookup[category]);
+        : getUniqueDatasetValues(seriesData, 'name');
     const maxValue =
       yAxisScale === 'shared'
         ? data.maxValue
-        : computeStatistic([series], 'max');
+        : computeStatistic(seriesData, 'max');
+    const values = isGroupedOrStacked
+      ? getSeriesTotals(series.data, categories, 'name', 'value')
+      : getSeriesData(series.data, categories, 'name', 'value');
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
@@ -185,6 +212,15 @@ export default class BarChartModifier extends AbstractChartModifier {
       xAxisStyle.marginTop +
       xAxisStyle.marginBottom +
       xAxisLineWidth;
+
+    // Setup base configurations
+    const seriesBaseConfig = {
+      type: 'bar',
+      xAxisIndex: gridIndex,
+      yAxisIndex: gridIndex,
+      // if this is changed, update the select handler in `configureChart`
+      selectedMode: 'single',
+    };
 
     return {
       grid: [
@@ -224,17 +260,22 @@ export default class BarChartModifier extends AbstractChartModifier {
           },
         },
       ],
-      series: [
-        {
-          type: 'bar',
-          colorBy: 'data',
-          xAxisIndex: gridIndex,
-          yAxisIndex: gridIndex,
-          // if this is changed, update the select handler in `configureChart`
-          selectedMode: 'single',
-          data: values,
-        },
-      ],
+      series: !isGroupedOrStacked
+        ? [
+            {
+              ...seriesBaseConfig,
+              data: values,
+              colorBy: 'data',
+            },
+          ]
+        : series.data.map((info) => ({
+            ...seriesBaseConfig,
+            name: info.label,
+            data: getSeriesData(info.data, categories, 'name', 'value'),
+            ...(isStacked && {
+              stack: 'total',
+            }),
+          })),
     };
   }
 

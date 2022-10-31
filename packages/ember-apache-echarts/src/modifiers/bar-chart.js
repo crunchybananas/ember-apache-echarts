@@ -31,6 +31,14 @@ import AbstractChartModifier from './abstract-chart';
  * : CSS properties defining the style for the titles for individual plots when
  *   rendering more than one series
  *
+ * `xAxisStyle`
+ * : CSS properties defining the style for horizontal X axis, regardless of the
+ *   value of `orientation`
+ *
+ * `yAxisStyle`
+ * : CSS properties defining the style for vertical Y axis, regardless of the
+ *   value of `orientation`
+ *
  * `maxColumns`
  * : The maximum number of columns to render when rendering more than one series
  *
@@ -55,12 +63,12 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     return {
       ...styles,
-      categoryAxis: {
+      xAxis: {
         font: 'normal 12px Montserrat',
         textAlign: 'center',
         marginTop: 8,
       },
-      valueAxis: {
+      yAxis: {
         font: 'normal 12px Montserrat',
         textAlign: 'right',
         // Add extra margin to the left too, since the width calculation of the
@@ -187,48 +195,40 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
-    const valueAxisStyle = resolveStyle(styles.valueAxis, context.layout);
-    const valueAxisLabels = values.map((value) =>
+    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
+    const yAxisLabels = values.map((value) =>
       value != null ? `${value}` : ''
     );
-    const valueAxisMetrics = computeMaxTextMetrics(
-      valueAxisLabels,
-      valueAxisStyle
-    );
-    const valueAxisWidth =
-      valueAxisMetrics.width +
-      valueAxisStyle.marginLeft +
-      valueAxisStyle.marginRight;
+    const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
+    const yAxisWidth =
+      yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
 
     // Only applies when the very top label is rendered; for now, assuming it's
     // always there, since I don't know how to determine this on the fly
-    const valueAxisTopLabelMetrics = computeTextMetrics(
-      `${maxValue}`,
-      valueAxisStyle
-    );
-    const valueAxisOverflow = valueAxisTopLabelMetrics.height / 2;
+    const yAxisTopLabelMetrics = computeTextMetrics(`${maxValue}`, yAxisStyle);
+    const yAxisOverflow = yAxisTopLabelMetrics.height / 2;
 
     // Configure the plot
     const gridWidth =
       layout.innerWidth -
-      valueAxisWidth -
+      yAxisWidth -
       layout.borderLeftWidth -
       layout.borderRightWidth;
 
     // Configure the X axis
-    const categoryAxisStyle = resolveStyle(styles.categoryAxis, context.layout);
-    const categoryAxisLineWidth = 1;
-    const categoryAxisLabelWidth = gridWidth / categories.length;
-    const categoryAxisMetrics = computeMaxTextMetrics(
+    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
+    const xAxisLineWidth = 1;
+    const xAxisLabelWidth = gridWidth / categories.length;
+    const xAxisMetrics = computeMaxTextMetrics(
       categories,
-      categoryAxisStyle,
-      categoryAxisLabelWidth
+      xAxisStyle,
+      xAxisLabelWidth
     );
-    const categoryAxisHeight =
-      categoryAxisMetrics.height +
-      categoryAxisStyle.marginTop +
-      categoryAxisStyle.marginBottom +
-      categoryAxisLineWidth;
+    const xAxisHeight =
+      xAxisMetrics.height +
+      xAxisStyle.marginTop +
+      xAxisStyle.marginBottom +
+      xAxisLineWidth;
 
     // Setup base configurations
     const seriesBaseConfig = {
@@ -262,8 +262,8 @@ export default class BarChartModifier extends AbstractChartModifier {
         max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
         axisLabel: {
           // margin between the axis label and the axis line
-          margin: valueAxisStyle.marginRight,
-          ...this.generateAxisLabelConfig(layout, valueAxisStyle),
+          margin: yAxisStyle.marginRight,
+          ...this.generateAxisLabelConfig(layout, yAxisStyle),
         },
       },
     ];
@@ -276,10 +276,10 @@ export default class BarChartModifier extends AbstractChartModifier {
           // Ensure every category is shown on the axis
           interval: 0,
           overflow: 'break',
-          width: categoryAxisLabelWidth,
+          width: xAxisLabelWidth,
           // margin between the axis label and the axis line
-          margin: categoryAxisStyle.marginTop,
-          ...this.generateAxisLabelConfig(layout, categoryAxisStyle),
+          margin: xAxisStyle.marginTop,
+          ...this.generateAxisLabelConfig(layout, xAxisStyle),
         },
       },
     ];
@@ -288,10 +288,10 @@ export default class BarChartModifier extends AbstractChartModifier {
       grid: [
         {
           // Not sure why the 1px adjustment is needed to `x`, but it is
-          x: layout.innerX + valueAxisWidth - 1,
-          y: layout.innerY + valueAxisOverflow,
+          x: layout.innerX + yAxisWidth - 1,
+          y: layout.innerY + yAxisOverflow,
           width: gridWidth,
-          height: layout.innerHeight - categoryAxisHeight - valueAxisOverflow,
+          height: layout.innerHeight - xAxisHeight - yAxisOverflow,
         },
       ],
       yAxis: valueAxisConfig,

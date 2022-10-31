@@ -39,6 +39,18 @@
   @noDataText="No data"
 />
 
+<h3>Stacked Horizontal</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="stackedBar"
+  @orientation="horizontal"
+  @cellStyle={{hash border="solid 1px rgb(229, 231, 235)" margin=2}}
+  @series={{this.seriesData}}
+  @noDataText="No data"
+/>
+
 <h2>Line Charts</h2>
 
 <h3>Simple</h3>

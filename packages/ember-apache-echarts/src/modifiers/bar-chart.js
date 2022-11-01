@@ -2,6 +2,7 @@ import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values';
+import rotateDataSeries from '../utils/data/rotate-data-series';
 import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import resolveStyle from '../utils/style/resolve-style';
@@ -159,10 +160,11 @@ export default class BarChartModifier extends AbstractChartModifier {
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
       series:
-        this.isGroupedVariant(args.variant) ||
         this.isStackedVariant(args.variant)
-          ? [{ data: context.series }]
-          : context.series,
+          ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
+          : this.isGroupedVariant(args.variant)
+            ? [{ data: context.series }]
+            : context.series,
     };
   }
 

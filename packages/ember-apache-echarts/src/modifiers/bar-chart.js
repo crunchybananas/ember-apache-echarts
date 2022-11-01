@@ -286,7 +286,9 @@ export default class BarChartModifier extends AbstractChartModifier {
         axisLabel: {
           // Ensure every category is shown on the axis
           interval: 0,
-          overflow: 'break',
+          ...!isHorizontal && {
+            overflow: 'break',
+          },
           width: xAxisLabelWidth,
           // margin between the axis label and the axis line
           margin: xAxisStyle.marginTop,

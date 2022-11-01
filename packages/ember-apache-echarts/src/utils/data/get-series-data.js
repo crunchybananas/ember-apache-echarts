@@ -9,7 +9,7 @@ import createLookup from '../create-lookup';
  *                                    object that represents the category
  * @param {string}   valueProperty    The name of the property in each data
  *                                    object that represents the value
-
+ *
  * @return {number[]} An array of data values
  */
 export default function getSeriesData(

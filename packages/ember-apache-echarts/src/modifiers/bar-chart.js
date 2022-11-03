@@ -61,6 +61,11 @@ import AbstractChartModifier from './abstract-chart';
  * `orientation`
  * : Which orientation to render the value axes: `vertical` (default) or
  *   `horizontal`
+ *
+ * `legend`
+ * : Whether and where to display a legend: `none`, `top`, `bottom`, `left`,
+ *   `right`, `topLeft`, `topRight`, `bottomLeft`, `bottomRight`, `leftTop`,
+ *   `leftBottom`, `rightTop`, `rightBottom`
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {
@@ -166,6 +171,21 @@ export default class BarChartModifier extends AbstractChartModifier {
             ? [{ data: context.series }]
             : context.series,
     };
+  }
+
+  /**
+   * Returns the labels for the legend.
+   */
+  getLegendLabels(series, args) {
+    if (
+      !this.isStackedVariant(args.variant) &&
+      !this.isGroupedVariant(args.variant)
+    ) {
+      return super.getLegendLabels(series, args);
+    }
+
+    // Grouped and stacked datasets may have a dummy root node
+    return series[0].data.map((info) => info.label ?? info.name);
   }
 
   /**

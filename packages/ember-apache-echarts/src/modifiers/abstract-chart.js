@@ -3,7 +3,9 @@ import transform from 'lodash/transform';
 import { registerDestructor } from '@ember/destroyable';
 import Modifier from 'ember-modifier';
 import * as echarts from 'echarts';
+import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values';
 import computeInnerBox from '../utils/layout/compute-inner-box';
+import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextHeight from '../utils/layout/compute-text-height';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import layoutCells from '../utils/layout/layout-cells';
@@ -33,6 +35,11 @@ export default class AbstractChartModifier extends Modifier {
       chartTitle: {
         font: 'bold 20px Montserrat,sans-serif',
         textAlign: 'center',
+        margin: 24,
+      },
+      chartLegend: {
+        font: 'normal 16px Montserrat,sans-serif',
+        textAlign: 'left',
         margin: 24,
       },
       cell: {
@@ -127,6 +134,7 @@ export default class AbstractChartModifier extends Modifier {
     // These must be called in the order from outsidemost layout to innermost
     context.layout = this.addChartBox(context, config);
     context.layout = this.addTitle(context, config);
+    context.layout = this.addLegend(context, config);
     context.layout = this.addCellBoxes(context, config);
     context.layout = this.addCellTitles(context, config);
     context.layout = this.addCellPlots(context, config);
@@ -236,6 +244,58 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   /**
+   * Adds the legend to `config` if defined in `args` and returns the new
+   * context.
+   */
+  addLegend(context, config) {
+    const { legend } = context.args;
+
+    if (!legend || legend === 'none') {
+      return context.layout;
+    }
+
+    const style = resolveStyle(context.styles.chartLegend, context.layout);
+
+    mergeAtPaths(config, [
+      this.generateLegendConfig(
+        context.data.series,
+        context.args,
+        context.layout,
+        style
+      ),
+    ]);
+
+    // `computeTextHeight` includes margins unlike `computeMaxTextMetrics` below
+    const textHeight = computeTextHeight(style);
+    const newLayout = { ...context.layout };
+
+    if (legend.startsWith('top') || legend.startsWith('bottom')) {
+      newLayout.height -= textHeight;
+
+      if (legend.startsWith('top')) {
+        newLayout.y += textHeight;
+      }
+    } else if (legend.startsWith('left') || legend.startsWith('right')) {
+      const labels = this.getLegendLabels(context.data.series, context.args);
+      const legendMetrics = computeMaxTextMetrics(labels, style);
+      // 25 is the default value of `itemWidth` if not specified
+      const legendWidth =
+        legendMetrics.width +
+        (config.legend.itemWidth ?? 25) +
+        style.marginLeft +
+        style.marginRight;
+
+      newLayout.width -= legendWidth;
+
+      if (legend.startsWith('left')) {
+        newLayout.x += legendWidth;
+      }
+    }
+
+    return newLayout;
+  }
+
+  /**
    * Add the border and background of the cells.
    */
   addCellBoxes(context, config) {
@@ -333,6 +393,13 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   /**
+   * Returns the labels for the legend.
+   */
+  getLegendLabels(series /*, args */) {
+    return getUniqueDatasetValues(series, 'name');
+  }
+
+  /**
    * Generates the configuration for the background and border of a box element.
    */
   generateBoxConfig(box) {
@@ -425,6 +492,101 @@ export default class AbstractChartModifier extends Modifier {
     return {
       title: [config],
     };
+  }
+
+  /**
+   * Generates the configuration for a legend element.
+   */
+  generateLegendConfig(series, args, layout, style) {
+    const { legend = 'topCenter' } = args;
+    const isVertical = legend.startsWith('left') || legend.startsWith('right');
+    const config = {
+      legend: {
+        type: 'scroll',
+        data: this.getLegendLabels(series, args).map((label) => ({
+          name: label,
+          icon: 'circle',
+          itemStyle: {
+            color: args?.colorMap?.[label],
+          },
+        })),
+        itemGap: isVertical ? 15 : 40,
+        align: style.textAlign ?? 'left',
+        width: layout.width,
+        orient: isVertical ? 'vertical' : 'horizontal',
+        backgroundColor: style.backgroundColor,
+        // Safari only parses contituent values, so use "top" as a proxy for all
+        borderWidth: style.borderTopWidth,
+        borderColor: style.borderTopColor,
+        borderRadius: style.borderRadius,
+        padding: [
+          style.paddingTop,
+          style.paddingRight,
+          style.paddingBottom,
+          style.paddingLeft,
+        ],
+        textStyle: {
+          color: style.color,
+          fontStyle: style.fontStyle,
+          fontWeight: style.fontWeight,
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+        },
+      },
+    };
+
+    let xLayout, yLayout;
+
+    if (legend.startsWith('top') || legend.endsWith('Top')) {
+      yLayout = {
+        top: layout.y + style.marginTop,
+      };
+    } else if (legend.startsWith('bottom') || legend.endsWith('Bottom')) {
+      // NOTE: Not sure why I need the +1, but if it's missing and the legend
+      //       has a border, it overlaps the chart border. [twl 2.Nov.22]
+      yLayout = {
+        bottom:
+          layout.chartHeight -
+          layout.height -
+          layout.y +
+          1 +
+          style.marginBottom,
+      };
+    } else {
+      // NOTE: Technically this positions the legend in the vertical center of
+      //       the full chart, rather than the remaining `height` in `layout`.
+      //       However, since positioning it correctly requires calculating the
+      //       rendered height of the legend, which is non-trivial, and we're
+      //       not currently using this option, I'm using this approximation
+      //       instead. [twl 2.Nov.22]
+      yLayout = {
+        top: 'middle',
+      };
+    }
+
+    if (legend.startsWith('left') || legend.endsWith('Left')) {
+      xLayout = {
+        left: layout.x + style.marginLeft,
+      };
+    } else if (legend.startsWith('right') || legend.endsWith('Right')) {
+      // NOTE: Not sure why I need the +1, but if it's missing and the legend
+      //       has a border, it overlaps the chart border. [twl 2.Nov.22]
+      xLayout = {
+        right:
+          layout.chartWidth - layout.width - layout.x + 1 + style.marginRight,
+      };
+    } else {
+      xLayout = {
+        left: 'center',
+      };
+    }
+
+    merge(config.legend, {
+      ...xLayout,
+      ...yLayout,
+    });
+
+    return config;
   }
 
   /**

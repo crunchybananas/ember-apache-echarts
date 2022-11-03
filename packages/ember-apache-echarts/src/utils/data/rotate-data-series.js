@@ -18,19 +18,20 @@ import getUniqueDatasetValues from './get-unique-dataset-values';
  *
  * @return {object[]} data An array of data objects
  */
-const rotateDataSeries = (data, categoryProperty, valueProperty) => (
-  getUniqueDatasetValues(data, categoryProperty).map(label => ({
+const rotateDataSeries = (data, categoryProperty, valueProperty) =>
+  getUniqueDatasetValues(data, categoryProperty).map((label) => ({
     label,
     data: data.map((series) => {
-      const item = series.data.find(item => item[categoryProperty] === label);
+      const item = series.data.find((item) => item[categoryProperty] === label);
 
-      return !item ? undefined : ({
-        [categoryProperty]: series.label,
-        [valueProperty]: item[valueProperty],
-        ...omit(series, 'data', 'label'),
-      });
+      return !item
+        ? undefined
+        : {
+            [categoryProperty]: series.label,
+            [valueProperty]: item[valueProperty],
+            ...omit(series, 'data', 'label'),
+          };
     }),
-  }))
-);
+  }));
 
 export default rotateDataSeries;

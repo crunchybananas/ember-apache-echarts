@@ -164,12 +164,11 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
-      series:
-        this.isStackedVariant(args.variant)
-          ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
-          : this.isGroupedVariant(args.variant)
-            ? [{ data: context.series }]
-            : context.series,
+      series: this.isStackedVariant(args.variant)
+        ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
+        : this.isGroupedVariant(args.variant)
+        ? [{ data: context.series }]
+        : context.series,
     };
   }
 
@@ -306,9 +305,9 @@ export default class BarChartModifier extends AbstractChartModifier {
         axisLabel: {
           // Ensure every category is shown on the axis
           interval: 0,
-          ...!isHorizontal && {
+          ...(!isHorizontal && {
             overflow: 'break',
-          },
+          }),
           width: xAxisLabelWidth,
           // margin between the axis label and the axis line
           margin: xAxisStyle.marginTop,

@@ -11,6 +11,16 @@ import AbstractChartModifier from './abstract-chart';
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
 
+const setItemColor = (colorMap, item, color) =>
+  !colorMap?.[color]
+    ? item
+    : {
+        ...item,
+        itemStyle: {
+          color: colorMap[color],
+        },
+      };
+
 /**
  * Renders one or more bar charts.
  *
@@ -66,6 +76,10 @@ import AbstractChartModifier from './abstract-chart';
  * : Whether and where to display a legend: `none`, `top`, `bottom`, `left`,
  *   `right`, `topLeft`, `topRight`, `bottomLeft`, `bottomRight`, `leftTop`,
  *   `leftBottom`, `rightTop`, `rightBottom`
+ *
+ * `colorMap`
+ * : A hash that maps series names to the colors to use for the data items in
+ *   those series
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {
@@ -344,7 +358,10 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: getSeriesData(info.data, categories, 'name', 'value'),
+            data: info.data.map((item) => ({
+              ...item,
+              ...setItemColor(args.colorMap, item, info.label),
+            })),
             ...(isStackedVariant && {
               stack: 'total',
             }),

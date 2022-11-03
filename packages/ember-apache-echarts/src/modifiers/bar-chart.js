@@ -88,12 +88,12 @@ export default class BarChartModifier extends AbstractChartModifier {
     return {
       ...styles,
       xAxis: {
-        font: 'normal 12px Montserrat',
+        font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'center',
         marginTop: 8,
       },
       yAxis: {
-        font: 'normal 12px Montserrat',
+        font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'right',
         // Add extra margin to the left too, since the width calculation of the
         // Y axis can sometimes be off a few pixels

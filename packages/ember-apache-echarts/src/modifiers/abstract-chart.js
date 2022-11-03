@@ -14,7 +14,7 @@ import mergeAtPaths from '../utils/merge-at-paths';
 // composite properties or individual constituent properties
 const baseStyle = {
   border: '0px solid #000',
-  font: 'bold 16px Montserrat',
+  font: 'bold 16px Montserrat,sans-serif',
   color: '#000',
   margin: 0,
   padding: 0,
@@ -31,7 +31,7 @@ export default class AbstractChartModifier extends Modifier {
     return {
       chart: {},
       chartTitle: {
-        font: 'bold 20px Montserrat',
+        font: 'bold 20px Montserrat,sans-serif',
         textAlign: 'center',
         margin: 24,
       },
@@ -40,12 +40,12 @@ export default class AbstractChartModifier extends Modifier {
         margin: 8,
       },
       cellTitle: {
-        font: 'bold 16px Montserrat',
+        font: 'bold 16px Montserrat,sans-serif',
         textAlign: 'left',
         margin: 8,
       },
       cellTextOverlay: {
-        font: 'normal 16px Montserrat',
+        font: 'normal 16px Montserrat,sans-serif',
         textAlign: 'center',
         verticalAlign: 'middle',
         zIndex: Z_OVERLAY,

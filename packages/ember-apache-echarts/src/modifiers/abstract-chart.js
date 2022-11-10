@@ -542,7 +542,7 @@ export default class AbstractChartModifier extends Modifier {
 
     if (legend.startsWith('top') || legend.endsWith('Top')) {
       yLayout = {
-        top: layout.y + style.marginTop,
+        top: layout.y + style.marginTop + style.borderTopWidth / 2,
       };
     } else if (legend.startsWith('bottom') || legend.endsWith('Bottom')) {
       // NOTE: Not sure why I need the +1, but if it's missing and the legend
@@ -553,7 +553,8 @@ export default class AbstractChartModifier extends Modifier {
           layout.height -
           layout.y +
           1 +
-          style.marginBottom,
+          style.marginBottom +
+          style.borderBottomWidth / 2,
       };
     } else {
       // NOTE: Technically this positions the legend in the vertical center of
@@ -569,14 +570,15 @@ export default class AbstractChartModifier extends Modifier {
 
     if (legend.startsWith('left') || legend.endsWith('Left')) {
       xLayout = {
-        left: layout.x + style.marginLeft,
+        left: layout.x + style.marginLeft + style.borderLeftWidth / 2,
       };
     } else if (legend.startsWith('right') || legend.endsWith('Right')) {
       // NOTE: Not sure why I need the +1, but if it's missing and the legend
       //       has a border, it overlaps the chart border. [twl 2.Nov.22]
       xLayout = {
         right:
-          layout.chartWidth - layout.width - layout.x + 1 + style.marginRight,
+          layout.chartWidth - layout.width - layout.x + 1 + style.marginRight +
+          style.borderRightWidth / 2,
       };
     } else {
       xLayout = {

@@ -32,7 +32,7 @@ export default class ChartBarExample extends Component {
           name: 'rejected',
           value: 13,
         },
-        ],
+      ],
     },
     {
       label: 'Yesterday',
@@ -49,7 +49,7 @@ export default class ChartBarExample extends Component {
           name: 'rejected',
           value: 5,
         },
-        ],
+      ],
     },
     {
       label: 'Last Week',
@@ -66,7 +66,7 @@ export default class ChartBarExample extends Component {
           name: 'rejected',
           value: 21,
         },
-        ],
+      ],
     },
-  ]
+  ];
 }

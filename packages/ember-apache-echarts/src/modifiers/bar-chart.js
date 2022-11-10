@@ -77,6 +77,12 @@ const setItemColor = (colorMap, item, color) =>
  *   `right`, `topLeft`, `topRight`, `bottomLeft`, `bottomRight`, `leftTop`,
  *   `leftBottom`, `rightTop`, `rightBottom`
  *
+ * `legendOrientation`
+ * : Which orientation to render the legend: `horizontal`, `vertical` or `auto`
+ *   (default), where `auto` renders the legend horizontally when positioned
+ *   on the top or bottom of the chart, and vertically when positioned on the
+ *   left or right of the chart
+ *
  * `colorMap`
  * : A hash that maps series names to the colors to use for the data items in
  *   those series

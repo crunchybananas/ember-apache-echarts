@@ -265,30 +265,20 @@ export default class AbstractChartModifier extends Modifier {
       ),
     ]);
 
-    // `computeTextHeight` includes margins unlike `computeMaxTextMetrics` below
-    const textHeight = computeTextHeight(style);
+    const legendMetrics = this.computeLegendMetrics(context, config, style);
     const newLayout = { ...context.layout };
 
     if (legend.startsWith('top') || legend.startsWith('bottom')) {
-      newLayout.height -= textHeight;
+      newLayout.height -= legendMetrics.height;
 
       if (legend.startsWith('top')) {
-        newLayout.y += textHeight;
+        newLayout.y += legendMetrics.height;
       }
-    } else if (legend.startsWith('left') || legend.startsWith('right')) {
-      const labels = this.getLegendLabels(context.data.series, context.args);
-      const legendMetrics = computeMaxTextMetrics(labels, style);
-      // 25 is the default value of `itemWidth` if not specified
-      const legendWidth =
-        legendMetrics.width +
-        (config.legend.itemWidth ?? 25) +
-        style.marginLeft +
-        style.marginRight;
-
-      newLayout.width -= legendWidth;
+    } else {
+      newLayout.width -= legendMetrics.width;
 
       if (legend.startsWith('left')) {
-        newLayout.x += legendWidth;
+        newLayout.x += legendMetrics.width;
       }
     }
 
@@ -400,6 +390,19 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   /**
+   * Returns the orientation of the legend as either `horizontal` or `vertical`.
+   */
+  getLegendOrientation(args) {
+    const { legend, legendOrientation } = args;
+
+    return !['horizontal', 'vertical'].includes(legendOrientation)
+      ? legend.startsWith('top') || legend.startsWith('bottom')
+        ? 'horizontal'
+        : 'vertical'
+      : legendOrientation;
+  }
+
+  /**
    * Generates the configuration for the background and border of a box element.
    */
   generateBoxConfig(box) {
@@ -499,7 +502,7 @@ export default class AbstractChartModifier extends Modifier {
    */
   generateLegendConfig(series, args, layout, style) {
     const { legend = 'topCenter' } = args;
-    const isVertical = legend.startsWith('left') || legend.startsWith('right');
+    const isVertical = this.getLegendOrientation(args) === 'vertical';
     const config = {
       legend: {
         type: 'scroll',
@@ -664,5 +667,62 @@ export default class AbstractChartModifier extends Modifier {
     return {
       'graphic.elements': [config],
     };
+  }
+
+  /**
+   * Computes the width and height of the legend, after the legend has been
+   * added into the `config` using the compiled legend `style`.
+   */
+  computeLegendMetrics(context, config, style) {
+    const { layout, data, args } = context;
+    const labels = this.getLegendLabels(data.series, args);
+    const orientation = this.getLegendOrientation(args);
+    // hardcoded values are the defaults for `itemWidth` and `itemGap`
+    const markerWidth = config.legend.itemWidth ?? 25;
+    const itemGap = config.legend.itemGap ?? 10;
+    // Divide by 2 on border, since it appears to be drawn at the end of the
+    // legend rather than inside or outside the legend
+    const metrics = {
+      width: style.paddingLeft +
+        style.paddingRight +
+        style.borderLeftWidth / 2 +
+        style.borderRightWidth / 2 +
+        style.marginLeft +
+        style.marginRight,
+      height: style.paddingTop +
+        style.paddingBottom +
+        style.borderTopWidth / 2 +
+        style.borderBottomWidth / 2 +
+        style.marginTop +
+        style.marginBottom,
+    };
+
+    if (orientation === 'horizontal') {
+      const labelMetrics = labels.reduce(
+        (result, label) => {
+          const textMetrics = computeTextMetrics(label, style)
+
+          result.width += markerWidth + textMetrics.width;
+          result.height = Math.max(result.height, textMetrics.height);
+
+          return result;
+        },
+        { width: 0, height: 0 },
+      );
+
+      metrics.width = Math.min(
+        layout.width,
+        metrics.width + labelMetrics.width + (itemGap * (labels.length - 1))
+      );
+      metrics.height = metrics.height + labelMetrics.height;
+    } else {
+      const labelMetrics = computeMaxTextMetrics(labels, style, layout.width);
+
+      metrics.width = metrics.width + markerWidth + labelMetrics.width;
+      metrics.height = metrics.height + (labelMetrics.height * labels.length) +
+        (itemGap * (labels.length - 1));
+    }
+
+    return metrics;
   }
 }

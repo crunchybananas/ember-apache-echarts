@@ -577,7 +577,11 @@ export default class AbstractChartModifier extends Modifier {
       //       has a border, it overlaps the chart border. [twl 2.Nov.22]
       xLayout = {
         right:
-          layout.chartWidth - layout.width - layout.x + 1 + style.marginRight +
+          layout.chartWidth -
+          layout.width -
+          layout.x +
+          1 +
+          style.marginRight +
           style.borderRightWidth / 2,
       };
     } else {
@@ -685,13 +689,15 @@ export default class AbstractChartModifier extends Modifier {
     // Divide by 2 on border, since it appears to be drawn at the end of the
     // legend rather than inside or outside the legend
     const metrics = {
-      width: style.paddingLeft +
+      width:
+        style.paddingLeft +
         style.paddingRight +
         style.borderLeftWidth / 2 +
         style.borderRightWidth / 2 +
         style.marginLeft +
         style.marginRight,
-      height: style.paddingTop +
+      height:
+        style.paddingTop +
         style.paddingBottom +
         style.borderTopWidth / 2 +
         style.borderBottomWidth / 2 +
@@ -702,27 +708,29 @@ export default class AbstractChartModifier extends Modifier {
     if (orientation === 'horizontal') {
       const labelMetrics = labels.reduce(
         (result, label) => {
-          const textMetrics = computeTextMetrics(label, style)
+          const textMetrics = computeTextMetrics(label, style);
 
           result.width += markerWidth + textMetrics.width;
           result.height = Math.max(result.height, textMetrics.height);
 
           return result;
         },
-        { width: 0, height: 0 },
+        { width: 0, height: 0 }
       );
 
       metrics.width = Math.min(
         layout.width,
-        metrics.width + labelMetrics.width + (itemGap * (labels.length - 1))
+        metrics.width + labelMetrics.width + itemGap * (labels.length - 1)
       );
       metrics.height = metrics.height + labelMetrics.height;
     } else {
       const labelMetrics = computeMaxTextMetrics(labels, style, layout.width);
 
       metrics.width = metrics.width + markerWidth + labelMetrics.width;
-      metrics.height = metrics.height + (labelMetrics.height * labels.length) +
-        (itemGap * (labels.length - 1));
+      metrics.height =
+        metrics.height +
+        labelMetrics.height * labels.length +
+        itemGap * (labels.length - 1);
     }
 
     return metrics;

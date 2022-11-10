@@ -37,7 +37,7 @@ export default class AbstractChartModifier extends Modifier {
         textAlign: 'center',
         margin: 24,
       },
-      chartLegend: {
+      legend: {
         font: 'normal 16px Montserrat,sans-serif',
         textAlign: 'left',
         margin: 24,
@@ -254,7 +254,7 @@ export default class AbstractChartModifier extends Modifier {
       return context.layout;
     }
 
-    const style = resolveStyle(context.styles.chartLegend, context.layout);
+    const style = resolveStyle(context.styles.legend, context.layout);
 
     mergeAtPaths(config, [
       this.generateLegendConfig(

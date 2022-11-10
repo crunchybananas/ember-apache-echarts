@@ -34,6 +34,10 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties for the title for the entire chart including color, font,
  *   background color, border and alignment.
  *
+ * `legendStyle`
+ * : CSS properties for the chart legend including color, font, background
+ *   color, border and alignment.
+ *
  * `cellStyle`
  * : CSS properties defining the style for individual plots when rendering more
  *   than one series

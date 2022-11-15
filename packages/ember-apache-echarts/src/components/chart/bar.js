@@ -29,14 +29,11 @@ const toTooltipItem = (param) => ({
   ...pick(param, 'value', 'marker', 'dataIndex'),
   label: param.name,
   bar: pick(param, 'color'),
-
-  // TODO: Think about how/if we need to support multiple series for bar charts.
-  //       [twl 30.Apr.22]
-  //
-  // series: {
-  //   ...dataset[param.seriesIndex],
-  //   index: param.seriesIndex,
-  // },
+  meta: param.data?.meta,
+  series: {
+    label: param.seriesName,
+    index: param.seriesIndex,
+  },
 });
 
 export default class BarChartComponent extends Component {

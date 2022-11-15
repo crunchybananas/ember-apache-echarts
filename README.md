@@ -37,7 +37,17 @@ cd <project-root>
 npm link ember-apache-echarts
 ```
 
-To unlink this project:
+Or for `yarn`:
+
+```
+cd packages/ember-apache-echarts/
+yarn link
+
+cd <project-root>
+yarn link ember-apache-echarts
+```
+
+To unlink this project via `npm`:
 
 ```
 cd <project-root>
@@ -45,7 +55,18 @@ npm unlink --no-save ember-apache-echarts
 
 cd packages/ember-apache-echarts/
 npm unlink
+```
 
+To unlink this project via `yarn`:
+
+```
+cd packages/ember-apache-echarts/
+yarn unlink
+
+cd <project-root>
+yarn unlink ember-apache-echarts
+yarn install --check-files
+// or yarn install --force
 ```
 
 Note that after unlinking, you may need to delete `node_modules` and reinstall

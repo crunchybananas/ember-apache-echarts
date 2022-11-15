@@ -1,6 +1,8 @@
-import createLookup from '../utils/create-lookup';
 import computeStatistic from '../utils/data/compute-statistic';
+import getSeriesData from '../utils/data/get-series-data';
+import getSeriesTotals from '../utils/data/get-series-totals';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values';
+import rotateDataSeries from '../utils/data/rotate-data-series';
 import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import resolveStyle from '../utils/style/resolve-style';
@@ -8,6 +10,16 @@ import AbstractChartModifier from './abstract-chart';
 
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
+
+const setItemColor = (colorMap, item, color) =>
+  !colorMap?.[color]
+    ? item
+    : {
+        ...item,
+        itemStyle: {
+          color: colorMap[color],
+        },
+      };
 
 /**
  * Renders one or more bar charts.
@@ -22,6 +34,10 @@ import AbstractChartModifier from './abstract-chart';
  * : CSS properties for the title for the entire chart including color, font,
  *   background color, border and alignment.
  *
+ * `legendStyle`
+ * : CSS properties for the chart legend including color, font, background
+ *   color, border and alignment.
+ *
  * `cellStyle`
  * : CSS properties defining the style for individual plots when rendering more
  *   than one series
@@ -30,10 +46,18 @@ import AbstractChartModifier from './abstract-chart';
  * : CSS properties defining the style for the titles for individual plots when
  *   rendering more than one series
  *
+ * `xAxisStyle`
+ * : CSS properties defining the style for horizontal X axis, regardless of the
+ *   value of `orientation`
+ *
+ * `yAxisStyle`
+ * : CSS properties defining the style for vertical Y axis, regardless of the
+ *   value of `orientation`
+ *
  * `maxColumns`
  * : The maximum number of columns to render when rendering more than one series
  *
- * `xAxisScale`, `yAxisScale`
+ * `categoryAxisScale`, `valueAxisScale`
  * : Whether to use a shared axis for all plots that accounts for the data
  *   across all series, or use a separate axis for each plot that only uses
  *   that plot's data. Valid values are: `shared`, `separate`
@@ -43,6 +67,29 @@ import AbstractChartModifier from './abstract-chart';
  *
  * `tooltipFormatter`
  * : The function used to generate the tool tip
+ *
+ * `variant`
+ * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
+ *   `stackedBar` or `stackedArea`
+ *
+ * `orientation`
+ * : Which orientation to render the value axes: `vertical` (default) or
+ *   `horizontal`
+ *
+ * `legend`
+ * : Whether and where to display a legend: `none`, `top`, `bottom`, `left`,
+ *   `right`, `topLeft`, `topRight`, `bottomLeft`, `bottomRight`, `leftTop`,
+ *   `leftBottom`, `rightTop`, `rightBottom`
+ *
+ * `legendOrientation`
+ * : Which orientation to render the legend: `horizontal`, `vertical` or `auto`
+ *   (default), where `auto` renders the legend horizontally when positioned
+ *   on the top or bottom of the chart, and vertically when positioned on the
+ *   left or right of the chart
+ *
+ * `colorMap`
+ * : A hash that maps series names to the colors to use for the data items in
+ *   those series
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {
@@ -51,12 +98,12 @@ export default class BarChartModifier extends AbstractChartModifier {
     return {
       ...styles,
       xAxis: {
-        font: 'normal 12px Montserrat',
+        font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'center',
         marginTop: 8,
       },
       yAxis: {
-        font: 'normal 12px Montserrat',
+        font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'right',
         // Add extra margin to the left too, since the width calculation of the
         // Y axis can sometimes be off a few pixels
@@ -65,9 +112,25 @@ export default class BarChartModifier extends AbstractChartModifier {
     };
   }
 
+  isGroupedVariant(variant) {
+    return ['groupedBar'].includes(variant);
+  }
+
+  isStackedVariant(variant) {
+    return ['stackedArea', 'stackedBar'].includes(variant);
+  }
+
+  isBarVariant(variant) {
+    return ['bar', 'groupedBar', 'stackedBar'].includes(variant ?? 'bar');
+  }
+
+  isAreaVariant(variant) {
+    return ['area', 'stackedArea'].includes(variant);
+  }
+
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
-    const { xAxisScale, tooltipFormatter, onSelect } = args;
+    const { categoryAxisScale, tooltipFormatter, onSelect } = args;
     const { config, context } = this.buildLayout(args, chart);
 
     chart.setOption({
@@ -91,7 +154,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       //       category on the X axis. Thus we need to look up the value based
       //       on how the axis is being rendered. [twl 20.Jul.22]
       const name =
-        xAxisScale === 'shared'
+        categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
           ? series.data[dataIndex].name
@@ -113,17 +176,39 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
-    const { xAxisScale, yAxisScale } = args;
+    const { categoryAxisScale, valueAxisScale } = args;
 
     return {
       ...context,
-      ...(xAxisScale === 'shared' && {
+      ...(categoryAxisScale === 'shared' && {
         categories: getUniqueDatasetValues(context.series, 'name'),
       }),
-      ...(yAxisScale === 'shared' && {
+      ...(valueAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
       }),
+      // If grouped or stacked, render multple series on a single chart rather
+      // than one chart per series
+      series: this.isStackedVariant(args.variant)
+        ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
+        : this.isGroupedVariant(args.variant)
+        ? [{ data: context.series }]
+        : context.series,
     };
+  }
+
+  /**
+   * Returns the labels for the legend.
+   */
+  getLegendLabels(series, args) {
+    if (
+      !this.isStackedVariant(args.variant) &&
+      !this.isGroupedVariant(args.variant)
+    ) {
+      return super.getLegendLabels(series, args);
+    }
+
+    // Grouped and stacked datasets may have a dummy root node
+    return series[0].data.map((info) => info.label ?? info.name);
   }
 
   /**
@@ -131,30 +216,38 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText, xAxisScale, yAxisScale } = args;
+    const { noDataText, categoryAxisScale, valueAxisScale } = args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
     }
 
+    const isHorizontal = args.orientation === 'horizontal';
+    const isBarVariant = this.isBarVariant(args.variant);
+    const isAreaVariant = this.isAreaVariant(args.variant);
+    const isStackedVariant = this.isStackedVariant(args.variant);
+    const isGroupedOrStacked =
+      this.isGroupedVariant(args.variant) || isStackedVariant;
+    const seriesData = isGroupedOrStacked ? series.data : [series];
+
     // Analyze the data
-    const lookup = createLookup(series.data, 'name', 'value');
     const categories =
-      xAxisScale === 'shared'
+      categoryAxisScale === 'shared'
         ? data.categories
-        : getUniqueDatasetValues([series], 'name');
-    const values = categories.map((category) => lookup[category]);
+        : getUniqueDatasetValues(seriesData, 'name');
     const maxValue =
-      yAxisScale === 'shared'
+      valueAxisScale === 'shared'
         ? data.maxValue
-        : computeStatistic([series], 'max');
+        : computeStatistic(seriesData, 'max');
+    const values = isGroupedOrStacked
+      ? getSeriesTotals(series.data, categories, 'name', 'value')
+      : getSeriesData(series.data, categories, 'name', 'value');
+    const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
     // Configure the Y axis
     // Not the real labels, but good enough for now for computing the metrics
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = values.map((value) =>
-      value != null ? `${value}` : ''
-    );
+    const yAxisLabels = isHorizontal ? categories : valueTexts;
     const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
     const yAxisWidth =
       yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
@@ -173,10 +266,12 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Configure the X axis
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
-    const xAxisLineWidth = 1;
-    const xAxisLabelWidth = gridWidth / categories.length;
+    const xAxisLineWidth = isHorizontal ? 0 : 1;
+    // 10 is arbitrary number here, since we don't know how many divisions the
+    // chart will create if the X axis is a value axis
+    const xAxisLabelWidth = gridWidth / (isHorizontal ? 10 : categories.length);
     const xAxisMetrics = computeMaxTextMetrics(
-      categories,
+      isHorizontal ? valueTexts : categories,
       xAxisStyle,
       xAxisLabelWidth
     );
@@ -185,6 +280,68 @@ export default class BarChartModifier extends AbstractChartModifier {
       xAxisStyle.marginTop +
       xAxisStyle.marginBottom +
       xAxisLineWidth;
+
+    // Setup base configurations
+    const seriesBaseConfig = {
+      xAxisIndex: gridIndex,
+      yAxisIndex: gridIndex,
+      type: isBarVariant ? 'bar' : 'line',
+      ...(isAreaVariant && {
+        areaStyle: {},
+      }),
+      ...(!isBarVariant && {
+        symbol: 'circle',
+        symbolSize: isAreaVariant ? 6 : 8,
+      }),
+      ...(!isBarVariant && {
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 3,
+            shadowColor: '#000000',
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+          },
+        },
+      }),
+      // if this is changed, update the select handler in `configureChart`
+      selectedMode: 'single',
+    };
+    const valueAxisConfig = [
+      {
+        gridIndex,
+        type: 'value',
+        max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
+        axisLabel: {
+          // margin between the axis label and the axis line
+          margin: yAxisStyle.marginRight,
+          ...this.generateAxisLabelConfig(
+            layout,
+            isHorizontal ? xAxisStyle : yAxisStyle
+          ),
+        },
+      },
+    ];
+    const categoryAxisConfig = [
+      {
+        gridIndex,
+        type: 'category',
+        data: categories,
+        axisLabel: {
+          // Ensure every category is shown on the axis
+          interval: 0,
+          ...(!isHorizontal && {
+            overflow: 'break',
+          }),
+          width: xAxisLabelWidth,
+          // margin between the axis label and the axis line
+          margin: xAxisStyle.marginTop,
+          ...this.generateAxisLabelConfig(
+            layout,
+            isHorizontal ? yAxisStyle : xAxisStyle
+          ),
+        },
+      },
+    ];
 
     return {
       grid: [
@@ -196,45 +353,29 @@ export default class BarChartModifier extends AbstractChartModifier {
           height: layout.innerHeight - xAxisHeight - yAxisOverflow,
         },
       ],
-      yAxis: [
-        {
-          gridIndex,
-          type: 'value',
-          max: yAxisScale === 'shared' ? data.maxValue : 'dataMax',
-          axisLabel: {
-            // margin between the axis label and the axis line
-            margin: yAxisStyle.marginRight,
-            ...this.generateAxisLabelConfig(layout, yAxisStyle),
-          },
-        },
-      ],
-      xAxis: [
-        {
-          gridIndex,
-          type: 'category',
-          data: categories,
-          axisLabel: {
-            // Ensure every category is shown on the axis
-            interval: 0,
-            overflow: 'break',
-            width: xAxisLabelWidth,
-            // margin between the axis label and the axis line
-            margin: xAxisStyle.marginTop,
-            ...this.generateAxisLabelConfig(layout, xAxisStyle),
-          },
-        },
-      ],
-      series: [
-        {
-          type: 'bar',
-          colorBy: 'data',
-          xAxisIndex: gridIndex,
-          yAxisIndex: gridIndex,
-          // if this is changed, update the select handler in `configureChart`
-          selectedMode: 'single',
-          data: values,
-        },
-      ],
+      yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
+      xAxis: isHorizontal ? valueAxisConfig : categoryAxisConfig,
+      series: !isGroupedOrStacked
+        ? [
+            {
+              ...seriesBaseConfig,
+              data: values,
+              ...(isBarVariant && {
+                colorBy: 'data',
+              }),
+            },
+          ]
+        : series.data.map((info) => ({
+            ...seriesBaseConfig,
+            name: info.label,
+            data: info.data.map((item) => ({
+              ...item,
+              ...setItemColor(args.colorMap, item, info.label),
+            })),
+            ...(isStackedVariant && {
+              stack: 'total',
+            }),
+          })),
     };
   }
 

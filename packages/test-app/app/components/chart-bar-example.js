@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 
-export default class ChartPieExample extends Component {
+export default class ChartBarExample extends Component {
   chartData = [
     {
       name: 'sent',

@@ -3,11 +3,7 @@ ember-apache-echarts
 
 [![CI](https://github.com/crunchybananas/ember-apache-echarts/actions/workflows/ci.yml/badge.svg)](https://github.com/crunchybananas/ember-apache-echarts/actions/workflows/ci.yml)
 
-A modern take on using so-called "portals" to render things in a
-different place of the DOM tree than they are logically defined in the app.
-
-Implemented using lightweight Glimmer components and Ember's new `{{in-element}}`,
-but without its caveats.
+An add-on that helps simplify Apache eChart integration with Ember.
 
 
 Compatibility

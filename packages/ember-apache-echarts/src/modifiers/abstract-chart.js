@@ -325,7 +325,8 @@ export default class AbstractChartModifier extends Modifier {
     if (xAxisZoom) {
       const sliderHeight = config.dataZoom[0].height ?? 30;
       const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
-      const xAxisZoomHeight = sliderHeight +
+      const xAxisZoomHeight =
+        sliderHeight +
         brushSelectHeight +
         xAxisZoomStyle.marginTop +
         xAxisZoomStyle.marginBottom;
@@ -338,7 +339,8 @@ export default class AbstractChartModifier extends Modifier {
       const yAxisConfig = xAxisZoom ? config.dataZoom[1] : config.dataZoom[0];
       const sliderWidth = yAxisConfig.height ?? 30;
       const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
-      const yAxisZoomWidth = sliderWidth +
+      const yAxisZoomWidth =
+        sliderWidth +
         brushSelectWidth +
         yAxisZoomStyle.marginLeft +
         yAxisZoomStyle.marginRight;

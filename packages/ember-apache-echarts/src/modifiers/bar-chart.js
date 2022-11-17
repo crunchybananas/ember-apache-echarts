@@ -291,7 +291,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
       isHorizontal ? categories : valueTexts,
-      maxValue,
+      maxValue
     );
 
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
@@ -300,7 +300,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       xAxisStyle,
       isHorizontal ? valueTexts : categories,
       yAxisInfo,
-      isHorizontal,
+      isHorizontal
     );
     // Setup base configurations
     const seriesBaseConfig = {
@@ -372,9 +372,7 @@ export default class BarChartModifier extends AbstractChartModifier {
           y: layout.innerY + yAxisInfo.heightOverflow,
           width: xAxisInfo.width,
           height:
-            layout.innerHeight -
-            xAxisInfo.height -
-            yAxisInfo.heightOverflow,
+            layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
         },
       ],
       yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
@@ -488,10 +486,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const maxLabelWidth = width / (isHorizontal ? 10 : labels.length);
     const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
     const height =
-      labelMetrics.height +
-      style.marginTop +
-      style.marginBottom +
-      lineWidth;
+      labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
 
     return {
       width,

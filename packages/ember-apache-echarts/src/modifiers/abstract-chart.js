@@ -42,6 +42,16 @@ export default class AbstractChartModifier extends Modifier {
         textAlign: 'left',
         margin: 24,
       },
+      xAxisZoom: {
+        margin: 8,
+        border: 'solid 1px #ddd',
+        backgroundColor: '#e7efff',
+      },
+      yAxisZoom: {
+        margin: 8,
+        border: 'solid 1px #ddd',
+        backgroundColor: '#e7efff',
+      },
       cell: {
         padding: 8,
         margin: 8,
@@ -135,6 +145,7 @@ export default class AbstractChartModifier extends Modifier {
     context.layout = this.addChartBox(context, config);
     context.layout = this.addTitle(context, config);
     context.layout = this.addLegend(context, config);
+    context.layout = this.addDataZoom(context, config);
     context.layout = this.addCellBoxes(context, config);
     context.layout = this.addCellTitles(context, config);
     context.layout = this.addCellPlots(context, config);
@@ -280,6 +291,57 @@ export default class AbstractChartModifier extends Modifier {
       if (legend.startsWith('left')) {
         newLayout.x += legendMetrics.width;
       }
+    }
+
+    return newLayout;
+  }
+
+  /**
+   * Adds the data zoom slider to `config` if defined in `args` and returns the
+   * new context.
+   */
+  addDataZoom(context, config) {
+    const { args, layout, styles } = context;
+    const { xAxisZoom, yAxisZoom } = args;
+
+    if (!xAxisZoom && !yAxisZoom) {
+      return context.layout;
+    }
+
+    const xAxisZoomStyle = resolveStyle(styles.xAxisZoom, layout);
+    const yAxisZoomStyle = resolveStyle(styles.yAxisZoom, layout);
+
+    mergeAtPaths(config, [
+      this.generateXAxisDataZoomConfig(args, layout, xAxisZoomStyle),
+      this.generateYAxisDataZoomConfig(args, layout, yAxisZoomStyle),
+    ]);
+
+    const newLayout = { ...layout };
+    const { xAxisZoomBrush, yAxisZoomBrush } = args;
+
+    if (xAxisZoom) {
+      const sliderHeight = config.dataZoom[0].height ?? 30;
+      const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
+      const xAxisZoomHeight = sliderHeight +
+        brushSelectHeight +
+        xAxisZoomStyle.marginTop +
+        xAxisZoomStyle.marginBottom;
+
+      newLayout.height = layout.height - xAxisZoomHeight;
+      newLayout.y = layout.y + (xAxisZoom === 'top' ? xAxisZoomHeight : 0);
+    }
+
+    if (yAxisZoom) {
+      const yAxisConfig = xAxisZoom ? config.dataZoom[1] : config.dataZoom[0];
+      const sliderWidth = yAxisConfig.height ?? 30;
+      const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
+      const yAxisZoomWidth = sliderWidth +
+        brushSelectWidth +
+        yAxisZoomStyle.marginLeft +
+        yAxisZoomStyle.marginRight;
+
+      newLayout.width = layout.width - yAxisZoomWidth;
+      newLayout.x = layout.x + (yAxisZoom === 'left' ? yAxisZoomWidth : 0);
     }
 
     return newLayout;
@@ -596,6 +658,90 @@ export default class AbstractChartModifier extends Modifier {
     });
 
     return config;
+  }
+
+  /**
+   * Generates the configuration for the control that allows a user to zoom in
+   * and out of the data.
+   */
+  generateXAxisDataZoomConfig(args, layout, style) {
+    const { xAxisZoom, xAxisZoomBrush } = args;
+
+    if (!xAxisZoom) {
+      return undefined;
+    }
+
+    const config = this.generateDataZoomConfigElement(style, xAxisZoomBrush);
+    const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
+
+    if (xAxisZoom === 'top') {
+      config.top = layout.y + style.marginTop + style.borderTopWidth / 2;
+    } else {
+      config.bottom =
+        layout.chartHeight -
+        layout.height -
+        layout.y +
+        brushSelectHeight +
+        style.marginBottom +
+        style.borderBottomWidth / 2;
+    }
+
+    return {
+      dataZoom: [{
+        ...config,
+        xAxisIndex: [0, 1],
+      }],
+    };
+  }
+
+  /**
+   * Generates the configuration for the control that allows a user to zoom in
+   * and out of the data.
+   */
+  generateYAxisDataZoomConfig(args, layout, style) {
+    const { yAxisZoom, yAxisZoomBrush } = args;
+
+    if (!yAxisZoom) {
+      return undefined;
+    }
+
+    const config = this.generateDataZoomConfigElement(style, yAxisZoomBrush);
+    const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
+
+    if (yAxisZoom === 'left') {
+      config.left = layout.x + style.marginLeft + style.borderLeftWidth / 2;
+    } else {
+      config.right =
+        layout.chartWidth -
+        layout.width -
+        layout.x +
+        brushSelectWidth +
+        style.marginRight +
+        style.borderRightWidth / 2;
+    }
+
+    return {
+      dataZoom: [{
+        ...config,
+        yAxisIndex: [0, 1],
+      }],
+    };
+  }
+
+  /**
+   * Generates the base configuration for a single element in the `dataZoom`
+   * configuration.
+   */
+  generateDataZoomConfigElement(style, brushSelect) {
+    return {
+      type: 'slider',
+      brushSelect,
+      fillerColor: style.backgroundColor,
+      borderColor: style.borderTopColor,
+      show: true,
+      start: 0,
+      end: 100,
+    };
   }
 
   /**

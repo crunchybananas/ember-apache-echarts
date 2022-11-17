@@ -90,6 +90,30 @@ const setItemColor = (colorMap, item, color) =>
  * `colorMap`
  * : A hash that maps series names to the colors to use for the data items in
  *   those series
+ *
+ * ## Data Zoom
+ *
+ * `xAxisZoom`
+ * : Whether and where to display a data zoom control for the X axis: `top`,
+ *   `bottom`, `none` (default)
+ *
+ * `xAxisZoomBrush`
+ * : Whether to enable brush select for the X axis data zoom control. Defaults
+ *   to `false`.
+ *
+ * `xAxisStyle`
+ * : CSS properties defining the style for the the X axis data zoom control.
+ *
+ * `yAxisZoom`
+ * : Whether and where to display a data zoom control for the Y axis: `top`,
+ *   `bottom`, `none` (default)
+ *
+ * `yAxisZoomBrush`
+ * : Whether to enable brush select for the Y axis data zoom control. Defaults
+ *   to `false`.
+ *
+ * `yAxisStyle`
+ * : CSS properties defining the style for the the Y axis data zoom control.
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {

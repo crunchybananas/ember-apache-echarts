@@ -690,10 +690,23 @@ export default class AbstractChartModifier extends Modifier {
     }
 
     return {
-      dataZoom: [{
-        ...config,
-        xAxisIndex: [0, 1],
-      }],
+      dataZoom: [
+        {
+          ...config,
+          xAxisIndex: [0, 1],
+        },
+        // TODO: Add support for mouse zooming by adding this in. When we do
+        //       this, the index in `addDataZoom` for the Y axis will need to
+        //       be changed. Also, we should have a way to disable it or turn it
+        //       on explicitly, since it can be jerky on some charts (which is
+        //       why I'm not implementing it now). [twl 16.Nov.22]
+        // {
+        //   type: 'inside',
+        //   start: 0,
+        //   end: 100,
+        //   xAxisIndex: [0, 1],
+        // },
+      ],
     };
   }
 
@@ -724,10 +737,19 @@ export default class AbstractChartModifier extends Modifier {
     }
 
     return {
-      dataZoom: [{
-        ...config,
-        yAxisIndex: [0, 1],
-      }],
+      dataZoom: [
+        {
+          ...config,
+          yAxisIndex: [0, 1],
+        },
+        // TODO: See the note in `generateXAxisDataZoomConfig` [twl 16.Nov.22]
+        // {
+        //   type: 'inside',
+        //   start: 0,
+        //   end: 100,
+        //   yAxisIndex: [0, 1],
+        // },
+      ],
     };
   }
 

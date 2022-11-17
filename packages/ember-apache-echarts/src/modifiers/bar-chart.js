@@ -26,6 +26,8 @@ const setItemColor = (colorMap, item, color) =>
  *
  * # Arguments
  *
+ * ## Chart Layout
+ *
  * `chartStyle`
  * : CSS properties for the entire chart including background color, border,
  *   margins and padding.
@@ -34,9 +36,23 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties for the title for the entire chart including color, font,
  *   background color, border and alignment.
  *
- * `legendStyle`
- * : CSS properties for the chart legend including color, font, background
- *   color, border and alignment.
+ * `maxColumns`
+ * : The maximum number of columns to render when rendering more than one series
+ *
+ *
+ *  ## Plots
+ *
+ * `variant`
+ * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
+ *   `stackedBar` or `stackedArea`
+ *
+ * `orientation`
+ * : Which orientation to render the value axes: `vertical` (default) or
+ *   `horizontal`
+ *
+ * `colorMap`
+ * : A hash that maps series names to the colors to use for the data items in
+ *   those series
  *
  * `cellStyle`
  * : CSS properties defining the style for individual plots when rendering more
@@ -46,6 +62,14 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for the titles for individual plots when
  *   rendering more than one series
  *
+ *
+ * ## Axes
+ *
+ * `categoryAxisScale`, `valueAxisScale`
+ * : Whether to use a shared axis for all plots that accounts for the data
+ *   across all series, or use a separate axis for each plot that only uses
+ *   that plot's data. Valid values are: `shared`, `separate`
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -54,27 +78,8 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for vertical Y axis, regardless of the
  *   value of `orientation`
  *
- * `maxColumns`
- * : The maximum number of columns to render when rendering more than one series
  *
- * `categoryAxisScale`, `valueAxisScale`
- * : Whether to use a shared axis for all plots that accounts for the data
- *   across all series, or use a separate axis for each plot that only uses
- *   that plot's data. Valid values are: `shared`, `separate`
- *
- * `onSelect`
- * : Called when an element on a chart is selected
- *
- * `tooltipFormatter`
- * : The function used to generate the tool tip
- *
- * `variant`
- * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
- *   `stackedBar` or `stackedArea`
- *
- * `orientation`
- * : Which orientation to render the value axes: `vertical` (default) or
- *   `horizontal`
+ * ## Legend
  *
  * `legend`
  * : Whether and where to display a legend: `none`, `top`, `bottom`, `left`,
@@ -87,9 +92,10 @@ const setItemColor = (colorMap, item, color) =>
  *   on the top or bottom of the chart, and vertically when positioned on the
  *   left or right of the chart
  *
- * `colorMap`
- * : A hash that maps series names to the colors to use for the data items in
- *   those series
+ * `legendStyle`
+ * : CSS properties for the chart legend including color, font, background
+ *   color, border and alignment.
+ *
  *
  * ## Data Zoom
  *
@@ -99,10 +105,10 @@ const setItemColor = (colorMap, item, color) =>
  *
  * `xAxisZoomBrush`
  * : Whether to enable brush select for the X axis data zoom control. Defaults
- *   to `false`.
+ *   to `false`
  *
  * `xAxisStyle`
- * : CSS properties defining the style for the the X axis data zoom control.
+ * : CSS properties defining the style for the the X axis data zoom control
  *
  * `yAxisZoom`
  * : Whether and where to display a data zoom control for the Y axis: `top`,
@@ -110,10 +116,22 @@ const setItemColor = (colorMap, item, color) =>
  *
  * `yAxisZoomBrush`
  * : Whether to enable brush select for the Y axis data zoom control. Defaults
- *   to `false`.
+ *   to `false`
  *
  * `yAxisStyle`
- * : CSS properties defining the style for the the Y axis data zoom control.
+ * : CSS properties defining the style for the the Y axis data zoom control
+ *
+ *
+ * ## Tooltips
+ *
+ * `tooltipFormatter`
+ * : The function used to generate the tool tip
+ *
+ *
+ * ## Events
+ *
+ * `onSelect`
+ * : Called when an element on a chart is selected
  */
 export default class BarChartModifier extends AbstractChartModifier {
   get defaultStyles() {

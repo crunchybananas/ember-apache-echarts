@@ -304,7 +304,10 @@ export default class AbstractChartModifier extends Modifier {
     const { args, layout, styles } = context;
     const { xAxisZoom, yAxisZoom } = args;
 
-    if (!xAxisZoom && !yAxisZoom) {
+    if (
+      (!xAxisZoom || xAxisZoom === 'none') &&
+      (!yAxisZoom || yAxisZoom === 'none')
+    ) {
       return context.layout;
     }
 

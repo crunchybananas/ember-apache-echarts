@@ -242,45 +242,24 @@ export default class BarChartModifier extends AbstractChartModifier {
     const values = isGroupedOrStacked
       ? getSeriesTotals(series.data, categories, 'name', 'value')
       : getSeriesData(series.data, categories, 'name', 'value');
+    // Not the real labels, but good enough for now for computing the metrics
     const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
-    // Configure the Y axis
-    // Not the real labels, but good enough for now for computing the metrics
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = isHorizontal ? categories : valueTexts;
-    const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
-    const yAxisWidth =
-      yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
-
-    // Only applies when the very top label is rendered; for now, assuming it's
-    // always there, since I don't know how to determine this on the fly
-    const yAxisTopLabelMetrics = computeTextMetrics(`${maxValue}`, yAxisStyle);
-    const yAxisOverflow = yAxisTopLabelMetrics.height / 2;
-
-    // Configure the plot
-    const gridWidth =
-      layout.innerWidth -
-      yAxisWidth -
-      layout.borderLeftWidth -
-      layout.borderRightWidth;
-
-    // Configure the X axis
-    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
-    const xAxisLineWidth = isHorizontal ? 0 : 1;
-    // 10 is arbitrary number here, since we don't know how many divisions the
-    // chart will create if the X axis is a value axis
-    const xAxisLabelWidth = gridWidth / (isHorizontal ? 10 : categories.length);
-    const xAxisMetrics = computeMaxTextMetrics(
-      isHorizontal ? valueTexts : categories,
-      xAxisStyle,
-      xAxisLabelWidth
+    const yAxisInfo = this.computeYAxisInfo(
+      yAxisStyle,
+      isHorizontal ? categories : valueTexts,
+      maxValue,
     );
-    const xAxisHeight =
-      xAxisMetrics.height +
-      xAxisStyle.marginTop +
-      xAxisStyle.marginBottom +
-      xAxisLineWidth;
 
+    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
+    const xAxisInfo = this.computeXAxisInfo(
+      layout,
+      xAxisStyle,
+      isHorizontal ? valueTexts : categories,
+      yAxisInfo,
+      isHorizontal,
+    );
     // Setup base configurations
     const seriesBaseConfig = {
       xAxisIndex: gridIndex,
@@ -332,7 +311,7 @@ export default class BarChartModifier extends AbstractChartModifier {
           ...(!isHorizontal && {
             overflow: 'break',
           }),
-          width: xAxisLabelWidth,
+          width: xAxisInfo.maxLabelWidth,
           // margin between the axis label and the axis line
           margin: xAxisStyle.marginTop,
           ...this.generateAxisLabelConfig(
@@ -347,10 +326,13 @@ export default class BarChartModifier extends AbstractChartModifier {
       grid: [
         {
           // Not sure why the 1px adjustment is needed to `x`, but it is
-          x: layout.innerX + yAxisWidth - 1,
-          y: layout.innerY + yAxisOverflow,
-          width: gridWidth,
-          height: layout.innerHeight - xAxisHeight - yAxisOverflow,
+          x: layout.innerX + yAxisInfo.width - 1,
+          y: layout.innerY + yAxisInfo.heightOverflow,
+          width: xAxisInfo.width,
+          height:
+            layout.innerHeight -
+            xAxisInfo.height -
+            yAxisInfo.heightOverflow,
         },
       ],
       yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
@@ -424,5 +406,56 @@ export default class BarChartModifier extends AbstractChartModifier {
           style
         )
       : undefined;
+  }
+
+  /**
+   * Computes style and metrics about the Y axis for charts that use an Y axis.
+   */
+  computeYAxisInfo(style, labels, maxValue) {
+    const labelMetrics = computeMaxTextMetrics(labels, style);
+    const width = labelMetrics.width + style.marginLeft + style.marginRight;
+
+    // Only applies when the very top label is rendered; for now, assuming it's
+    // always there, since I don't know how to determine this on the fly
+    const topLabelMetrics = computeTextMetrics(`${maxValue}`, style);
+    const heightOverflow = topLabelMetrics.height / 2;
+
+    return {
+      width,
+      // NOTE: no height returned because we need to know the X axis height to
+      //       determine that and `computeXAxisInfo` needs the result from this
+      //       function to calculate its result. We don't use the Y axis height
+      //       currently in the code, so this is fine. [twl 16.Nov.22]
+      labelMetrics,
+      heightOverflow,
+    };
+  }
+
+  /**
+   * Computes style and metrics about the X axis for charts that use an X axis.
+   */
+  computeXAxisInfo(layout, style, labels, yAxisInfo, isHorizontal) {
+    const width =
+      layout.innerWidth -
+      yAxisInfo.width -
+      layout.borderLeftWidth -
+      layout.borderRightWidth;
+    const lineWidth = isHorizontal ? 0 : 1;
+    // 10 is arbitrary number here, since we don't know how many divisions the
+    // chart will create if the X axis is a value axis
+    const maxLabelWidth = width / (isHorizontal ? 10 : labels.length);
+    const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
+    const height =
+      labelMetrics.height +
+      style.marginTop +
+      style.marginBottom +
+      lineWidth;
+
+    return {
+      width,
+      height,
+      labelMetrics,
+      maxLabelWidth,
+    };
   }
 }

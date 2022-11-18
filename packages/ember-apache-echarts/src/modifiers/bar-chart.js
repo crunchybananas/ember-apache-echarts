@@ -78,6 +78,33 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for vertical Y axis, regardless of the
  *   value of `orientation`
  *
+ * `xAxisPointer`, `yAxisPointer`
+ * : The style to use for an axis pointer: `line`, `shadow`, `none` (default)
+ *
+ * `xAxisPointerLabel`
+ * : Whether and where to display the label for the X axis pointer:
+ *   `bottom` (default), `top`, `none`
+ *
+ * `yAxisPointerLabel`
+ * : Whether and where to display the label for the Y axis pointer:
+ *   `left` (default), `right`, `none`
+ *
+ * `xAxisPointerStyle`, `yAxisPointerStyle`
+ * : CSS properties defining the style of an axis pointer including border &
+ *   opacity if using `line` as the pointer or background color & opacity if
+ *   using `shadow` as the pointer.
+ *
+ * `xAxisPointerLabelStyle`, `yAxisPointerLabelStyle`
+ * : CSS properties defining the style of an axis pointer label.
+ *
+ * `xAxisTooltip`
+ * : Whether the tooltip for the X axis should be shown near the pointer when
+ *   it's active. Defaults to `true`
+ *
+ * `yAxisTooltip`
+ * : Whether the tooltip for the Y axis should be shown near the pointer when
+ *   it's active. Defaults to `false`
+ *
  *
  * ## Legend
  *
@@ -150,6 +177,34 @@ export default class BarChartModifier extends AbstractChartModifier {
         // Add extra margin to the left too, since the width calculation of the
         // Y axis can sometimes be off a few pixels
         margin: 8,
+      },
+      xAxisPointer: {
+        border: 'dashed 1px #555',
+        backgroundColor: '#ccc',
+        opacity: '0.5',
+      },
+      yAxisPointer: {
+        border: 'dashed 1px #555',
+        backgroundColor: '#ccc',
+        opacity: '0.5',
+      },
+      xAxisPointerLabel: {
+        color: '#000',
+        font: 'normal 12px Montserrat,sans-serif',
+        backgroundColor: '#eee',
+        border: 'solid 1px #999',
+        borderRadius: 0,
+        padding: 4,
+        margin: 4,
+      },
+      yAxisPointerLabel: {
+        color: '#000',
+        font: 'normal 12px Montserrat,sans-serif',
+        backgroundColor: '#eee',
+        border: 'solid 1px #999',
+        borderRadius: 0,
+        padding: 4,
+        marginRight: 4,
       },
     };
   }
@@ -287,6 +342,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     // Not the real labels, but good enough for now for computing the metrics
     const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
+    // Configure the Y axis
+    const yAxisConfig = {};
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
@@ -294,6 +351,10 @@ export default class BarChartModifier extends AbstractChartModifier {
       maxValue
     );
 
+    layout = this.addAxisPointer(context, layout, yAxisConfig, yAxisInfo, 'y');
+
+    // Configure the X axis
+    const xAxisConfig = {};
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const xAxisInfo = this.computeXAxisInfo(
       layout,
@@ -302,6 +363,9 @@ export default class BarChartModifier extends AbstractChartModifier {
       yAxisInfo,
       isHorizontal
     );
+
+    layout = this.addAxisPointer(context, layout, xAxisConfig, xAxisInfo, 'x');
+
     // Setup base configurations
     const seriesBaseConfig = {
       xAxisIndex: gridIndex,
@@ -327,8 +391,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       // if this is changed, update the select handler in `configureChart`
       selectedMode: 'single',
     };
-    const valueAxisConfig = [
-      {
+    const valueAxisConfig = {
         gridIndex,
         type: 'value',
         max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
@@ -340,10 +403,8 @@ export default class BarChartModifier extends AbstractChartModifier {
             isHorizontal ? xAxisStyle : yAxisStyle
           ),
         },
-      },
-    ];
-    const categoryAxisConfig = [
-      {
+    };
+    const categoryAxisConfig = {
         gridIndex,
         type: 'category',
         data: categories,
@@ -361,8 +422,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             isHorizontal ? yAxisStyle : xAxisStyle
           ),
         },
-      },
-    ];
+    };
 
     return {
       grid: [
@@ -375,8 +435,14 @@ export default class BarChartModifier extends AbstractChartModifier {
             layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
         },
       ],
-      yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
-      xAxis: isHorizontal ? valueAxisConfig : categoryAxisConfig,
+      yAxis: [{
+        ...yAxisConfig,
+        ...(isHorizontal ? categoryAxisConfig : valueAxisConfig)
+      }],
+      xAxis: [{
+        ...xAxisConfig,
+        ...(isHorizontal ? valueAxisConfig : categoryAxisConfig),
+      }],
       series: !isGroupedOrStacked
         ? [
             {
@@ -426,6 +492,126 @@ export default class BarChartModifier extends AbstractChartModifier {
         style.paddingLeft,
       ],
     };
+  }
+
+  /**
+   * Adds the configuration for the axis pointer for the `axis` to `config` and
+   * returns an updated `layout`.
+   */
+  addAxisPointer(context, layout, config, axisInfo, axis) {
+    const { args, styles } = context;
+    const name = `${axis}AxisPointer`;
+    const type = args[name];
+
+    if (!type || type === 'none') {
+      return layout;
+    }
+
+    const pointerStyle = resolveStyle(styles[name], context.layout);
+    const labelStyle = resolveStyle(styles[`${name}Label`], context.layout);
+    const labelPosition = args[`${name}Label`] ?? 'bottom';
+    const triggerTooltip = args[`${axis}AxisTooltip`] ?? axis === 'x';
+    const formatter = args[`${axis}AxisFormatter`];
+
+    config.axisPointer = {
+      show: true,
+      type,
+      triggerTooltip,
+      // Render axis line underneath emphasis items
+      z: 0,
+    };
+
+    if (type === 'line') {
+      config.axisPointer.lineStyle = {
+        color: pointerStyle.color,
+        // Use of || is intentional here; use the first non-zero width
+        width: axis === 'x'
+          ? pointerStyle.borderLeftWidth || pointerStyle.borderRightWidth
+          : pointerStyle.borderTopWidth || pointerStyle.borderBottomWidth,
+        type: axis === 'x'
+          ? pointerStyle.borderLeftStyle || pointerStyle.borderRightStyle
+          : pointerStyle.borderTopStyle || pointerStyle.borderBottomStyle,
+        opacity: pointerStyle.opacity,
+      };
+    } else if (type === 'shadow') {
+      config.axisPointer.shadowStyle = {
+        color: pointerStyle.backgroundColor,
+        opacity: pointerStyle.opacity,
+      };
+    }
+
+    config.axisPointer.label = labelPosition === 'none'
+      ? {
+          show: false,
+        }
+      : {
+        ...(formatter && {
+          formatter: (params) => formatter(params.value),
+        }),
+        color: labelStyle.color,
+        fontStyle: labelStyle.fontStyle,
+        fontWeight: labelStyle.fontWeight,
+        fontFamily: labelStyle.fontFamily,
+        fontSize: labelStyle.fontSize,
+        backgroundColor: labelStyle.backgroundColor,
+        // Safari only parses contituent values, so use "top" as a proxy for all
+        borderWidth: labelStyle.borderTopWidth,
+        borderColor: labelStyle.borderTopColor,
+        borderType: labelStyle.borderTopType,
+        borderRadius: labelStyle.borderRadius,
+        padding: [
+          labelStyle.paddingTop,
+          labelStyle.paddingRight,
+          labelStyle.paddingBottom,
+          labelStyle.paddingLeft,
+        ],
+      };
+
+    const newLayout = { ...layout };
+    const labelSize = axis === 'x'
+      ? axisInfo.height +
+        labelStyle.paddingTop +
+        labelStyle.paddingBottom +
+        labelStyle.borderTopWidth +
+        labelStyle.borderBottomWidth
+      : axisInfo.width +
+        labelStyle.paddingLeft +
+        labelStyle.paddingRight +
+        labelStyle.borderLeftWidth +
+        labelStyle.borderRightWidth;
+    const labelMargins = axis === 'x'
+      ? labelStyle.marginTop + labelStyle.marginBottom
+      : labelStyle.marginLeft + labelStyle.marginRight;
+
+    switch (labelPosition) {
+      case 'top':
+        newLayout.innerHeight -= labelSize + labelMargins;
+        newLayout.innerY += axisInfo.height + labelMargins;
+        config.axisPointer.label.margin =
+          labelSize +
+          labelStyle.marginTop -
+          layout.innerHeight;
+        break;
+
+      case 'right':
+        newLayout.innerWidth -= labelSize + labelMargins;
+        config.axisPointer.label.margin =
+          labelSize -
+          labelStyle.marginLeft -
+          layout.innerWidth;
+        break;
+
+      case 'bottom':
+        newLayout.innerHeight -= labelStyle.marginTop;
+        config.axisPointer.label.margin = labelStyle.marginTop;
+        break;
+
+      case 'left':
+        config.axisPointer.label.margin = labelStyle.marginRight;
+        break;
+    }
+
+    return newLayout;
   }
 
   /**

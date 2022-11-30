@@ -339,6 +339,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         this.isGroupedVariant(args.variant)
           ? [{ data: seriesData }]
           : seriesData,
+      dataset: seriesData,
     };
   }
 

@@ -3,7 +3,7 @@ import formatCssStyleValue from './format-css-style-value';
 import parseCssStyleValue from './parse-css-style-value';
 
 const isPixelDimension = /^\d+\.?\d*\px$/;
-const isPercentDimension = /^\d+\.?\d*%?$/;
+const isPercentDimension = /^\d+\.?\d*%+$/;
 
 function resolvePercentDimension(value, side, context) {
   value = value.slice(0, -1) / 100.0;

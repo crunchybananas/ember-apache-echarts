@@ -507,7 +507,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? [
             {
               ...seriesBaseConfig,
-              data: values,
+              data: getSeriesData(series.data, categories, 'name'),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),
@@ -516,7 +516,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: info.data.map((item) => ({
+            data: getSeriesData(info.data, categories, 'name').map((item) => ({
               ...item,
               ...setItemColor(args.colorMap, item, info.label),
             })),

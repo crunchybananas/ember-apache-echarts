@@ -15,5 +15,13 @@
     >
       {{yield this.tooltipItem to="itemTooltip"}}
     </div>
+
+  {{#if (has-block "axisTooltip")}}
+    <div
+      data-role="axisTooltip"
+      style={{html-safe (if this.tooltipItems "" "display: none")}}
+    >
+      {{yield this.tooltipItems this.tooltipAxis to="axisTooltip"}}
+    </div>
   {{/if}}
 </div>

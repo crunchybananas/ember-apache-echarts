@@ -36,20 +36,44 @@ const toTooltipItem = (param) => ({
   },
 });
 
+/**
+ * Converts an axis EChart tooltip param into an object describing the axis the
+ * tooltip is for.
+ */
+const toTooltipAxis = ([firstParam]) => ({
+  id: firstParam.axisId,
+  index: firstParam.axisIndex,
+  type: firstParam.axisType,
+  value: firstParam.axisValue,
+  valueLabel: firstParam.axisValueLabel,
+  dimension: firstParam.axisDim,
+});
+
 export default class BarChartComponent extends Component {
+  axisTooltipElement;
   itemTooltipElement;
 
   @tracked tooltipItem;
+  @tracked tooltipItems;
+  @tracked tooltipAxis;
 
   @action
   setup(element) {
+    this.axisTooltipElement = element.querySelector('[data-role=axisTooltip]');
     this.itemTooltipElement = element.querySelector('[data-role=itemTooltip]');
   }
 
   @action
-  tooltipFormatter(params) {
-    this.tooltipItem = toTooltipItem(params);
+  tooltipFormatter(params, dataset) {
+    if (params.length) {
+      this.tooltipAxis = toTooltipAxis(params);
+      this.tooltipItems = params.map((param) => toTooltipItem(param, dataset));
 
-    return this.itemTooltipElement;
+      return this.axisTooltipElement;
+    } else {
+      this.tooltipItem = toTooltipItem(params, dataset);
+
+      return this.itemTooltipElement;
+    }
   }
 }

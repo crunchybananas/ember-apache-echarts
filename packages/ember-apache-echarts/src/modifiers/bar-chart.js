@@ -26,6 +26,15 @@ const setItemColor = (colorMap, item, color) =>
  *
  * # Arguments
  *
+ * ## Data Zoom
+ *
+ * `rotateData`
+ * : Rotates the data series so the "columns" become the "rows" and the "rows"
+ *   become the "columns". For hierarchical series, the names/labels of each
+ *   data item within each series will each become their own series, while the
+ *   original series labels are used to label the values.
+ *
+ *
  * ## Chart Layout
  *
  * `chartStyle`
@@ -310,6 +319,10 @@ export default class BarChartModifier extends AbstractChartModifier {
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
     const { categoryAxisScale, valueAxisScale } = args;
+    const { rotateData, categoryAxisScale, valueAxisScale } = args;
+    const seriesData = rotateData
+      ? rotateDataSeries(context.series, 'name', 'value')
+      : context.series;
 
     return {
       ...context,
@@ -321,11 +334,11 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
-      series: this.isStackedVariant(args.variant)
-        ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
-        : this.isGroupedVariant(args.variant)
-        ? [{ data: context.series }]
-        : context.series,
+      series:
+        this.isStackedVariant(args.variant) ||
+        this.isGroupedVariant(args.variant)
+          ? [{ data: seriesData }]
+          : seriesData,
     };
   }
 

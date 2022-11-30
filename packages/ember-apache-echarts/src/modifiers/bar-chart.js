@@ -70,6 +70,11 @@ const setItemColor = (colorMap, item, color) =>
  *   across all series, or use a separate axis for each plot that only uses
  *   that plot's data. Valid values are: `shared`, `separate`
  *
+ * `categoryAxisSort`
+ * : How to sort the labels on the category axis: `firstSeries` (default),
+ *   `asc`, `desc` or a custom sort function. By default, the sort order of the
+ *   labels for the data in the first series is used.
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -225,6 +230,28 @@ export default class BarChartModifier extends AbstractChartModifier {
     return ['area', 'stackedArea'].includes(variant);
   }
 
+  /**
+   * Returns the categories used within the data series in render order.
+   */
+  getCategories(args, series) {
+    const { categoryAxisSort = 'firstSeries' } = args;
+    const categories = getUniqueDatasetValues(series, 'name');
+
+    if (categoryAxisSort !== 'firstSeries') {
+      if (categoryAxisSort === 'asc') {
+        categories.sort();
+      } else if (categoryAxisSort === 'desc') {
+        categories.sort().reverse();
+      } else if (typeof categoryAxisSort === 'function') {
+        categories.sort(categoryAxisSort);
+      } else {
+        console.warn(`Invalid 'categoryAxisSort' value: ${categoryAxisSort}`);
+      }
+    }
+
+    return categories;
+  }
+
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { categoryAxisScale, tooltipFormatter, onSelect } = args;
@@ -233,7 +260,10 @@ export default class BarChartModifier extends AbstractChartModifier {
     chart.setOption({
       ...config,
       tooltip: {
-        formatter: tooltipFormatter,
+        trigger: 'item',
+        ...tooltipFormatter && {
+          formatter: (params) => tooltipFormatter(params, context.data.dataset),
+        },
       },
     });
 
@@ -278,7 +308,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     return {
       ...context,
       ...(categoryAxisScale === 'shared' && {
-        categories: getUniqueDatasetValues(context.series, 'name'),
+        categories: this.getCategories(args, context.series),
       }),
       ...(valueAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
@@ -331,7 +361,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const categories =
       categoryAxisScale === 'shared'
         ? data.categories
-        : getUniqueDatasetValues(seriesData, 'name');
+        : this.getCategories(args, seriesData);
     const maxValue =
       valueAxisScale === 'shared'
         ? data.maxValue

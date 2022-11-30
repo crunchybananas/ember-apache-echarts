@@ -451,6 +451,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     const categoryAxisConfig = {
         gridIndex,
         type: 'category',
+        // Render labels top-to-bottom when using horizontal orientation
+        inverse: isHorizontal,
         data: categories,
         axisLabel: {
           // Ensure every category is shown on the axis

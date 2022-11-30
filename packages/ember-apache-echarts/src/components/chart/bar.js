@@ -10,29 +10,37 @@ import { tracked } from '@glimmer/tracking';
  * The object returned from this function includes the following properties:
  *
  * `label`
- * : The label used for the bar.
+ * : The label on the category axis for the item.
  *
  * `value`
- * : The value used for the bar.
+ * : The value on the value axis for the item.
  *
  * `marker`
  * : Raw HTML that renders the marker used to identify the item on the chart.
  *
+ * `style`
+ * : An object representing the graphical properties of the element being
+ *   hovered over. Currently only supports `color`.
+ *
  * `dataIndex`
  * : The index of the item in the data for the series this item belongs to.
  *
- * `bar`
- * : An object representing the graphical properties of the bar: `color` and
- *   `percent` of circle.
+ * `data`
+ * : The data object from the chart data for this item.
+ *
+ * `seriesIndex`
+ * : The index in the dataset of the series this item belongs to.
+ *
+ * `series`
+ * : The series object for the series this item belongs to.
  */
-const toTooltipItem = (param) => ({
-  ...pick(param, 'value', 'marker', 'dataIndex'),
+const toTooltipItem = (param, dataset) => ({
+  ...pick(param, 'value', 'marker', 'dataIndex', 'data', 'seriesIndex'),
   label: param.name,
-  bar: pick(param, 'color'),
-  meta: param.data?.meta,
+  style: pick(param, 'color'),
   series: {
     label: param.seriesName,
-    index: param.seriesIndex,
+    ...dataset[param.seriesIndex],
   },
 });
 

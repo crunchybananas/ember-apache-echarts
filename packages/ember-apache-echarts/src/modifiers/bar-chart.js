@@ -75,6 +75,12 @@ const setItemColor = (colorMap, item, color) =>
  *   `asc`, `desc` or a custom sort function. By default, the sort order of the
  *   labels for the data in the first series is used.
  *
+ * `valueAxisMax`
+ * : The maximum value of the value axis. Valid values are: a specific number,
+ *   `dataMax` or `dataMaxRoundedUp` (default). `dataMaxRoundedUp` is only
+ *   supported when `valueAxisScale` is `separate` and rounds the data maximum
+ *   up so the axis ticks are evenly distributed on the value axis.
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -343,7 +349,8 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText, categoryAxisScale, valueAxisScale } = args;
+    const { noDataText, categoryAxisScale, valueAxisScale, valueAxisMax } =
+      args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
@@ -424,7 +431,14 @@ export default class BarChartModifier extends AbstractChartModifier {
     const valueAxisConfig = {
         gridIndex,
         type: 'value',
-        max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
+        max:
+          valueAxisScale === 'shared'
+            ? valueAxisMax && valueAxisMax !== 'dataMax'
+              ? valueAxisMax
+              : data.maxValue
+            : valueAxisMax !== 'dataMaxRoundedUp'
+              ? valueAxisMax
+              : undefined,
         axisLabel: {
           // margin between the axis label and the axis line
           margin: yAxisStyle.marginRight,

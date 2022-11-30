@@ -434,7 +434,7 @@ export default class AbstractChartModifier extends Modifier {
    */
   addCellTextOverlays(context, config) {
     if (!this.generateTextOverlayConfig) {
-      return;
+      return context.layout;
     }
 
     const style = resolveStyle(context.styles.cellTextOverlay, context.layout);

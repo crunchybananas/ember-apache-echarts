@@ -276,9 +276,9 @@ export default class BarChartModifier extends AbstractChartModifier {
       ...config,
       tooltip: {
         trigger: 'item',
-        ...tooltipFormatter && {
+        ...(tooltipFormatter && {
           formatter: (params) => tooltipFormatter(params, context.data.dataset),
-        },
+        }),
       },
     });
 
@@ -318,7 +318,6 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
-    const { categoryAxisScale, valueAxisScale } = args;
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
     const seriesData = rotateData
       ? rotateDataSeries(context.series, 'name', 'value')
@@ -443,45 +442,47 @@ export default class BarChartModifier extends AbstractChartModifier {
       selectedMode: 'single',
     };
     const valueAxisConfig = {
-        gridIndex,
-        type: 'value',
-        max:
-          valueAxisScale === 'shared'
-            ? valueAxisMax && valueAxisMax !== 'dataMax'
-              ? valueAxisMax
-              : data.maxValue
-            : valueAxisMax !== 'dataMaxRoundedUp'
-              ? valueAxisMax
-              : undefined,
-        axisLabel: {
-          // margin between the axis label and the axis line
-          margin: yAxisStyle.marginRight,
-          ...this.generateAxisLabelConfig(
-            layout,
-            isHorizontal ? xAxisStyle : yAxisStyle
-          ),
-        },
+      gridIndex,
+      type: 'value',
+      max:
+        // prettier not formatting nested ternaries properly, so turn it off
+        // prettier-ignore
+        valueAxisScale === 'shared'
+          ? valueAxisMax && valueAxisMax !== 'dataMax'
+            ? valueAxisMax
+            : data.maxValue
+          : valueAxisMax !== 'dataMaxRoundedUp'
+            ? valueAxisMax
+            : undefined,
+      axisLabel: {
+        // margin between the axis label and the axis line
+        margin: yAxisStyle.marginRight,
+        ...this.generateAxisLabelConfig(
+          layout,
+          isHorizontal ? xAxisStyle : yAxisStyle
+        ),
+      },
     };
     const categoryAxisConfig = {
-        gridIndex,
-        type: 'category',
-        // Render labels top-to-bottom when using horizontal orientation
-        inverse: isHorizontal,
-        data: categories,
-        axisLabel: {
-          // Ensure every category is shown on the axis
-          interval: 0,
-          ...(!isHorizontal && {
-            overflow: 'break',
-          }),
-          width: xAxisInfo.maxLabelWidth,
-          // margin between the axis label and the axis line
-          margin: xAxisStyle.marginTop,
-          ...this.generateAxisLabelConfig(
-            layout,
-            isHorizontal ? yAxisStyle : xAxisStyle
-          ),
-        },
+      gridIndex,
+      type: 'category',
+      // Render labels top-to-bottom when using horizontal orientation
+      inverse: isHorizontal,
+      data: categories,
+      axisLabel: {
+        // Ensure every category is shown on the axis
+        interval: 0,
+        ...(!isHorizontal && {
+          overflow: 'break',
+        }),
+        width: xAxisInfo.maxLabelWidth,
+        // margin between the axis label and the axis line
+        margin: xAxisStyle.marginTop,
+        ...this.generateAxisLabelConfig(
+          layout,
+          isHorizontal ? yAxisStyle : xAxisStyle
+        ),
+      },
     };
 
     return {
@@ -495,14 +496,18 @@ export default class BarChartModifier extends AbstractChartModifier {
             layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
         },
       ],
-      yAxis: [{
-        ...yAxisConfig,
-        ...(isHorizontal ? categoryAxisConfig : valueAxisConfig)
-      }],
-      xAxis: [{
-        ...xAxisConfig,
-        ...(isHorizontal ? valueAxisConfig : categoryAxisConfig),
-      }],
+      yAxis: [
+        {
+          ...yAxisConfig,
+          ...(isHorizontal ? categoryAxisConfig : valueAxisConfig),
+        },
+      ],
+      xAxis: [
+        {
+          ...xAxisConfig,
+          ...(isHorizontal ? valueAxisConfig : categoryAxisConfig),
+        },
+      ],
       series: !isGroupedOrStacked
         ? [
             {
@@ -585,12 +590,14 @@ export default class BarChartModifier extends AbstractChartModifier {
       config.axisPointer.lineStyle = {
         color: pointerStyle.color,
         // Use of || is intentional here; use the first non-zero width
-        width: axis === 'x'
-          ? pointerStyle.borderLeftWidth || pointerStyle.borderRightWidth
-          : pointerStyle.borderTopWidth || pointerStyle.borderBottomWidth,
-        type: axis === 'x'
-          ? pointerStyle.borderLeftStyle || pointerStyle.borderRightStyle
-          : pointerStyle.borderTopStyle || pointerStyle.borderBottomStyle,
+        width:
+          axis === 'x'
+            ? pointerStyle.borderLeftWidth || pointerStyle.borderRightWidth
+            : pointerStyle.borderTopWidth || pointerStyle.borderBottomWidth,
+        type:
+          axis === 'x'
+            ? pointerStyle.borderLeftStyle || pointerStyle.borderRightStyle
+            : pointerStyle.borderTopStyle || pointerStyle.borderBottomStyle,
         opacity: pointerStyle.opacity,
       };
     } else if (type === 'shadow') {
@@ -600,65 +607,64 @@ export default class BarChartModifier extends AbstractChartModifier {
       };
     }
 
-    config.axisPointer.label = labelPosition === 'none'
-      ? {
-          show: false,
-        }
-      : {
-        ...(formatter && {
-          formatter: (params) => formatter(params.value),
-        }),
-        color: labelStyle.color,
-        fontStyle: labelStyle.fontStyle,
-        fontWeight: labelStyle.fontWeight,
-        fontFamily: labelStyle.fontFamily,
-        fontSize: labelStyle.fontSize,
-        backgroundColor: labelStyle.backgroundColor,
-        // Safari only parses contituent values, so use "top" as a proxy for all
-        borderWidth: labelStyle.borderTopWidth,
-        borderColor: labelStyle.borderTopColor,
-        borderType: labelStyle.borderTopType,
-        borderRadius: labelStyle.borderRadius,
-        padding: [
-          labelStyle.paddingTop,
-          labelStyle.paddingRight,
-          labelStyle.paddingBottom,
-          labelStyle.paddingLeft,
-        ],
-      };
+    config.axisPointer.label =
+      labelPosition === 'none'
+        ? {
+            show: false,
+          }
+        : {
+            ...(formatter && {
+              formatter: (params) => formatter(params.value),
+            }),
+            color: labelStyle.color,
+            fontStyle: labelStyle.fontStyle,
+            fontWeight: labelStyle.fontWeight,
+            fontFamily: labelStyle.fontFamily,
+            fontSize: labelStyle.fontSize,
+            backgroundColor: labelStyle.backgroundColor,
+            // Safari only parses contituent values, so use "top" as a proxy for all
+            borderWidth: labelStyle.borderTopWidth,
+            borderColor: labelStyle.borderTopColor,
+            borderType: labelStyle.borderTopType,
+            borderRadius: labelStyle.borderRadius,
+            padding: [
+              labelStyle.paddingTop,
+              labelStyle.paddingRight,
+              labelStyle.paddingBottom,
+              labelStyle.paddingLeft,
+            ],
+          };
 
     const newLayout = { ...layout };
-    const labelSize = axis === 'x'
-      ? axisInfo.height +
-        labelStyle.paddingTop +
-        labelStyle.paddingBottom +
-        labelStyle.borderTopWidth +
-        labelStyle.borderBottomWidth
-      : axisInfo.width +
-        labelStyle.paddingLeft +
-        labelStyle.paddingRight +
-        labelStyle.borderLeftWidth +
-        labelStyle.borderRightWidth;
-    const labelMargins = axis === 'x'
-      ? labelStyle.marginTop + labelStyle.marginBottom
-      : labelStyle.marginLeft + labelStyle.marginRight;
+    const labelSize =
+      axis === 'x'
+        ? axisInfo.height +
+          labelStyle.paddingTop +
+          labelStyle.paddingBottom +
+          labelStyle.borderTopWidth +
+          labelStyle.borderBottomWidth
+        : axisInfo.width +
+          labelStyle.paddingLeft +
+          labelStyle.paddingRight +
+          labelStyle.borderLeftWidth +
+          labelStyle.borderRightWidth;
+    const labelMargins =
+      axis === 'x'
+        ? labelStyle.marginTop + labelStyle.marginBottom
+        : labelStyle.marginLeft + labelStyle.marginRight;
 
     switch (labelPosition) {
       case 'top':
         newLayout.innerHeight -= labelSize + labelMargins;
         newLayout.innerY += axisInfo.height + labelMargins;
         config.axisPointer.label.margin =
-          labelSize +
-          labelStyle.marginTop -
-          layout.innerHeight;
+          labelSize + labelStyle.marginTop - layout.innerHeight;
         break;
 
       case 'right':
         newLayout.innerWidth -= labelSize + labelMargins;
         config.axisPointer.label.margin =
-          labelSize -
-          labelStyle.marginLeft -
-          layout.innerWidth;
+          labelSize - labelStyle.marginLeft - layout.innerWidth;
         break;
 
       case 'bottom':

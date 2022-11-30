@@ -4,7 +4,7 @@
     {{style width=(css-size @width "100%") height=(css-size @height 400)}}
     {{bar-chart
       this.args
-      tooltipFormatter=(if (has-block "itemTooltip") this.tooltipFormatter)
+      tooltipFormatter=(if (or (has-block "itemTooltip") this.useDefaultGroupedOrStackedTooltip) this.tooltipFormatter)
     }}
   ></div>
 
@@ -15,6 +15,17 @@
     >
       {{yield this.tooltipItem to="itemTooltip"}}
     </div>
+  {{else if this.useDefaultGroupedOrStackedTooltip}}
+    <div
+      data-role="itemTooltip"
+      style={{html-safe (if this.tooltipItem "" "display: none")}}
+    >
+      {{!-- template-lint-disable no-triple-curlies --}}
+      {{{this.tooltipItem.marker}}}
+      {{this.tooltipItem.series.label}}:
+      {{this.tooltipItem.value}}
+    </div>
+  {{/if}}
 
   {{#if (has-block "axisTooltip")}}
     <div

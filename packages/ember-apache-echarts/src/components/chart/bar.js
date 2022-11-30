@@ -65,6 +65,18 @@ export default class BarChartComponent extends Component {
   @tracked tooltipItems;
   @tracked tooltipAxis;
 
+  // HACK: The way we're currently transforming the data for the grouped or
+  //       stacked layout is causing Apache eCharts to swap the item label with
+  //       the series label. This ensures that by default the tooltip is
+  //       rendered correctly. [twl 30.Nov.22]
+  get useDefaultGroupedOrStackedTooltip() {
+    const { variant } = this.args;
+
+    return (
+      variant && (variant.startsWith('group') || variant.startsWith('stacked'))
+    );
+  }
+
   @action
   setup(element) {
     this.axisTooltipElement = element.querySelector('[data-role=axisTooltip]');

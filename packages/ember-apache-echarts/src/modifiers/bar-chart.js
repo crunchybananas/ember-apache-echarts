@@ -1,3 +1,4 @@
+import { tracked } from '@glimmer/tracking';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
@@ -181,6 +182,8 @@ const setItemColor = (colorMap, item, color) =>
  * : Called when an element on a chart is selected
  */
 export default class BarChartModifier extends AbstractChartModifier {
+  @tracked drillPath = [];
+
   get defaultStyles() {
     const styles = super.defaultStyles;
 
@@ -311,6 +314,13 @@ export default class BarChartModifier extends AbstractChartModifier {
 
       onSelect && onSelect(fromAction === 'select' ? name : null);
     });
+
+    // Handle the drill in action
+    chart.handle('dblclick', ({ seriesIndex }) => {
+      if (context.data.dataset[seriesIndex].series) {
+        this.drillPath.pushObject(seriesIndex);
+      }
+    });
   }
 
   /**
@@ -322,6 +332,13 @@ export default class BarChartModifier extends AbstractChartModifier {
     const seriesData = rotateData
       ? rotateDataSeries(context.series, 'name', 'value')
       : context.series;
+    const { series, title } = this.drillPath.reduce(
+      ({ series }, pathIndex) => ({
+        series: series[pathIndex].series,
+        title: series[pathIndex].label,
+      }),
+      { series: seriesData, title: args.title }
+    );
 
     return {
       ...context,
@@ -336,9 +353,9 @@ export default class BarChartModifier extends AbstractChartModifier {
       series:
         this.isStackedVariant(args.variant) ||
         this.isGroupedVariant(args.variant)
-          ? [{ data: seriesData }]
-          : seriesData,
-      dataset: seriesData,
+          ? [{ data: series }]
+          : series,
+      dataset: series,
     };
   }
 
@@ -440,6 +457,8 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       // if this is changed, update the select handler in `configureChart`
       selectedMode: 'single',
+      // Allow the double-clicking on the area to be the same as if on the line
+      triggerLineEvent: true,
     };
     const valueAxisConfig = {
       gridIndex,

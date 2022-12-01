@@ -536,12 +536,13 @@ export default class BarChartModifier extends AbstractChartModifier {
       return undefined;
     }
 
-    const isHorizontal = args.orientation === 'horizontal';
-    const isBarVariant = this.isBarVariant(args.variant);
-    const isAreaVariant = this.isAreaVariant(args.variant);
-    const isStackedVariant = this.isStackedVariant(args.variant);
+    const { variant, orientation, colorMap } = args;
+    const isHorizontal = orientation === 'horizontal';
+    const isBarVariant = this.isBarVariant(variant);
+    const isAreaVariant = this.isAreaVariant(variant);
+    const isStackedVariant = this.isStackedVariant(variant);
     const isGroupedOrStacked =
-      this.isGroupedVariant(args.variant) || isStackedVariant;
+      this.isGroupedVariant(variant) || isStackedVariant;
     const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
@@ -692,7 +693,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             name: info.label,
             data: getSeriesData(info.data, categories, 'name').map((item) => ({
               ...item,
-              ...setItemColor(args.colorMap, item, info.label),
+              ...setItemColor(colorMap, item, info.label),
             })),
             ...(isStackedVariant && {
               stack: 'total',

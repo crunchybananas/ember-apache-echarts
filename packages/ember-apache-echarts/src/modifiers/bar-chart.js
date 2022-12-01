@@ -29,7 +29,7 @@ const setItemColor = (colorMap, item, color) =>
  *
  * # Arguments
  *
- * ## Data Zoom
+ * ## Data
  *
  * `rotateData`
  * : Rotates the data series so the "columns" become the "rows" and the "rows"
@@ -80,7 +80,7 @@ const setItemColor = (colorMap, item, color) =>
  * `categoryAxisScale`, `valueAxisScale`
  * : Whether to use a shared axis for all plots that accounts for the data
  *   across all series, or use a separate axis for each plot that only uses
- *   that plot's data. Valid values are: `shared`, `separate`
+ *   that plot's data. Valid values are: `shared`, `separate` (default)
  *
  * `categoryAxisSort`
  * : How to sort the labels on the category axis: `firstSeries` (default),

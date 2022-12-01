@@ -356,6 +356,26 @@ export default class BarChartModifier extends AbstractChartModifier {
           ? [{ data: series }]
           : series,
       dataset: series,
+      title,
+  /**
+   * Adds the title to `config` as defined in the data or by `args` and returns
+   * the new context layout.
+   */
+  addTitle(context, config) {
+    const titleLayout = super.addTitle(
+      {
+        ...context,
+        args: {
+          ...context.args,
+          title: context.data.title ?? context.args.title,
+        },
+      },
+      config
+    );
+
+    return titleLayout;
+  }
+
     };
   }
 

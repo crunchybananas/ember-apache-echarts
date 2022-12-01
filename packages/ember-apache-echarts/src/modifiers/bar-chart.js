@@ -1,4 +1,5 @@
 import { tracked } from '@glimmer/tracking';
+import mergeAtPaths from '../utils/merge-at-paths';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
@@ -170,6 +171,15 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for the the Y axis data zoom control
  *
  *
+ * ## Data Drilling
+ *
+ * `drillUpButtonStyle`
+ * : CSS properties defining the style of the drill up button
+ *
+ * `drillUpButtonText`
+ * : The text of the drill up button. Defaults to `<`.
+ *
+ *
  * ## Tooltips
  *
  * `tooltipFormatter`
@@ -228,6 +238,12 @@ export default class BarChartModifier extends AbstractChartModifier {
         borderRadius: 0,
         padding: 4,
         marginRight: 4,
+      },
+      drillUpButton: {
+        margin: 4,
+        color: '#000',
+        font: 'normal 22px Montserrat,sans-serif',
+        marginRight: 10,
       },
     };
   }
@@ -357,11 +373,18 @@ export default class BarChartModifier extends AbstractChartModifier {
           : series,
       dataset: series,
       title,
+    };
+  }
+
   /**
    * Adds the title to `config` as defined in the data or by `args` and returns
    * the new context layout.
    */
   addTitle(context, config) {
+    const buttonLayout = this.addDrillUpButton(context, config);
+    const buttonWidth = context.layout.width - buttonLayout.width;
+    const buttonHeight = context.layout.height - buttonLayout.height;
+
     const titleLayout = super.addTitle(
       {
         ...context,
@@ -373,9 +396,116 @@ export default class BarChartModifier extends AbstractChartModifier {
       config
     );
 
+    if (config.title?.[0]) {
+      const titleHeight = context.layout.height - titleLayout.height;
+
+      if (buttonHeight > titleHeight) {
+        const heightDifference = buttonHeight - titleHeight;
+
+        titleLayout.height -= heightDifference;
+        titleLayout.y += heightDifference;
+
+        // Center the title within the height of the button
+        config.title[0].top = config.title[0].top / 2 + heightDifference / 2;
+      }
+
+      config.title[0].left += buttonWidth;
+    }
+
     return titleLayout;
   }
 
+  /**
+   * Adds the drill up button to `config` and returns the new context layout.
+   */
+  addDrillUpButton(context, config) {
+    if (!this.drillPath.length) {
+      return context.layout;
+    }
+
+    const { layout, args, styles } = context;
+    const { drillUpButtonText = '<' } = args;
+    const style = resolveStyle(styles.drillUpButton, layout);
+    const titleStyle = resolveStyle(styles.chartTitle, layout);
+    const xMargins = style.marginLeft + style.marginRight;
+    const yMargins = style.marginTop + style.marginBottom;
+
+    // Ensure the button aligns with where the title is positioned
+    style.marginLeft += titleStyle.marginLeft;
+
+    const buttonConfig = this.generateDrillUpButtonConfig(
+      drillUpButtonText,
+      layout,
+      style
+    );
+
+    mergeAtPaths(config, [buttonConfig]);
+
+    const buttonBox = buttonConfig['graphic.elements'][0].children[0].shape;
+
+    return {
+      ...layout,
+      width: layout.width - buttonBox.width - xMargins,
+      height: layout.height - buttonBox.height - yMargins,
+      x: layout.x + buttonBox.width + xMargins,
+      y: layout.y + buttonBox.height + yMargins,
+    };
+  }
+
+  /**
+   * Generates the configuration for the drill up button.
+   */
+  generateDrillUpButtonConfig(text, layout, style) {
+    const textMetrics = computeTextMetrics(text, style);
+
+    return {
+      'graphic.elements': [
+        {
+          type: 'group',
+          left: style.marginLeft,
+          top: style.marginTop,
+          children: [
+            // NOTE: This element is referenced by path in `addDrillUpButton`
+            {
+              type: 'rect',
+              shape: {
+                width:
+                  textMetrics.width + style.paddingLeft + style.paddingRight,
+                height:
+                  textMetrics.fontHeight +
+                  style.paddingTop +
+                  style.paddingBottom,
+                r: [
+                  style.borderTopLeftRadius ?? 0,
+                  style.borderTopRightRadius ?? 0,
+                  style.borderBottomRightRadius ?? 0,
+                  style.borderBottomLeftRadius ?? 0,
+                ],
+              },
+              style: {
+                stroke: style.borderColor ?? '#fff',
+                fill: style.backgroundColor ?? '#fff',
+              },
+            },
+            {
+              type: 'text',
+              x: style.paddingLeft,
+              y: style.paddingTop,
+              style: {
+                fill: style.color,
+                text,
+                font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
+              },
+              textConfig: {
+                distance: 0,
+                inside: true,
+                position: [10, 0],
+              },
+            },
+          ],
+          onclick: () => this.drillPath.popObject(),
+        },
+      ],
     };
   }
 

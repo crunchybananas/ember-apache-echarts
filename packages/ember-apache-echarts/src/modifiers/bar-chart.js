@@ -86,6 +86,11 @@ const setItemColor = (colorMap, item, color) =>
  *   `asc`, `desc` or a custom sort function. By default, the sort order of the
  *   labels for the data in the first series is used.
  *
+ * `categoryAxisMaxLabelCount`
+ * : The maximum number of categories to show on the category axis. The number
+ *   of actual labels rendered may be lower than this; this merely sets the
+ *   maximum number so labels are not too thin.
+ *
  * `valueAxisMax`
  * : The maximum value of the value axis. Valid values are: a specific number,
  *   `dataMax` or `dataMaxRoundedUp` (default). `dataMaxRoundedUp` is only
@@ -529,14 +534,15 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText, categoryAxisScale, valueAxisScale, valueAxisMax } =
-      args;
+    const { noDataText } = args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
     }
 
     const { variant, orientation, colorMap } = args;
+    const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
+    const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
     const isBarVariant = this.isBarVariant(variant);
     const isAreaVariant = this.isAreaVariant(variant);
@@ -575,6 +581,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const xAxisConfig = {};
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const xAxisInfo = this.computeXAxisInfo(
+      args,
       layout,
       xAxisStyle,
       isHorizontal ? valueTexts : categories,
@@ -640,8 +647,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       inverse: isHorizontal,
       data: categories,
       axisLabel: {
-        // Ensure every category is shown on the axis
-        interval: 0,
+        // Determine how many categories are shown on the axis
+        interval:
+          categoryAxisMaxLabelCount &&
+          categories.length > categoryAxisMaxLabelCount
+            ? Math.ceil(categories.length / categoryAxisMaxLabelCount) - 1
+            : 0,
         ...(!isHorizontal && {
           overflow: 'break',
         }),
@@ -896,7 +907,11 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the X axis for charts that use an X axis.
    */
-  computeXAxisInfo(layout, style, labels, yAxisInfo, isHorizontal) {
+  computeXAxisInfo(args, layout, style, labels, yAxisInfo, isHorizontal) {
+    const maxLabelCount = Math.min(
+      args.categoryAxisMaxLabelCount ?? labels.length,
+      labels.length
+    );
     const width =
       layout.innerWidth -
       yAxisInfo.width -
@@ -905,7 +920,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const lineWidth = isHorizontal ? 0 : 1;
     // 10 is arbitrary number here, since we don't know how many divisions the
     // chart will create if the X axis is a value axis
-    const maxLabelWidth = width / (isHorizontal ? 10 : labels.length);
+    const maxLabelWidth = width / (isHorizontal ? 10 : maxLabelCount);
     const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
     const height =
       labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;

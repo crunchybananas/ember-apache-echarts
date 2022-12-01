@@ -1,4 +1,5 @@
 import { tracked } from '@glimmer/tracking';
+import countBy from 'lodash/countBy';
 import mergeAtPaths from '../utils/merge-at-paths';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
@@ -334,6 +335,23 @@ export default class BarChartModifier extends AbstractChartModifier {
       }
 
       onSelect && onSelect(fromAction === 'select' ? name : null);
+    });
+
+    // Change the default behavior of how selections work on the legend
+    chart.handle('legendselectchanged', ({ name, selected }) => {
+      const selections = Object.values(selected);
+      const counts = countBy(selections);
+
+      // If the only one selected is the one that just changed, or if nothing is
+      // selected, then invert the selection
+      if (
+        (counts.false === 1 && selected[name] === false) ||
+        counts.false === selections.length
+      ) {
+        chart.dispatchAction({
+          type: 'legendInverseSelect',
+        });
+      }
     });
 
     // Handle the drill in action

@@ -297,15 +297,21 @@ export default class BarChartModifier extends AbstractChartModifier {
     const { categoryAxisScale, tooltipFormatter, onSelect } = args;
     const { config, context } = this.buildLayout(args, chart);
 
-    chart.setOption({
-      ...config,
-      tooltip: {
-        trigger: 'item',
-        ...(tooltipFormatter && {
-          formatter: (params) => tooltipFormatter(params, context.data.dataset),
-        }),
+    chart.setOption(
+      {
+        ...config,
+        tooltip: {
+          trigger: 'item',
+          ...(tooltipFormatter && {
+            formatter: (params) =>
+              tooltipFormatter(params, context.data.dataset),
+          }),
+        },
       },
-    });
+      {
+        notMerge: true,
+      }
+    );
 
     chart.handle('selectchanged', (event) => {
       const { fromAction, fromActionPayload, isFromClick } = event;

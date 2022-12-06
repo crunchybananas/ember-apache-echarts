@@ -251,7 +251,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         marginRight: 4,
       },
       drillUpButton: {
-        margin: 4,
+        margin: 0,
         color: '#000',
         font: 'normal 22px Montserrat,sans-serif',
         marginRight: 10,
@@ -465,6 +465,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const yMargins = style.marginTop + style.marginBottom;
 
     // Ensure the button aligns with where the title is positioned
+    style.marginTop += titleStyle.marginTop;
     style.marginLeft += titleStyle.marginLeft;
 
     const buttonConfig = this.generateDrillUpButtonConfig(

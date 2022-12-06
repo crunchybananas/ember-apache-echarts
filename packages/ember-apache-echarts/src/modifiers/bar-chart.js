@@ -74,6 +74,9 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for the titles for individual plots when
  *   rendering more than one series
  *
+ * `plotStyle`
+ * : CSS properties defining the style of the plot (area defined by the axes)
+ *
  *
  * ## Axes
  *
@@ -205,6 +208,8 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     return {
       ...styles,
+      plot: {
+      },
       xAxis: {
         font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'center',
@@ -690,27 +695,49 @@ export default class BarChartModifier extends AbstractChartModifier {
       },
     };
 
+    // Configure final grid style
+    const plotStyle = resolveStyle(styles.plot, context.layout);
+    const gridInfo = {
+      // Not sure why the 1px adjustment is needed to `x`, but it is
+      x: layout.innerX + yAxisInfo.width - 1,
+      y: layout.innerY + yAxisInfo.heightOverflow,
+      width: xAxisInfo.width,
+      height:
+        layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
+    };
+
     return {
-      grid: [
-        {
-          // Not sure why the 1px adjustment is needed to `x`, but it is
-          x: layout.innerX + yAxisInfo.width - 1,
-          y: layout.innerY + yAxisInfo.heightOverflow,
-          width: xAxisInfo.width,
-          height:
-            layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
-        },
-      ],
+      grid: [gridInfo],
       yAxis: [
         {
           ...yAxisConfig,
           ...(isHorizontal ? categoryAxisConfig : valueAxisConfig),
+          ...(plotStyle.borderLeftWidth && {
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: plotStyle.borderLeftColor,
+                width: plotStyle.borderLeftWidth,
+                style: plotStyle.borderLeftStyle,
+              },
+            },
+          }),
         },
       ],
       xAxis: [
         {
           ...xAxisConfig,
           ...(isHorizontal ? valueAxisConfig : categoryAxisConfig),
+          ...(plotStyle.borderBottomWidth && {
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: plotStyle.borderBottomColor,
+                width: plotStyle.borderBottomWidth,
+                style: plotStyle.borderBottomStyle,
+              },
+            },
+          }),
         },
       ],
       series: !isGroupedOrStacked
@@ -734,6 +761,50 @@ export default class BarChartModifier extends AbstractChartModifier {
               stack: 'total',
             }),
           })),
+      ...((plotStyle.borderTopWidth || plotStyle.borderRightWidth) && {
+        'graphic.elements': [
+          ...(plotStyle.borderRightWidth &&
+            // The right border for the grid, since ECharts doesn't provide a
+            // setting for it
+            [{
+              type: 'line',
+              // NOTE: The adjustment here was eye-balled. Not sure why it's 2.
+              left: gridInfo.x + gridInfo.width - 2,
+              top: gridInfo.y - 3,
+              shape: {
+                y2: gridInfo.height + 1,
+              },
+              style: {
+                stroke: plotStyle.borderRightColor,
+                lineWidth: plotStyle.borderRightWidth,
+              },
+              silent: true,
+              // render above the axis lines of the chart
+              z: 10,
+            }]
+          ),
+          ...(plotStyle.borderTopWidth &&
+            // The right border for the grid, since ECharts doesn't provide a
+            // setting for it
+            [{
+              type: 'line',
+              // NOTE: The adjustment here was eye-balled. Not sure why it's 2.5
+              left: gridInfo.x - 2.5,
+              top: gridInfo.y - 2.5,
+              shape: {
+                x2: gridInfo.width,
+              },
+              style: {
+                stroke: plotStyle.borderTopColor,
+                lineWidth: plotStyle.borderTopWidth,
+              },
+              silent: true,
+              // render above the axis lines of the chart
+              z: 10,
+            }]
+          ),
+        ],
+      }),
     };
   }
 

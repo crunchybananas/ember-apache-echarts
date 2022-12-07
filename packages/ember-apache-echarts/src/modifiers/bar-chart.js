@@ -109,6 +109,10 @@ const setItemColor = (colorMap, item, color) =>
  *   supported when `valueAxisScale` is `separate` and rounds the data maximum
  *   up so the axis ticks are evenly distributed on the value axis.
  *
+ * `categoryAxisFormatter`, `valueAxisFormatter`
+ * : Functions used to format the values for the category or value axis,
+ *   respectively.
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -582,6 +586,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const { variant, orientation, colorMap } = args;
     const { categoryProperty = 'name', valueProperty = 'value' } = args;
     const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
+    const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
     const isBarVariant = this.isBarVariant(variant);
@@ -672,6 +677,9 @@ export default class BarChartModifier extends AbstractChartModifier {
             ? valueAxisMax
             : undefined,
       axisLabel: {
+        ...(valueAxisFormatter && {
+          formatter: valueAxisFormatter,
+        }),
         // margin between the axis label and the axis line
         margin: yAxisStyle.marginRight,
         ...this.generateAxisLabelConfig(
@@ -687,6 +695,9 @@ export default class BarChartModifier extends AbstractChartModifier {
       inverse: isHorizontal,
       data: categories,
       axisLabel: {
+        ...(categoryAxisFormatter && {
+          formatter: categoryAxisFormatter,
+        }),
         // Determine how many categories are shown on the axis
         interval:
           categoryAxisMaxLabelCount &&

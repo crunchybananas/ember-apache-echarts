@@ -452,8 +452,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Returns the labels for the legend.
    */
-  getLegendLabels(series /*, args */) {
-    return getUniqueDatasetValues(series, 'name');
+  getLegendLabels(series, args) {
+    return getUniqueDatasetValues(series, args.categoryProperty ?? 'name');
   }
 
   /**

@@ -37,6 +37,14 @@ const setItemColor = (colorMap, item, color) =>
  *   data item within each series will each become their own series, while the
  *   original series labels are used to label the values.
  *
+ * `categoryProperty`
+ * : The name of the property within the data to use as the category for each
+ *   data point.
+ *
+ * `valueProperty`
+ * : The name of the property within the data to use as the value for each data
+ *   point.
+ *
  *
  * ## Chart Layout
  *
@@ -279,8 +287,8 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the categories used within the data series in render order.
    */
   getCategories(args, series) {
-    const { categoryAxisSort = 'firstSeries' } = args;
-    const categories = getUniqueDatasetValues(series, 'name');
+    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } = args;
+    const categories = getUniqueDatasetValues(series, categoryProperty);
 
     if (categoryAxisSort !== 'firstSeries') {
       if (categoryAxisSort === 'asc') {
@@ -335,7 +343,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-          ? series.data[dataIndex].name
+          ? series.data[dataIndex][args.categoryProperty ?? 'name']
           : null;
 
       if (name) {
@@ -379,8 +387,9 @@ export default class BarChartModifier extends AbstractChartModifier {
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
+    const { categoryProperty = 'name', valueProperty = 'value' } = args;
     const seriesData = rotateData
-      ? rotateDataSeries(context.series, 'name', 'value')
+      ? rotateDataSeries(context.series, categoryProperty, valueProperty)
       : context.series;
     const { series, title } = this.drillPath.reduce(
       ({ series }, pathIndex) => ({
@@ -571,6 +580,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     }
 
     const { variant, orientation, colorMap } = args;
+    const { categoryProperty = 'name', valueProperty = 'value' } = args;
     const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
     const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
@@ -591,8 +601,8 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? data.maxValue
         : computeStatistic(seriesData, 'max');
     const values = isGroupedOrStacked
-      ? getSeriesTotals(series.data, categories, 'name', 'value')
-      : getSeriesData(series.data, categories, 'name', 'value');
+      ? getSeriesTotals(series.data, categories, categoryProperty, valueProperty)
+      : getSeriesData(series.data, categories, categoryProperty, valueProperty);
     // Not the real labels, but good enough for now for computing the metrics
     const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
@@ -745,7 +755,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? [
             {
               ...seriesBaseConfig,
-              data: getSeriesData(series.data, categories, 'name'),
+              data: getSeriesData(series.data, categories, categoryProperty),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),
@@ -754,7 +764,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: getSeriesData(info.data, categories, 'name').map((item) => ({
+            data: getSeriesData(info.data, categories, categoryProperty).map((item) => ({
               ...item,
               ...setItemColor(colorMap, item, info.label),
             })),

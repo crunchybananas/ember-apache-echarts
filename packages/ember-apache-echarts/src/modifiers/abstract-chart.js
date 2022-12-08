@@ -499,7 +499,7 @@ export default class AbstractChartModifier extends Modifier {
           style: {
             // `fill` can be missing, but cannot be not be `undefined` or the box
             // will render a few pixels to the right and down [twl 2.Jun.22]
-            fill: box.backgroundColor ?? '#fff',
+            fill: box.backgroundColor ?? '#fff0',
             // Safari only parses contituent values, so use "top" as a proxy for all
             stroke: box.borderTopColor,
             lineWidth: box.borderTopWidth ?? 0,

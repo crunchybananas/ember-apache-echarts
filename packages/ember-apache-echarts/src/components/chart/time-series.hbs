@@ -10,7 +10,16 @@
   @categoryProperty={{coalesce @categoryProperty "at"}}
   @valueProperty={{@valueProperty}}
   @chartStyle={{@chartStyle}}
-  @chartTitleStyle={{coalesce @chartTitleStyle (hash marginLeft=80 marginBottom=8 marginTop=4 textAlign="left" font="bold 18px Montserrat,sans-serif")}}
+  @chartTitleStyle={{coalesce
+    @chartTitleStyle
+    (hash
+      marginLeft=80
+      marginBottom=8
+      marginTop=4
+      textAlign="left"
+      font="bold 18px Montserrat,sans-serif"
+    )
+  }}
   @maxColumns={{@maxColumns}}
   @orientation={{@orientation}}
   @colorMap={{@colorMap}}
@@ -35,7 +44,14 @@
   @yAxisPointerLabel={{@yAxisPointerLabel}}
   @xAxisPointerStyle={{@xAxisPointerStyle}}
   @yAxisPointerStyle={{@yAxisPointerStyle}}
-  @xAxisPointerLabelStyle={{coalesce @xAxisPointerLabelStyle (hash background="#fff" border="solid 1px #dbdbdb" marginBottom=8)}}
+  @xAxisPointerLabelStyle={{coalesce
+    @xAxisPointerLabelStyle
+    (hash
+      background="#fff"
+      border="solid 1px #dbdbdb"
+      marginBottom=8
+    )
+  }}
   @yAxisPointerLabelStyle={{@yAxisPointerLabelStyle}}
   @xAxisTooltip={{@xAxisTooltip}}
   @yAxisTooltip={{@yAxisTooltip}}
@@ -47,8 +63,23 @@
   @yAxisZoomStyle={{@yAxisZoomStyle}}
   @legend={{coalesce @legend "topLeft"}}
   @legendOrientation={{@legendOrientation}}
-  @legendStyle={{coalesce @legendStyle (hash margin=20 marginLeft=80 marginBottom=0 font="normal 12px Montserrat,sans-serif")}}
-  @drillUpButtonStyle={{coalesce @drillUpButtonStyle (hash color="#036E9B" marginTop=-3 fontFamily="Material Icons")}}
+  @legendStyle={{coalesce
+    @legendStyle
+    (hash
+      margin=20
+      marginLeft=80
+      marginBottom=0
+      font="normal 12px Montserrat,sans-serif"
+    )
+  }}
+  @drillUpButtonStyle={{coalesce
+    @drillUpButtonStyle
+    (hash
+      color="#036E9B"
+      marginTop=-3
+      fontFamily="Material Icons"
+    )
+  }}
   @drillUpButtonText={{coalesce @drillUpButtonText "chevron_left"}}
   @onSelect={{@onSelect}}
 >

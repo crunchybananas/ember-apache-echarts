@@ -64,7 +64,7 @@ const setItemColor = (colorMap, item, color) =>
  *
  * `variant`
  * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
- *   `stackedBar` or `stackedArea`
+ *   `groupedLine`, `stackedBar` or `stackedArea`
  *
  * `orientation`
  * : Which orientation to render the value axes: `vertical` (default) or
@@ -111,7 +111,9 @@ const setItemColor = (colorMap, item, color) =>
  *
  * `categoryAxisFormatter`, `valueAxisFormatter`
  * : Functions used to format the values for the category or value axis,
- *   respectively.
+ *   respectively. Passed the value to be formatted, the type of element the
+ *   value is being formatted for (`axis`, `itemTooltip`, `axisTooltip`) and for
+ *   axis elements, the index of the axis.
  *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
@@ -272,7 +274,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   isGroupedVariant(variant) {
-    return ['groupedBar'].includes(variant);
+    return ['groupedBar', 'groupedLine'].includes(variant);
   }
 
   isStackedVariant(variant) {

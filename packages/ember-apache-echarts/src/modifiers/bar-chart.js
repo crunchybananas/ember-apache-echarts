@@ -228,8 +228,7 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     return {
       ...styles,
-      plot: {
-      },
+      plot: {},
       xAxis: {
         font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'center',
@@ -299,7 +298,8 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the categories used within the data series in render order.
    */
   getCategories(args, series) {
-    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } = args;
+    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } =
+      args;
     const categories = getUniqueDatasetValues(series, categoryProperty);
 
     if (categoryAxisSort !== 'firstSeries') {
@@ -322,21 +322,25 @@ export default class BarChartModifier extends AbstractChartModifier {
    * formatter are defined, respectively.
    */
   formatTooltipParams(args, params, elementType) {
-    const { categoryAxisFormatter, valueAxisFormatter, missingDataFormat } = args;
+    const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { missingCategoryFormat, missingValueFormat } = args;
 
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
     return {
       ...params,
-      value: !params.value && missingValueFormat != null
-        ? missingValueFormat
-        : valueAxisFormatter
-          ? valueAxisFormatter(params.value, elementType)
-          : params.value,
-      category: !params.name && missingCategoryFormat != null
-        ? missingCategoryFormat
-        : categoryAxisFormatter
-          ? categoryAxisFormatter(params.name, elementType)
-          : params.name,
+      value:
+        !params.value && missingValueFormat != null
+          ? missingValueFormat
+          : valueAxisFormatter
+            ? valueAxisFormatter(params.value, elementType)
+            : params.value,
+      category:
+        !params.name && missingCategoryFormat != null
+          ? missingCategoryFormat
+          : categoryAxisFormatter
+            ? categoryAxisFormatter(params.name, elementType)
+            : params.name,
     };
   }
 
@@ -354,7 +358,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             formatter: (params) =>
               tooltipFormatter(
                 params.length != null
-                  ? params.map(param =>
+                  ? params.map((param) =>
                       this.formatTooltipParams(args, param, 'axisTooltip')
                     )
                   : this.formatTooltipParams(args, params, 'itemTooltip'),
@@ -644,7 +648,12 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? data.maxValue
         : computeStatistic(seriesData, 'max');
     const values = isGroupedOrStacked
-      ? getSeriesTotals(series.data, categories, categoryProperty, valueProperty)
+      ? getSeriesTotals(
+          series.data,
+          categories,
+          categoryProperty,
+          valueProperty
+        )
       : getSeriesData(series.data, categories, categoryProperty, valueProperty);
     // Not the real labels, but good enough for now for computing the metrics
     const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
@@ -717,7 +726,8 @@ export default class BarChartModifier extends AbstractChartModifier {
             : undefined,
       axisLabel: {
         ...(valueAxisFormatter && {
-          formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
+          formatter: (value, axisIndex) =>
+            valueAxisFormatter(value, 'axis', axisIndex),
         }),
         // margin between the axis label and the axis line
         margin: yAxisStyle.marginRight,
@@ -735,7 +745,8 @@ export default class BarChartModifier extends AbstractChartModifier {
       data: categories,
       axisLabel: {
         ...(categoryAxisFormatter && {
-          formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
+          formatter: (value, axisIndex) =>
+            categoryAxisFormatter(value, 'axis', axisIndex),
         }),
         // Determine how many categories are shown on the axis
         interval:
@@ -763,8 +774,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       x: layout.innerX + yAxisInfo.width - 1,
       y: layout.innerY + yAxisInfo.heightOverflow,
       width: xAxisInfo.width,
-      height:
-        layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
+      height: layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
     };
 
     return {
@@ -814,20 +824,22 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: getSeriesData(info.data, categories, categoryProperty).map((item) => ({
-              ...item,
-              ...setItemColor(colorMap, item, info.label),
-            })),
+            data: getSeriesData(info.data, categories, categoryProperty).map(
+              (item) => ({
+                ...item,
+                ...setItemColor(colorMap, item, info.label),
+              })
+            ),
             ...(isStackedVariant && {
               stack: 'total',
             }),
           })),
       ...((plotStyle.borderTopWidth || plotStyle.borderRightWidth) && {
         'graphic.elements': [
-          ...(plotStyle.borderRightWidth &&
-            // The right border for the grid, since ECharts doesn't provide a
-            // setting for it
-            [{
+          // The right border for the grid, since ECharts doesn't provide a
+          // setting for it
+          ...(plotStyle.borderRightWidth && [
+            {
               type: 'line',
               // NOTE: The adjustment here was eye-balled. Not sure why it's 2.
               left: gridInfo.x + gridInfo.width - 2,
@@ -842,12 +854,12 @@ export default class BarChartModifier extends AbstractChartModifier {
               silent: true,
               // render above the axis lines of the chart
               z: 10,
-            }]
-          ),
-          ...(plotStyle.borderTopWidth &&
-            // The right border for the grid, since ECharts doesn't provide a
-            // setting for it
-            [{
+            },
+          ]),
+          // The top border for the grid, since ECharts doesn't provide a
+          // setting for it
+          ...(plotStyle.borderTopWidth && [
+            {
               type: 'line',
               // NOTE: The adjustment here was eye-balled. Not sure why it's 2.5
               left: gridInfo.x - 2.5,
@@ -862,8 +874,8 @@ export default class BarChartModifier extends AbstractChartModifier {
               silent: true,
               // render above the axis lines of the chart
               z: 10,
-            }]
-          ),
+            },
+          ]),
         ],
       }),
     };

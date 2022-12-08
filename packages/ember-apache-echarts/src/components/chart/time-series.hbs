@@ -57,7 +57,7 @@
   @yAxisTooltip={{@yAxisTooltip}}
   @xAxisZoom={{coalesce @xAxisZoom "bottom"}}
   @yAxisZoom={{@yAxisZoom}}
-  @xAxisZoomBrush={{@xAxisZoomBrush}}
+  @xAxisZoomBrush={{coalesce @xAxisZoomBrush true}}
   @yAxisZoomBrush={{@yAxisZoomBrush}}
   @xAxisZoomStyle={{coalesce @xAxisZoomStyle (hash marginTop=0)}}
   @yAxisZoomStyle={{@yAxisZoomStyle}}

@@ -763,7 +763,6 @@ export default class AbstractChartModifier extends Modifier {
     return {
       type: 'slider',
       brushSelect,
-      fillerColor: style.backgroundColor,
       borderColor: style.borderTopColor,
       show: true,
       start: 0,

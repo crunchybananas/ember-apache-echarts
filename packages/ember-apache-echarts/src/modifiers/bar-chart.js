@@ -115,6 +115,12 @@ const setItemColor = (colorMap, item, color) =>
  *   value is being formatted for (`axis`, `itemTooltip`, `axisTooltip`) and for
  *   axis elements, the index of the axis.
  *
+ * `missingCategoryFormat`, `missingValueFormat`
+ * : The text to use when the category or value is missing, i.e., an empty
+ *   string, undefined or null. If not defined, then the category or value is
+ *   passed into either `categoryAxisFormatter` or `valueAxisFormatter`,
+ *   respectively, to be formatted
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -311,6 +317,29 @@ export default class BarChartModifier extends AbstractChartModifier {
     return categories;
   }
 
+  /**
+   * Formats the `name` and `value` within `params` when a category or value
+   * formatter are defined, respectively.
+   */
+  formatTooltipParams(args, params, elementType) {
+    const { categoryAxisFormatter, valueAxisFormatter, missingDataFormat } = args;
+    const { missingCategoryFormat, missingValueFormat } = args;
+
+    return {
+      ...params,
+      value: !params.value && missingValueFormat != null
+        ? missingValueFormat
+        : valueAxisFormatter
+          ? valueAxisFormatter(params.value, elementType)
+          : params.value,
+      category: !params.name && missingCategoryFormat != null
+        ? missingCategoryFormat
+        : categoryAxisFormatter
+          ? categoryAxisFormatter(params.name, elementType)
+          : params.name,
+    };
+  }
+
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { categoryAxisScale, tooltipFormatter, onSelect } = args;
@@ -323,7 +352,14 @@ export default class BarChartModifier extends AbstractChartModifier {
           trigger: 'item',
           ...(tooltipFormatter && {
             formatter: (params) =>
-              tooltipFormatter(params, context.data.dataset),
+              tooltipFormatter(
+                params.length != null
+                  ? params.map(param =>
+                      this.formatTooltipParams(args, param, 'axisTooltip')
+                    )
+                  : this.formatTooltipParams(args, params, 'itemTooltip'),
+                context.data.dataset
+              ),
           }),
         },
       },
@@ -681,7 +717,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             : undefined,
       axisLabel: {
         ...(valueAxisFormatter && {
-          formatter: valueAxisFormatter,
+          formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
         }),
         // margin between the axis label and the axis line
         margin: yAxisStyle.marginRight,
@@ -699,7 +735,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       data: categories,
       axisLabel: {
         ...(categoryAxisFormatter && {
-          formatter: categoryAxisFormatter,
+          formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
         }),
         // Determine how many categories are shown on the axis
         interval:

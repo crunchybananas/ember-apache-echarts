@@ -1,25 +1,62 @@
-<div {{did-insert this.setup}}>
-  <div
-    ...attributes
-    {{style width=(css-size @width "100%") height=(css-size @height 400)}}
-    {{time-series-chart this.args tooltipFormatter=this.tooltipFormatter}}
-  ></div>
+<Chart::Bar
+  @width={{@width}}
+  @height={{@height}}
+  @series={{coalesce @series @data}}
+  @variant={{coalesce @variant "groupedLine"}}
+  @title={{@title}}
+  @rotateData={{@rotateData}}
+  @missingValueFormat="--"
+  @missingCategoryFormat="???"
+  @categoryProperty={{coalesce @categoryProperty "at"}}
+  @valueProperty={{@valueProperty}}
+  @chartStyle={{@chartStyle}}
+  @chartTitleStyle={{coalesce @chartTitleStyle (hash marginLeft=80 marginBottom=8 marginTop=4 textAlign="left" font="bold 18px Montserrat,sans-serif")}}
+  @maxColumns={{@maxColumns}}
+  @orientation={{@orientation}}
+  @colorMap={{@colorMap}}
+  @cellStyle={{coalesce @cellStyle (hash marginBottom=0)}}
+  @cellTitleStyle={{@cellTitleStyle}}
+  @cellTextOverlayStyle={{@cellTextOverlayStyle}}
+  @plotStyle={{coalesce @plotStyle (hash border="solid 1px #dbdbdb")}}
+  @categoryAxisScale={{@categoryAxisScale}}
+  @valueAxisScale={{@valueAxisScale}}
+  @categoryAxisFormatter={{coalesce @categoryAxisFormatter @xAxisFormatter}}
+  @valueAxisFormatter={{coalesce @valueAxisFormatter @yAxisFormatter}}
+  @categoryAxisSort={{coalesce @categoryAxisSort "asc"}}
+  @categoryAxisMaxLabelCount={{coalesce @categoryAxisMaxLabelCount 20}}
+  @valueAxisMax={{@valueAxisMax}}
+  @xAxisFormatter={{@xAxisFormatter}}
+  @yAxisFormatter={{@yAxisFormatter}}
+  @xAxisStyle={{@xAxisStyle}}
+  @yAxisStyle={{@yAxisStyle}}
+  @xAxisPointer={{coalesce @xAxisPointer "line"}}
+  @yAxisPointer={{@yAxisPointer}}
+  @xAxisPointerLabel={{coalesce @xAxisPointerLabel "top"}}
+  @yAxisPointerLabel={{@yAxisPointerLabel}}
+  @xAxisPointerStyle={{@xAxisPointerStyle}}
+  @yAxisPointerStyle={{@yAxisPointerStyle}}
+  @xAxisPointerLabelStyle={{coalesce @xAxisPointerLabelStyle (hash background="#fff" border="solid 1px #dbdbdb" marginBottom=8)}}
+  @yAxisPointerLabelStyle={{@yAxisPointerLabelStyle}}
+  @xAxisTooltip={{@xAxisTooltip}}
+  @yAxisTooltip={{@yAxisTooltip}}
+  @xAxisZoom={{coalesce @xAxisZoom "bottom"}}
+  @yAxisZoom={{@yAxisZoom}}
+  @xAxisZoomBrush={{@xAxisZoomBrush}}
+  @yAxisZoomBrush={{@yAxisZoomBrush}}
+  @xAxisZoomStyle={{coalesce @xAxisZoomStyle (hash marginTop=0)}}
+  @yAxisZoomStyle={{@yAxisZoomStyle}}
+  @legend={{coalesce @legend "topLeft"}}
+  @legendOrientation={{@legendOrientation}}
+  @legendStyle={{coalesce @legendStyle (hash margin=20 marginLeft=80 marginBottom=0 font="normal 12px Montserrat,sans-serif")}}
+  @drillUpButtonStyle={{coalesce @drillUpButtonStyle (hash color="#036E9B" marginTop=-3 fontFamily="Material Icons")}}
+  @drillUpButtonText={{coalesce @drillUpButtonText "chevron_left"}}
+  @onSelect={{@onSelect}}
+>
+  <:itemTooltip as |item|>
+    {{yield item to="itemTooltip"}}
+  </:itemTooltip>
 
-  {{#if (has-block "itemTooltip")}}
-    <div
-      data-role="itemTooltip"
-      style={{html-safe (if this.tooltipItem "" "display: none")}}
-    >
-      {{yield this.tooltipItem to="itemTooltip"}}
-    </div>
-  {{/if}}
-
-  {{#if (has-block "axisTooltip")}}
-    <div
-      data-role="axisTooltip"
-      style={{html-safe (if this.tooltipItems "" "display: none")}}
-    >
-      {{yield this.tooltipItems this.tooltipAxis to="axisTooltip"}}
-    </div>
-  {{/if}}
-</div>
+  <:axisTooltip as |items|>
+    {{yield items to="axisTooltip"}}
+  </:axisTooltip>
+</Chart::Bar>

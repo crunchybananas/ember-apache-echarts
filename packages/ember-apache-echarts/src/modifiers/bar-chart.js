@@ -664,6 +664,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       selectedMode: 'single',
       // Allow the double-clicking on the area to be the same as if on the line
       triggerLineEvent: true,
+      z: 20,
     };
     const valueAxisConfig = {
       gridIndex,

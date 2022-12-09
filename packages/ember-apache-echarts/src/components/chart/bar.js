@@ -13,7 +13,12 @@ import { tracked } from '@glimmer/tracking';
  * : The label on the category axis for the item.
  *
  * `value`
- * : The value on the value axis for the item.
+ * : The value on the value axis for the item, formatted using the
+ *   `valueAxisFormatter` provided to the bar chart, if any.
+ *
+ * `category`
+ * : The category on the category axis for the item, formatted using the
+ *   `categoryAxisFormatter` provided to the bar chart, if any.
  *
  * `marker`
  * : Raw HTML that renders the marker used to identify the item on the chart.

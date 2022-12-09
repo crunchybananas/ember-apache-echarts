@@ -31,6 +31,17 @@ const setItemColor = (colorMap, item, color) =>
  *
  * ## Data
  *
+ * `data`
+ * : An array of data objects, where each data object has a category property
+ *   (e.g., `name`) and a value property (e.g., `value`).
+ *
+ * `series`
+ * : An array of data series, where each series has a label defined using the
+ *   `label` or `name` property, data contained in the `data` property (see
+ *   `data` argument above for the format) and an optional `series` property
+ *   which contains an array of drillable child series. When the `series`
+ *   argument is present, the `data` argument is ignored.
+ *
  * `rotateData`
  * : Rotates the data series so the "columns" become the "rows" and the "rows"
  *   become the "columns". For hierarchical series, the names/labels of each

@@ -26,8 +26,9 @@ export default function getSeriesTotals(
     transform(
       allData,
       (totals, item) => {
-        totals[item[categoryProperty]] =
-          (totals[item[categoryProperty]] ?? 0) + item[valueProperty];
+        totals[item?.[categoryProperty]] =
+          (totals[item?.[categoryProperty]] ?? 0) +
+          (item?.[valueProperty] ?? 0);
       },
       {}
     )

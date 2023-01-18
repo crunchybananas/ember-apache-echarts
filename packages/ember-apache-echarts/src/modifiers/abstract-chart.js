@@ -42,6 +42,16 @@ export default class AbstractChartModifier extends Modifier {
         textAlign: 'left',
         margin: 24,
       },
+      xAxisZoom: {
+        margin: 8,
+        border: 'solid 1px #ddd',
+        backgroundColor: '#e7efff',
+      },
+      yAxisZoom: {
+        margin: 8,
+        border: 'solid 1px #ddd',
+        backgroundColor: '#e7efff',
+      },
       cell: {
         padding: 8,
         margin: 8,
@@ -135,6 +145,7 @@ export default class AbstractChartModifier extends Modifier {
     context.layout = this.addChartBox(context, config);
     context.layout = this.addTitle(context, config);
     context.layout = this.addLegend(context, config);
+    context.layout = this.addDataZoom(context, config);
     context.layout = this.addCellBoxes(context, config);
     context.layout = this.addCellTitles(context, config);
     context.layout = this.addCellPlots(context, config);
@@ -286,6 +297,62 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   /**
+   * Adds the data zoom slider to `config` if defined in `args` and returns the
+   * new context.
+   */
+  addDataZoom(context, config) {
+    const { args, layout, styles } = context;
+    const { xAxisZoom, yAxisZoom } = args;
+
+    if (
+      (!xAxisZoom || xAxisZoom === 'none') &&
+      (!yAxisZoom || yAxisZoom === 'none')
+    ) {
+      return context.layout;
+    }
+
+    const xAxisZoomStyle = resolveStyle(styles.xAxisZoom, layout);
+    const yAxisZoomStyle = resolveStyle(styles.yAxisZoom, layout);
+
+    mergeAtPaths(config, [
+      this.generateXAxisDataZoomConfig(args, layout, xAxisZoomStyle),
+      this.generateYAxisDataZoomConfig(args, layout, yAxisZoomStyle),
+    ]);
+
+    const newLayout = { ...layout };
+    const { xAxisZoomBrush, yAxisZoomBrush } = args;
+
+    if (xAxisZoom) {
+      const sliderHeight = config.dataZoom[0].height ?? 30;
+      const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
+      const xAxisZoomHeight =
+        sliderHeight +
+        brushSelectHeight +
+        xAxisZoomStyle.marginTop +
+        xAxisZoomStyle.marginBottom;
+
+      newLayout.height = layout.height - xAxisZoomHeight;
+      newLayout.y = layout.y + (xAxisZoom === 'top' ? xAxisZoomHeight : 0);
+    }
+
+    if (yAxisZoom) {
+      const yAxisConfig = xAxisZoom ? config.dataZoom[1] : config.dataZoom[0];
+      const sliderWidth = yAxisConfig.height ?? 30;
+      const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
+      const yAxisZoomWidth =
+        sliderWidth +
+        brushSelectWidth +
+        yAxisZoomStyle.marginLeft +
+        yAxisZoomStyle.marginRight;
+
+      newLayout.width = layout.width - yAxisZoomWidth;
+      newLayout.x = layout.x + (yAxisZoom === 'left' ? yAxisZoomWidth : 0);
+    }
+
+    return newLayout;
+  }
+
+  /**
    * Add the border and background of the cells.
    */
   addCellBoxes(context, config) {
@@ -367,7 +434,7 @@ export default class AbstractChartModifier extends Modifier {
    */
   addCellTextOverlays(context, config) {
     if (!this.generateTextOverlayConfig) {
-      return;
+      return context.layout;
     }
 
     const style = resolveStyle(context.styles.cellTextOverlay, context.layout);
@@ -385,8 +452,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Returns the labels for the legend.
    */
-  getLegendLabels(series /*, args */) {
-    return getUniqueDatasetValues(series, 'name');
+  getLegendLabels(series, args) {
+    return getUniqueDatasetValues(series, args.categoryProperty ?? 'name');
   }
 
   /**
@@ -432,7 +499,7 @@ export default class AbstractChartModifier extends Modifier {
           style: {
             // `fill` can be missing, but cannot be not be `undefined` or the box
             // will render a few pixels to the right and down [twl 2.Jun.22]
-            fill: box.backgroundColor ?? '#fff',
+            fill: box.backgroundColor ?? '#fff0',
             // Safari only parses contituent values, so use "top" as a proxy for all
             stroke: box.borderTopColor,
             lineWidth: box.borderTopWidth ?? 0,
@@ -596,6 +663,111 @@ export default class AbstractChartModifier extends Modifier {
     });
 
     return config;
+  }
+
+  /**
+   * Generates the configuration for the control that allows a user to zoom in
+   * and out of the data.
+   */
+  generateXAxisDataZoomConfig(args, layout, style) {
+    const { xAxisZoom, xAxisZoomBrush } = args;
+
+    if (!xAxisZoom) {
+      return undefined;
+    }
+
+    const config = this.generateDataZoomConfigElement(style, xAxisZoomBrush);
+    const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
+
+    if (xAxisZoom === 'top') {
+      config.top = layout.y + style.marginTop + style.borderTopWidth / 2;
+    } else {
+      config.bottom =
+        layout.chartHeight -
+        layout.height -
+        layout.y +
+        brushSelectHeight +
+        style.marginBottom +
+        style.borderBottomWidth / 2;
+    }
+
+    return {
+      dataZoom: [
+        {
+          ...config,
+          xAxisIndex: [0, 1],
+        },
+        // TODO: Add support for mouse zooming by adding this in. When we do
+        //       this, the index in `addDataZoom` for the Y axis will need to
+        //       be changed. Also, we should have a way to disable it or turn it
+        //       on explicitly, since it can be jerky on some charts (which is
+        //       why I'm not implementing it now). [twl 16.Nov.22]
+        // {
+        //   type: 'inside',
+        //   start: 0,
+        //   end: 100,
+        //   xAxisIndex: [0, 1],
+        // },
+      ],
+    };
+  }
+
+  /**
+   * Generates the configuration for the control that allows a user to zoom in
+   * and out of the data.
+   */
+  generateYAxisDataZoomConfig(args, layout, style) {
+    const { yAxisZoom, yAxisZoomBrush } = args;
+
+    if (!yAxisZoom) {
+      return undefined;
+    }
+
+    const config = this.generateDataZoomConfigElement(style, yAxisZoomBrush);
+    const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
+
+    if (yAxisZoom === 'left') {
+      config.left = layout.x + style.marginLeft + style.borderLeftWidth / 2;
+    } else {
+      config.right =
+        layout.chartWidth -
+        layout.width -
+        layout.x +
+        brushSelectWidth +
+        style.marginRight +
+        style.borderRightWidth / 2;
+    }
+
+    return {
+      dataZoom: [
+        {
+          ...config,
+          yAxisIndex: [0, 1],
+        },
+        // TODO: See the note in `generateXAxisDataZoomConfig` [twl 16.Nov.22]
+        // {
+        //   type: 'inside',
+        //   start: 0,
+        //   end: 100,
+        //   yAxisIndex: [0, 1],
+        // },
+      ],
+    };
+  }
+
+  /**
+   * Generates the base configuration for a single element in the `dataZoom`
+   * configuration.
+   */
+  generateDataZoomConfigElement(style, brushSelect) {
+    return {
+      type: 'slider',
+      brushSelect,
+      borderColor: style.borderTopColor,
+      show: true,
+      start: 0,
+      end: 100,
+    };
   }
 
   /**

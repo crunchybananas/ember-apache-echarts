@@ -3,12 +3,12 @@ import Component from '@glimmer/component';
 export default class ChartBarExample extends Component {
   chartData = [
     {
-      name: 'sent',
-      value: 2,
-    },
-    {
       name: 'draft',
       value: 1,
+    },
+    {
+      name: 'sent',
+      value: 2,
     },
     {
       name: 'rejected',
@@ -21,12 +21,12 @@ export default class ChartBarExample extends Component {
       label: 'Today',
       data: [
         {
-          name: 'sent',
-          value: 2,
-        },
-        {
           name: 'draft',
           value: 1,
+        },
+        {
+          name: 'sent',
+          value: 2,
         },
         {
           name: 'rejected',
@@ -38,12 +38,12 @@ export default class ChartBarExample extends Component {
       label: 'Yesterday',
       data: [
         {
-          name: 'sent',
-          value: 4,
-        },
-        {
           name: 'draft',
           value: 2,
+        },
+        {
+          name: 'sent',
+          value: 4,
         },
         {
           name: 'rejected',
@@ -55,12 +55,12 @@ export default class ChartBarExample extends Component {
       label: 'Last Week',
       data: [
         {
-          name: 'sent',
-          value: 42,
-        },
-        {
           name: 'draft',
           value: 5,
+        },
+        {
+          name: 'sent',
+          value: 42,
         },
         {
           name: 'rejected',

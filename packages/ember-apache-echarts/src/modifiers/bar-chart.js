@@ -1,3 +1,6 @@
+import { tracked } from '@glimmer/tracking';
+import countBy from 'lodash/countBy';
+import mergeAtPaths from '../utils/merge-at-paths';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
@@ -26,6 +29,36 @@ const setItemColor = (colorMap, item, color) =>
  *
  * # Arguments
  *
+ * ## Data
+ *
+ * `data`
+ * : An array of data objects, where each data object has a category property
+ *   (e.g., `name`) and a value property (e.g., `value`).
+ *
+ * `series`
+ * : An array of data series, where each series has a label defined using the
+ *   `label` or `name` property, data contained in the `data` property (see
+ *   `data` argument above for the format) and an optional `series` property
+ *   which contains an array of drillable child series. When the `series`
+ *   argument is present, the `data` argument is ignored.
+ *
+ * `rotateData`
+ * : Rotates the data series so the "columns" become the "rows" and the "rows"
+ *   become the "columns". For hierarchical series, the names/labels of each
+ *   data item within each series will each become their own series, while the
+ *   original series labels are used to label the values.
+ *
+ * `categoryProperty`
+ * : The name of the property within the data to use as the category for each
+ *   data point.
+ *
+ * `valueProperty`
+ * : The name of the property within the data to use as the value for each data
+ *   point.
+ *
+ *
+ * ## Chart Layout
+ *
  * `chartStyle`
  * : CSS properties for the entire chart including background color, border,
  *   margins and padding.
@@ -34,9 +67,23 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties for the title for the entire chart including color, font,
  *   background color, border and alignment.
  *
- * `legendStyle`
- * : CSS properties for the chart legend including color, font, background
- *   color, border and alignment.
+ * `maxColumns`
+ * : The maximum number of columns to render when rendering more than one series
+ *
+ *
+ *  ## Plots
+ *
+ * `variant`
+ * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
+ *   `groupedLine`, `stackedBar` or `stackedArea`
+ *
+ * `orientation`
+ * : Which orientation to render the value axes: `vertical` (default) or
+ *   `horizontal`
+ *
+ * `colorMap`
+ * : A hash that maps series names to the colors to use for the data items in
+ *   those series
  *
  * `cellStyle`
  * : CSS properties defining the style for individual plots when rendering more
@@ -46,6 +93,45 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for the titles for individual plots when
  *   rendering more than one series
  *
+ * `plotStyle`
+ * : CSS properties defining the style of the plot (area defined by the axes)
+ *
+ *
+ * ## Axes
+ *
+ * `categoryAxisScale`, `valueAxisScale`
+ * : Whether to use a shared axis for all plots that accounts for the data
+ *   across all series, or use a separate axis for each plot that only uses
+ *   that plot's data. Valid values are: `shared`, `separate` (default)
+ *
+ * `categoryAxisSort`
+ * : How to sort the labels on the category axis: `firstSeries` (default),
+ *   `asc`, `desc` or a custom sort function. By default, the sort order of the
+ *   labels for the data in the first series is used.
+ *
+ * `categoryAxisMaxLabelCount`
+ * : The maximum number of categories to show on the category axis. The number
+ *   of actual labels rendered may be lower than this; this merely sets the
+ *   maximum number so labels are not too thin.
+ *
+ * `valueAxisMax`
+ * : The maximum value of the value axis. Valid values are: a specific number,
+ *   `dataMax` or `dataMaxRoundedUp` (default). `dataMaxRoundedUp` is only
+ *   supported when `valueAxisScale` is `separate` and rounds the data maximum
+ *   up so the axis ticks are evenly distributed on the value axis.
+ *
+ * `categoryAxisFormatter`, `valueAxisFormatter`
+ * : Functions used to format the values for the category or value axis,
+ *   respectively. Passed the value to be formatted, the type of element the
+ *   value is being formatted for (`axis`, `itemTooltip`, `axisTooltip`) and for
+ *   axis elements, the index of the axis.
+ *
+ * `missingCategoryFormat`, `missingValueFormat`
+ * : The text to use when the category or value is missing, i.e., an empty
+ *   string, undefined or null. If not defined, then the category or value is
+ *   passed into either `categoryAxisFormatter` or `valueAxisFormatter`,
+ *   respectively, to be formatted
+ *
  * `xAxisStyle`
  * : CSS properties defining the style for horizontal X axis, regardless of the
  *   value of `orientation`
@@ -54,27 +140,35 @@ const setItemColor = (colorMap, item, color) =>
  * : CSS properties defining the style for vertical Y axis, regardless of the
  *   value of `orientation`
  *
- * `maxColumns`
- * : The maximum number of columns to render when rendering more than one series
+ * `xAxisPointer`, `yAxisPointer`
+ * : The style to use for an axis pointer: `line`, `shadow`, `none` (default)
  *
- * `categoryAxisScale`, `valueAxisScale`
- * : Whether to use a shared axis for all plots that accounts for the data
- *   across all series, or use a separate axis for each plot that only uses
- *   that plot's data. Valid values are: `shared`, `separate`
+ * `xAxisPointerLabel`
+ * : Whether and where to display the label for the X axis pointer:
+ *   `bottom` (default), `top`, `none`
  *
- * `onSelect`
- * : Called when an element on a chart is selected
+ * `yAxisPointerLabel`
+ * : Whether and where to display the label for the Y axis pointer:
+ *   `left` (default), `right`, `none`
  *
- * `tooltipFormatter`
- * : The function used to generate the tool tip
+ * `xAxisPointerStyle`, `yAxisPointerStyle`
+ * : CSS properties defining the style of an axis pointer including border &
+ *   opacity if using `line` as the pointer or background color & opacity if
+ *   using `shadow` as the pointer.
  *
- * `variant`
- * : Which style chart to render: `bar`, `line`, `area`, `groupedBar`,
- *   `stackedBar` or `stackedArea`
+ * `xAxisPointerLabelStyle`, `yAxisPointerLabelStyle`
+ * : CSS properties defining the style of an axis pointer label.
  *
- * `orientation`
- * : Which orientation to render the value axes: `vertical` (default) or
- *   `horizontal`
+ * `xAxisTooltip`
+ * : Whether the tooltip for the X axis should be shown near the pointer when
+ *   it's active. Defaults to `true`
+ *
+ * `yAxisTooltip`
+ * : Whether the tooltip for the Y axis should be shown near the pointer when
+ *   it's active. Defaults to `false`
+ *
+ *
+ * ## Legend
  *
  * `legend`
  * : Whether and where to display a legend: `none`, `top`, `bottom`, `left`,
@@ -87,16 +181,65 @@ const setItemColor = (colorMap, item, color) =>
  *   on the top or bottom of the chart, and vertically when positioned on the
  *   left or right of the chart
  *
- * `colorMap`
- * : A hash that maps series names to the colors to use for the data items in
- *   those series
+ * `legendStyle`
+ * : CSS properties for the chart legend including color, font, background
+ *   color, border and alignment.
+ *
+ *
+ * ## Data Zoom
+ *
+ * `xAxisZoom`
+ * : Whether and where to display a data zoom control for the X axis: `top`,
+ *   `bottom`, `none` (default)
+ *
+ * `xAxisZoomBrush`
+ * : Whether to enable brush select for the X axis data zoom control. Defaults
+ *   to `false`
+ *
+ * `xAxisStyle`
+ * : CSS properties defining the style for the the X axis data zoom control
+ *
+ * `yAxisZoom`
+ * : Whether and where to display a data zoom control for the Y axis: `top`,
+ *   `bottom`, `none` (default)
+ *
+ * `yAxisZoomBrush`
+ * : Whether to enable brush select for the Y axis data zoom control. Defaults
+ *   to `false`
+ *
+ * `yAxisStyle`
+ * : CSS properties defining the style for the the Y axis data zoom control
+ *
+ *
+ * ## Data Drilling
+ *
+ * `drillUpButtonStyle`
+ * : CSS properties defining the style of the drill up button
+ *
+ * `drillUpButtonText`
+ * : The text of the drill up button. Defaults to `<`.
+ *
+ *
+ * ## Tooltips
+ *
+ * `tooltipFormatter`
+ * : The function used to generate the tool tip
+ *
+ *
+ * ## Events
+ *
+ * `onSelect`
+ * : Called when an element on a chart is selected
  */
 export default class BarChartModifier extends AbstractChartModifier {
+  @tracked drillPath = [];
+
   get defaultStyles() {
     const styles = super.defaultStyles;
 
     return {
       ...styles,
+      plot: {},
       xAxis: {
         font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'center',
@@ -109,11 +252,45 @@ export default class BarChartModifier extends AbstractChartModifier {
         // Y axis can sometimes be off a few pixels
         margin: 8,
       },
+      xAxisPointer: {
+        border: 'dashed 1px #555',
+        backgroundColor: '#ccc',
+        opacity: '0.5',
+      },
+      yAxisPointer: {
+        border: 'dashed 1px #555',
+        backgroundColor: '#ccc',
+        opacity: '0.5',
+      },
+      xAxisPointerLabel: {
+        color: '#000',
+        font: 'normal 12px Montserrat,sans-serif',
+        backgroundColor: '#eee',
+        border: 'solid 1px #999',
+        borderRadius: 0,
+        padding: 4,
+        margin: 4,
+      },
+      yAxisPointerLabel: {
+        color: '#000',
+        font: 'normal 12px Montserrat,sans-serif',
+        backgroundColor: '#eee',
+        border: 'solid 1px #999',
+        borderRadius: 0,
+        padding: 4,
+        marginRight: 4,
+      },
+      drillUpButton: {
+        margin: 0,
+        color: '#000',
+        font: 'normal 22px Montserrat,sans-serif',
+        marginRight: 10,
+      },
     };
   }
 
   isGroupedVariant(variant) {
-    return ['groupedBar'].includes(variant);
+    return ['groupedBar', 'groupedLine'].includes(variant);
   }
 
   isStackedVariant(variant) {
@@ -128,17 +305,83 @@ export default class BarChartModifier extends AbstractChartModifier {
     return ['area', 'stackedArea'].includes(variant);
   }
 
+  /**
+   * Returns the categories used within the data series in render order.
+   */
+  getCategories(args, series) {
+    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } =
+      args;
+    const categories = getUniqueDatasetValues(series, categoryProperty);
+
+    if (categoryAxisSort !== 'firstSeries') {
+      if (categoryAxisSort === 'asc') {
+        categories.sort();
+      } else if (categoryAxisSort === 'desc') {
+        categories.sort().reverse();
+      } else if (typeof categoryAxisSort === 'function') {
+        categories.sort(categoryAxisSort);
+      } else {
+        console.warn(`Invalid 'categoryAxisSort' value: ${categoryAxisSort}`);
+      }
+    }
+
+    return categories;
+  }
+
+  /**
+   * Formats the `name` and `value` within `params` when a category or value
+   * formatter are defined, respectively.
+   */
+  formatTooltipParams(args, params, elementType) {
+    const { categoryAxisFormatter, valueAxisFormatter } = args;
+    const { missingCategoryFormat, missingValueFormat } = args;
+
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
+    return {
+      ...params,
+      value:
+        !params.value && missingValueFormat != null
+          ? missingValueFormat
+          : valueAxisFormatter
+            ? valueAxisFormatter(params.value, elementType)
+            : params.value,
+      category:
+        !params.name && missingCategoryFormat != null
+          ? missingCategoryFormat
+          : categoryAxisFormatter
+            ? categoryAxisFormatter(params.name, elementType)
+            : params.name,
+    };
+  }
+
   configureChart(args, chart) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { categoryAxisScale, tooltipFormatter, onSelect } = args;
     const { config, context } = this.buildLayout(args, chart);
 
-    chart.setOption({
-      ...config,
-      tooltip: {
-        formatter: tooltipFormatter,
+    chart.setOption(
+      {
+        ...config,
+        tooltip: {
+          trigger: 'item',
+          ...(tooltipFormatter && {
+            formatter: (params) =>
+              tooltipFormatter(
+                params.length != null
+                  ? params.map((param) =>
+                      this.formatTooltipParams(args, param, 'axisTooltip')
+                    )
+                  : this.formatTooltipParams(args, params, 'itemTooltip'),
+                context.data.dataset
+              ),
+          }),
+        },
       },
-    });
+      {
+        notMerge: true,
+      }
+    );
 
     chart.handle('selectchanged', (event) => {
       const { fromAction, fromActionPayload, isFromClick } = event;
@@ -157,7 +400,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-          ? series.data[dataIndex].name
+          ? series.data[dataIndex][args.categoryProperty ?? 'name']
           : null;
 
       if (name) {
@@ -169,6 +412,30 @@ export default class BarChartModifier extends AbstractChartModifier {
 
       onSelect && onSelect(fromAction === 'select' ? name : null);
     });
+
+    // Change the default behavior of how selections work on the legend
+    chart.handle('legendselectchanged', ({ name, selected }) => {
+      const selections = Object.values(selected);
+      const counts = countBy(selections);
+
+      // If the only one selected is the one that just changed, or if nothing is
+      // selected, then invert the selection
+      if (
+        (counts.false === 1 && selected[name] === false) ||
+        counts.false === selections.length
+      ) {
+        chart.dispatchAction({
+          type: 'legendInverseSelect',
+        });
+      }
+    });
+
+    // Handle the drill in action
+    chart.handle('dblclick', ({ seriesIndex }) => {
+      if (context.data.dataset[seriesIndex].series) {
+        this.drillPath.pushObject(seriesIndex);
+      }
+    });
   }
 
   /**
@@ -176,23 +443,170 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
-    const { categoryAxisScale, valueAxisScale } = args;
+    const { rotateData, categoryAxisScale, valueAxisScale } = args;
+    const { categoryProperty = 'name', valueProperty = 'value' } = args;
+    const seriesData = rotateData
+      ? rotateDataSeries(context.series, categoryProperty, valueProperty)
+      : context.series;
+    const { series, title } = this.drillPath.reduce(
+      ({ series }, pathIndex) => ({
+        series: series[pathIndex].series,
+        title: series[pathIndex].label,
+      }),
+      { series: seriesData, title: args.title }
+    );
 
     return {
       ...context,
       ...(categoryAxisScale === 'shared' && {
-        categories: getUniqueDatasetValues(context.series, 'name'),
+        categories: this.getCategories(args, context.series),
       }),
       ...(valueAxisScale === 'shared' && {
         maxValue: computeStatistic(context.series, 'max'),
       }),
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
-      series: this.isStackedVariant(args.variant)
-        ? [{ data: rotateDataSeries(context.series, 'name', 'value') }]
-        : this.isGroupedVariant(args.variant)
-        ? [{ data: context.series }]
-        : context.series,
+      series:
+        this.isStackedVariant(args.variant) ||
+        this.isGroupedVariant(args.variant)
+          ? [{ data: series }]
+          : series,
+      dataset: series,
+      title,
+    };
+  }
+
+  /**
+   * Adds the title to `config` as defined in the data or by `args` and returns
+   * the new context layout.
+   */
+  addTitle(context, config) {
+    const buttonLayout = this.addDrillUpButton(context, config);
+    const buttonWidth = context.layout.width - buttonLayout.width;
+    const buttonHeight = context.layout.height - buttonLayout.height;
+
+    const titleLayout = super.addTitle(
+      {
+        ...context,
+        args: {
+          ...context.args,
+          title: context.data.title ?? context.args.title,
+        },
+      },
+      config
+    );
+
+    if (config.title?.[0]) {
+      const titleHeight = context.layout.height - titleLayout.height;
+
+      if (buttonHeight > titleHeight) {
+        const heightDifference = buttonHeight - titleHeight;
+
+        titleLayout.height -= heightDifference;
+        titleLayout.y += heightDifference;
+
+        // Center the title within the height of the button
+        config.title[0].top = config.title[0].top / 2 + heightDifference / 2;
+      }
+
+      config.title[0].left += buttonWidth;
+    }
+
+    return titleLayout;
+  }
+
+  /**
+   * Adds the drill up button to `config` and returns the new context layout.
+   */
+  addDrillUpButton(context, config) {
+    if (!this.drillPath.length) {
+      return context.layout;
+    }
+
+    const { layout, args, styles } = context;
+    const { drillUpButtonText = '<' } = args;
+    const style = resolveStyle(styles.drillUpButton, layout);
+    const titleStyle = resolveStyle(styles.chartTitle, layout);
+    const xMargins = style.marginLeft + style.marginRight;
+    const yMargins = style.marginTop + style.marginBottom;
+
+    // Ensure the button aligns with where the title is positioned
+    style.marginTop += titleStyle.marginTop;
+    style.marginLeft += titleStyle.marginLeft;
+
+    const buttonConfig = this.generateDrillUpButtonConfig(
+      drillUpButtonText,
+      layout,
+      style
+    );
+
+    mergeAtPaths(config, [buttonConfig]);
+
+    const buttonBox = buttonConfig['graphic.elements'][0].children[0].shape;
+
+    return {
+      ...layout,
+      width: layout.width - buttonBox.width - xMargins,
+      height: layout.height - buttonBox.height - yMargins,
+      x: layout.x + buttonBox.width + xMargins,
+      y: layout.y + buttonBox.height + yMargins,
+    };
+  }
+
+  /**
+   * Generates the configuration for the drill up button.
+   */
+  generateDrillUpButtonConfig(text, layout, style) {
+    const textMetrics = computeTextMetrics(text, style);
+
+    return {
+      'graphic.elements': [
+        {
+          type: 'group',
+          left: style.marginLeft,
+          top: style.marginTop,
+          children: [
+            // NOTE: This element is referenced by path in `addDrillUpButton`
+            {
+              type: 'rect',
+              shape: {
+                width:
+                  textMetrics.width + style.paddingLeft + style.paddingRight,
+                height:
+                  textMetrics.fontHeight +
+                  style.paddingTop +
+                  style.paddingBottom,
+                r: [
+                  style.borderTopLeftRadius ?? 0,
+                  style.borderTopRightRadius ?? 0,
+                  style.borderBottomRightRadius ?? 0,
+                  style.borderBottomLeftRadius ?? 0,
+                ],
+              },
+              style: {
+                stroke: style.borderColor ?? '#fff',
+                fill: style.backgroundColor ?? '#fff',
+              },
+            },
+            {
+              type: 'text',
+              x: style.paddingLeft,
+              y: style.paddingTop,
+              style: {
+                fill: style.color,
+                text,
+                font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
+              },
+              textConfig: {
+                distance: 0,
+                inside: true,
+                position: [10, 0],
+              },
+            },
+          ],
+          onclick: () => this.drillPath.popObject(),
+        },
+      ],
     };
   }
 
@@ -216,70 +630,69 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText, categoryAxisScale, valueAxisScale } = args;
+    const { noDataText } = args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
     }
 
-    const isHorizontal = args.orientation === 'horizontal';
-    const isBarVariant = this.isBarVariant(args.variant);
-    const isAreaVariant = this.isAreaVariant(args.variant);
-    const isStackedVariant = this.isStackedVariant(args.variant);
+    const { variant, orientation, colorMap } = args;
+    const { categoryProperty = 'name', valueProperty = 'value' } = args;
+    const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
+    const { categoryAxisFormatter, valueAxisFormatter } = args;
+    const { valueAxisScale, valueAxisMax } = args;
+    const isHorizontal = orientation === 'horizontal';
+    const isBarVariant = this.isBarVariant(variant);
+    const isAreaVariant = this.isAreaVariant(variant);
+    const isStackedVariant = this.isStackedVariant(variant);
     const isGroupedOrStacked =
-      this.isGroupedVariant(args.variant) || isStackedVariant;
+      this.isGroupedVariant(variant) || isStackedVariant;
     const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
     const categories =
       categoryAxisScale === 'shared'
         ? data.categories
-        : getUniqueDatasetValues(seriesData, 'name');
+        : this.getCategories(args, seriesData);
     const maxValue =
       valueAxisScale === 'shared'
         ? data.maxValue
         : computeStatistic(seriesData, 'max');
     const values = isGroupedOrStacked
-      ? getSeriesTotals(series.data, categories, 'name', 'value')
-      : getSeriesData(series.data, categories, 'name', 'value');
+      ? getSeriesTotals(
+          series.data,
+          categories,
+          categoryProperty,
+          valueProperty
+        )
+      : getSeriesData(series.data, categories, categoryProperty, valueProperty);
+    // Not the real labels, but good enough for now for computing the metrics
     const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
 
     // Configure the Y axis
-    // Not the real labels, but good enough for now for computing the metrics
+    const yAxisConfig = {};
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
-    const yAxisLabels = isHorizontal ? categories : valueTexts;
-    const yAxisMetrics = computeMaxTextMetrics(yAxisLabels, yAxisStyle);
-    const yAxisWidth =
-      yAxisMetrics.width + yAxisStyle.marginLeft + yAxisStyle.marginRight;
+    const yAxisInfo = this.computeYAxisInfo(
+      yAxisStyle,
+      isHorizontal ? categories : valueTexts,
+      maxValue
+    );
 
-    // Only applies when the very top label is rendered; for now, assuming it's
-    // always there, since I don't know how to determine this on the fly
-    const yAxisTopLabelMetrics = computeTextMetrics(`${maxValue}`, yAxisStyle);
-    const yAxisOverflow = yAxisTopLabelMetrics.height / 2;
-
-    // Configure the plot
-    const gridWidth =
-      layout.innerWidth -
-      yAxisWidth -
-      layout.borderLeftWidth -
-      layout.borderRightWidth;
+    layout = this.addAxisPointer(context, layout, yAxisConfig, yAxisInfo, 'y');
 
     // Configure the X axis
+    const xAxisConfig = {};
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
-    const xAxisLineWidth = isHorizontal ? 0 : 1;
-    // 10 is arbitrary number here, since we don't know how many divisions the
-    // chart will create if the X axis is a value axis
-    const xAxisLabelWidth = gridWidth / (isHorizontal ? 10 : categories.length);
-    const xAxisMetrics = computeMaxTextMetrics(
-      isHorizontal ? valueTexts : categories,
+    const xAxisInfo = this.computeXAxisInfo(
+      args,
+      layout,
       xAxisStyle,
-      xAxisLabelWidth
+      isHorizontal ? valueTexts : categories,
+      yAxisInfo,
+      isHorizontal
     );
-    const xAxisHeight =
-      xAxisMetrics.height +
-      xAxisStyle.marginTop +
-      xAxisStyle.marginBottom +
-      xAxisLineWidth;
+
+    layout = this.addAxisPointer(context, layout, xAxisConfig, xAxisInfo, 'x');
 
     // Setup base configurations
     const seriesBaseConfig = {
@@ -305,61 +718,115 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       // if this is changed, update the select handler in `configureChart`
       selectedMode: 'single',
+      // Allow the double-clicking on the area to be the same as if on the line
+      triggerLineEvent: true,
+      z: 20,
     };
-    const valueAxisConfig = [
-      {
-        gridIndex,
-        type: 'value',
-        max: valueAxisScale === 'shared' ? data.maxValue : 'dataMax',
-        axisLabel: {
-          // margin between the axis label and the axis line
-          margin: yAxisStyle.marginRight,
-          ...this.generateAxisLabelConfig(
-            layout,
-            isHorizontal ? xAxisStyle : yAxisStyle
-          ),
-        },
+    const valueAxisConfig = {
+      gridIndex,
+      type: 'value',
+      max:
+        // prettier not formatting nested ternaries properly, so turn it off
+        // prettier-ignore
+        valueAxisScale === 'shared'
+          ? valueAxisMax && valueAxisMax !== 'dataMax'
+            ? valueAxisMax
+            : data.maxValue
+          : valueAxisMax !== 'dataMaxRoundedUp'
+            ? valueAxisMax
+            : undefined,
+      axisLabel: {
+        ...(valueAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            valueAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // margin between the axis label and the axis line
+        margin: yAxisStyle.marginRight,
+        ...this.generateAxisLabelConfig(
+          layout,
+          isHorizontal ? xAxisStyle : yAxisStyle
+        ),
       },
-    ];
-    const categoryAxisConfig = [
-      {
-        gridIndex,
-        type: 'category',
-        data: categories,
-        axisLabel: {
-          // Ensure every category is shown on the axis
-          interval: 0,
-          ...(!isHorizontal && {
-            overflow: 'break',
-          }),
-          width: xAxisLabelWidth,
-          // margin between the axis label and the axis line
-          margin: xAxisStyle.marginTop,
-          ...this.generateAxisLabelConfig(
-            layout,
-            isHorizontal ? yAxisStyle : xAxisStyle
-          ),
-        },
+    };
+    const categoryAxisConfig = {
+      gridIndex,
+      type: 'category',
+      // Render labels top-to-bottom when using horizontal orientation
+      inverse: isHorizontal,
+      data: categories,
+      axisLabel: {
+        ...(categoryAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            categoryAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // Determine how many categories are shown on the axis
+        interval:
+          categoryAxisMaxLabelCount &&
+          categories.length > categoryAxisMaxLabelCount
+            ? Math.ceil(categories.length / categoryAxisMaxLabelCount) - 1
+            : 0,
+        ...(!isHorizontal && {
+          overflow: 'break',
+        }),
+        width: xAxisInfo.maxLabelWidth,
+        // margin between the axis label and the axis line
+        margin: xAxisStyle.marginTop,
+        ...this.generateAxisLabelConfig(
+          layout,
+          isHorizontal ? yAxisStyle : xAxisStyle
+        ),
       },
-    ];
+    };
+
+    // Configure final grid style
+    const plotStyle = resolveStyle(styles.plot, context.layout);
+    const gridInfo = {
+      // Not sure why the 1px adjustment is needed to `x`, but it is
+      x: layout.innerX + yAxisInfo.width - 1,
+      y: layout.innerY + yAxisInfo.heightOverflow,
+      width: xAxisInfo.width,
+      height: layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
+    };
 
     return {
-      grid: [
+      grid: [gridInfo],
+      yAxis: [
         {
-          // Not sure why the 1px adjustment is needed to `x`, but it is
-          x: layout.innerX + yAxisWidth - 1,
-          y: layout.innerY + yAxisOverflow,
-          width: gridWidth,
-          height: layout.innerHeight - xAxisHeight - yAxisOverflow,
+          ...yAxisConfig,
+          ...(isHorizontal ? categoryAxisConfig : valueAxisConfig),
+          ...(plotStyle.borderLeftWidth && {
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: plotStyle.borderLeftColor,
+                width: plotStyle.borderLeftWidth,
+                style: plotStyle.borderLeftStyle,
+              },
+            },
+          }),
         },
       ],
-      yAxis: isHorizontal ? categoryAxisConfig : valueAxisConfig,
-      xAxis: isHorizontal ? valueAxisConfig : categoryAxisConfig,
+      xAxis: [
+        {
+          ...xAxisConfig,
+          ...(isHorizontal ? valueAxisConfig : categoryAxisConfig),
+          ...(plotStyle.borderBottomWidth && {
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: plotStyle.borderBottomColor,
+                width: plotStyle.borderBottomWidth,
+                style: plotStyle.borderBottomStyle,
+              },
+            },
+          }),
+        },
+      ],
       series: !isGroupedOrStacked
         ? [
             {
               ...seriesBaseConfig,
-              data: values,
+              data: getSeriesData(series.data, categories, categoryProperty),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),
@@ -368,14 +835,60 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: info.data.map((item) => ({
-              ...item,
-              ...setItemColor(args.colorMap, item, info.label),
-            })),
+            data: getSeriesData(info.data, categories, categoryProperty).map(
+              (item) => ({
+                ...item,
+                ...setItemColor(colorMap, item, info.label),
+              })
+            ),
             ...(isStackedVariant && {
               stack: 'total',
             }),
           })),
+      ...((plotStyle.borderTopWidth || plotStyle.borderRightWidth) && {
+        'graphic.elements': [
+          // The right border for the grid, since ECharts doesn't provide a
+          // setting for it
+          ...(plotStyle.borderRightWidth && [
+            {
+              type: 'line',
+              // NOTE: The adjustment here was eye-balled. Not sure why it's 2.
+              left: gridInfo.x + gridInfo.width - 2,
+              top: gridInfo.y - 3,
+              shape: {
+                y2: gridInfo.height + 1,
+              },
+              style: {
+                stroke: plotStyle.borderRightColor,
+                lineWidth: plotStyle.borderRightWidth,
+              },
+              silent: true,
+              // render above the axis lines of the chart
+              z: 10,
+            },
+          ]),
+          // The top border for the grid, since ECharts doesn't provide a
+          // setting for it
+          ...(plotStyle.borderTopWidth && [
+            {
+              type: 'line',
+              // NOTE: The adjustment here was eye-balled. Not sure why it's 2.5
+              left: gridInfo.x - 2.5,
+              top: gridInfo.y - 2.5,
+              shape: {
+                x2: gridInfo.width,
+              },
+              style: {
+                stroke: plotStyle.borderTopColor,
+                lineWidth: plotStyle.borderTopWidth,
+              },
+              silent: true,
+              // render above the axis lines of the chart
+              z: 10,
+            },
+          ]),
+        ],
+      }),
     };
   }
 
@@ -407,6 +920,127 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
+   * Adds the configuration for the axis pointer for the `axis` to `config` and
+   * returns an updated `layout`.
+   */
+  addAxisPointer(context, layout, config, axisInfo, axis) {
+    const { args, styles } = context;
+    const name = `${axis}AxisPointer`;
+    const type = args[name];
+
+    if (!type || type === 'none') {
+      return layout;
+    }
+
+    const pointerStyle = resolveStyle(styles[name], context.layout);
+    const labelStyle = resolveStyle(styles[`${name}Label`], context.layout);
+    const labelPosition = args[`${name}Label`] ?? 'bottom';
+    const triggerTooltip = args[`${axis}AxisTooltip`] ?? axis === 'x';
+    const formatter = args[`${axis}AxisFormatter`];
+
+    config.axisPointer = {
+      show: true,
+      type,
+      triggerTooltip,
+      // Render axis line underneath emphasis items
+      z: 0,
+    };
+
+    if (type === 'line') {
+      config.axisPointer.lineStyle = {
+        color: pointerStyle.color,
+        // Use of || is intentional here; use the first non-zero width
+        width:
+          axis === 'x'
+            ? pointerStyle.borderLeftWidth || pointerStyle.borderRightWidth
+            : pointerStyle.borderTopWidth || pointerStyle.borderBottomWidth,
+        type:
+          axis === 'x'
+            ? pointerStyle.borderLeftStyle || pointerStyle.borderRightStyle
+            : pointerStyle.borderTopStyle || pointerStyle.borderBottomStyle,
+        opacity: pointerStyle.opacity,
+      };
+    } else if (type === 'shadow') {
+      config.axisPointer.shadowStyle = {
+        color: pointerStyle.backgroundColor,
+        opacity: pointerStyle.opacity,
+      };
+    }
+
+    config.axisPointer.label =
+      labelPosition === 'none'
+        ? {
+            show: false,
+          }
+        : {
+            ...(formatter && {
+              formatter: (params) => formatter(params.value),
+            }),
+            color: labelStyle.color,
+            fontStyle: labelStyle.fontStyle,
+            fontWeight: labelStyle.fontWeight,
+            fontFamily: labelStyle.fontFamily,
+            fontSize: labelStyle.fontSize,
+            backgroundColor: labelStyle.backgroundColor,
+            // Safari only parses contituent values, so use "top" as a proxy for all
+            borderWidth: labelStyle.borderTopWidth,
+            borderColor: labelStyle.borderTopColor,
+            borderType: labelStyle.borderTopType,
+            borderRadius: labelStyle.borderRadius,
+            padding: [
+              labelStyle.paddingTop,
+              labelStyle.paddingRight,
+              labelStyle.paddingBottom,
+              labelStyle.paddingLeft,
+            ],
+          };
+
+    const newLayout = { ...layout };
+    const labelSize =
+      axis === 'x'
+        ? axisInfo.height +
+          labelStyle.paddingTop +
+          labelStyle.paddingBottom +
+          labelStyle.borderTopWidth +
+          labelStyle.borderBottomWidth
+        : axisInfo.width +
+          labelStyle.paddingLeft +
+          labelStyle.paddingRight +
+          labelStyle.borderLeftWidth +
+          labelStyle.borderRightWidth;
+    const labelMargins =
+      axis === 'x'
+        ? labelStyle.marginTop + labelStyle.marginBottom
+        : labelStyle.marginLeft + labelStyle.marginRight;
+
+    switch (labelPosition) {
+      case 'top':
+        newLayout.innerHeight -= labelSize + labelMargins;
+        newLayout.innerY += axisInfo.height + labelMargins;
+        config.axisPointer.label.margin =
+          labelSize + labelStyle.marginTop - layout.innerHeight;
+        break;
+
+      case 'right':
+        newLayout.innerWidth -= labelSize + labelMargins;
+        config.axisPointer.label.margin =
+          labelSize - labelStyle.marginLeft - layout.innerWidth;
+        break;
+
+      case 'bottom':
+        newLayout.innerHeight -= labelStyle.marginTop;
+        config.axisPointer.label.margin = labelStyle.marginTop;
+        break;
+
+      case 'left':
+        config.axisPointer.label.margin = labelStyle.marginRight;
+        break;
+    }
+
+    return newLayout;
+  }
+
+  /**
    * Generates text to overlay on each cell of the chart, if any.
    */
   generateTextOverlayConfig(series, args, layout, style) {
@@ -424,5 +1058,57 @@ export default class BarChartModifier extends AbstractChartModifier {
           style
         )
       : undefined;
+  }
+
+  /**
+   * Computes style and metrics about the Y axis for charts that use an Y axis.
+   */
+  computeYAxisInfo(style, labels, maxValue) {
+    const labelMetrics = computeMaxTextMetrics(labels, style);
+    const width = labelMetrics.width + style.marginLeft + style.marginRight;
+
+    // Only applies when the very top label is rendered; for now, assuming it's
+    // always there, since I don't know how to determine this on the fly
+    const topLabelMetrics = computeTextMetrics(`${maxValue}`, style);
+    const heightOverflow = topLabelMetrics.height / 2;
+
+    return {
+      width,
+      // NOTE: no height returned because we need to know the X axis height to
+      //       determine that and `computeXAxisInfo` needs the result from this
+      //       function to calculate its result. We don't use the Y axis height
+      //       currently in the code, so this is fine. [twl 16.Nov.22]
+      labelMetrics,
+      heightOverflow,
+    };
+  }
+
+  /**
+   * Computes style and metrics about the X axis for charts that use an X axis.
+   */
+  computeXAxisInfo(args, layout, style, labels, yAxisInfo, isHorizontal) {
+    const maxLabelCount = Math.min(
+      args.categoryAxisMaxLabelCount ?? labels.length,
+      labels.length
+    );
+    const width =
+      layout.innerWidth -
+      yAxisInfo.width -
+      layout.borderLeftWidth -
+      layout.borderRightWidth;
+    const lineWidth = isHorizontal ? 0 : 1;
+    // 10 is arbitrary number here, since we don't know how many divisions the
+    // chart will create if the X axis is a value axis
+    const maxLabelWidth = width / (isHorizontal ? 10 : maxLabelCount);
+    const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
+    const height =
+      labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
+
+    return {
+      width,
+      height,
+      labelMetrics,
+      maxLabelWidth,
+    };
   }
 }

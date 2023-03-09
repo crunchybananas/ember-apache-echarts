@@ -1,5 +1,8 @@
 import { tracked } from '@glimmer/tracking';
+import compact from 'lodash/compact';
 import countBy from 'lodash/countBy';
+import flatten from 'lodash/flatten';
+import * as echarts from 'echarts';
 import mergeAtPaths from '../utils/merge-at-paths';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
@@ -10,6 +13,9 @@ import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import resolveStyle from '../utils/style/resolve-style';
 import AbstractChartModifier from './abstract-chart';
+
+const DEFAULT_CATEGORY_PROPERTY = 'name';
+const DEFAULT_VALUE_PROPERTY = 'value';
 
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
@@ -248,9 +254,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       yAxis: {
         font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'right',
-        // Add extra margin to the left too, since the width calculation of the
-        // Y axis can sometimes be off a few pixels
-        margin: 8,
+        marginRight: 8,
       },
       xAxisPointer: {
         border: 'dashed 1px #555',
@@ -309,8 +313,8 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the categories used within the data series in render order.
    */
   getCategories(args, series) {
-    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } =
-      args;
+    const { categoryAxisSort = 'firstSeries' } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
     const categories = getUniqueDatasetValues(series, categoryProperty);
 
     if (categoryAxisSort !== 'firstSeries') {
@@ -400,7 +404,9 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-          ? series.data[dataIndex][args.categoryProperty ?? 'name']
+          ? series.data[dataIndex][
+              args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY
+            ]
           : null;
 
       if (name) {
@@ -444,7 +450,8 @@ export default class BarChartModifier extends AbstractChartModifier {
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
-    const { categoryProperty = 'name', valueProperty = 'value' } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
     const seriesData = rotateData
       ? rotateDataSeries(context.series, categoryProperty, valueProperty)
       : context.series;
@@ -462,6 +469,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         categories: this.getCategories(args, context.series),
       }),
       ...(valueAxisScale === 'shared' && {
+        minValue: computeStatistic(context.series, 'min'),
         maxValue: computeStatistic(context.series, 'max'),
       }),
       // If grouped or stacked, render multple series on a single chart rather
@@ -626,6 +634,70 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
+   * Calculate the values and stats used for the value axis.
+   */
+  computeValueInfo(series, context, categories) {
+    const { args, data } = context;
+    const { variant, valueAxisScale } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
+    const isSharedScale = valueAxisScale === 'shared';
+
+    let values;
+
+    if (this.isStackedVariant(variant)) {
+      values = getSeriesTotals(
+        series.data,
+        categories,
+        categoryProperty,
+        valueProperty
+      );
+    } else if (this.isGroupedVariant(variant)) {
+      values = compact(
+        flatten(
+          series.data.map((group) =>
+            getSeriesData(
+              group.data,
+              categories,
+              categoryProperty,
+              valueProperty
+            )
+          )
+        )
+      );
+    } else {
+      values = getSeriesData(
+        series.data,
+        categories,
+        categoryProperty,
+        valueProperty
+      );
+    }
+
+    return {
+      values,
+      minimum: isSharedScale ? data.minValue : Math.min(...values),
+      maximum: isSharedScale ? data.maxValue : Math.max(...values),
+    };
+  }
+
+  /**
+   * Calculate the labels used for the value axis.
+   */
+  computeValueAxisLabels(context, valueInfo, axisConfig) {
+    const { args } = context;
+    const valueFormatter = args.valueAxisFormatter ?? echarts.format.addCommas;
+    const valueScale = echarts.helper.createScale(
+      [valueInfo.minimum, valueInfo.maximum],
+      axisConfig
+    );
+
+    return valueScale
+      .getTicks(false)
+      .map((tick) => (tick.value != null ? valueFormatter(tick.value) : ''));
+  }
+
+  /**
    * Generates the plot config for a single plot on this chart.
    */
   generatePlotConfig(series, layout, context, gridIndex) {
@@ -637,7 +709,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     }
 
     const { variant, orientation, colorMap } = args;
-    const { categoryProperty = 'name', valueProperty = 'value' } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
     const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
     const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { valueAxisScale, valueAxisMax } = args;
@@ -654,40 +727,60 @@ export default class BarChartModifier extends AbstractChartModifier {
       categoryAxisScale === 'shared'
         ? data.categories
         : this.getCategories(args, seriesData);
-    const maxValue =
-      valueAxisScale === 'shared'
-        ? data.maxValue
-        : computeStatistic(seriesData, 'max');
-    const values = isGroupedOrStacked
-      ? getSeriesTotals(
-          series.data,
-          categories,
-          categoryProperty,
-          valueProperty
-        )
-      : getSeriesData(series.data, categories, categoryProperty, valueProperty);
-    // Not the real labels, but good enough for now for computing the metrics
-    const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
+    const valueInfo = this.computeValueInfo(series, context, categories);
+
+    // Resolve axis styles
+    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
+    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
+    const valueAxisStyle = isHorizontal ? xAxisStyle : yAxisStyle;
+
+    // Configure value axis
+    const valueAxisConfig = {
+      gridIndex,
+      type: 'value',
+      max:
+        // prettier not formatting nested ternaries properly, so turn it off
+        // prettier-ignore
+        !isGroupedOrStacked && valueAxisScale === 'shared'
+          ? valueAxisMax && valueAxisMax !== 'dataMax'
+            ? valueAxisMax
+            : data.maxValue
+          : valueAxisMax !== 'dataMaxRoundedUp'
+            ? valueAxisMax
+            : undefined,
+      axisLabel: {
+        ...(valueAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            valueAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // margin between the axis label and the axis line
+        margin: valueAxisStyle.marginRight,
+        ...this.generateAxisLabelConfig(layout, valueAxisStyle),
+      },
+    };
+    const valueLabels = this.computeValueAxisLabels(
+      context,
+      valueInfo,
+      valueAxisConfig
+    );
 
     // Configure the Y axis
     const yAxisConfig = {};
-    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
-      isHorizontal ? categories : valueTexts,
-      maxValue
+      isHorizontal ? categories : valueLabels,
+      valueInfo.maximum
     );
 
     layout = this.addAxisPointer(context, layout, yAxisConfig, yAxisInfo, 'y');
 
     // Configure the X axis
     const xAxisConfig = {};
-    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const xAxisInfo = this.computeXAxisInfo(
       args,
       layout,
       xAxisStyle,
-      isHorizontal ? valueTexts : categories,
+      isHorizontal ? valueLabels : categories,
       yAxisInfo,
       isHorizontal
     );
@@ -721,32 +814,6 @@ export default class BarChartModifier extends AbstractChartModifier {
       // Allow the double-clicking on the area to be the same as if on the line
       triggerLineEvent: true,
       z: 20,
-    };
-    const valueAxisConfig = {
-      gridIndex,
-      type: 'value',
-      max:
-        // prettier not formatting nested ternaries properly, so turn it off
-        // prettier-ignore
-        valueAxisScale === 'shared'
-          ? valueAxisMax && valueAxisMax !== 'dataMax'
-            ? valueAxisMax
-            : data.maxValue
-          : valueAxisMax !== 'dataMaxRoundedUp'
-            ? valueAxisMax
-            : undefined,
-      axisLabel: {
-        ...(valueAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            valueAxisFormatter(value, 'axis', axisIndex),
-        }),
-        // margin between the axis label and the axis line
-        margin: yAxisStyle.marginRight,
-        ...this.generateAxisLabelConfig(
-          layout,
-          isHorizontal ? xAxisStyle : yAxisStyle
-        ),
-      },
     };
     const categoryAxisConfig = {
       gridIndex,

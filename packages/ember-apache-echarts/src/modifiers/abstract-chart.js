@@ -101,6 +101,10 @@ export default class AbstractChartModifier extends Modifier {
   createChart(element, chartArgs) {
     const chart = echarts.init(element, null, { renderer: 'canvas' });
 
+    // Initialize the chart model using default options so charts that need to
+    // access the locale via the model while being built can do so
+    chart.setOption({});
+
     // Add a `handle` method that ensures only one event listener can be
     // attached at the same time. This prevents mistakes when coding new charts
     // of forgetting to `off` an event during a reconfigure and then having

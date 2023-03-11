@@ -30,6 +30,27 @@ const setItemColor = (colorMap, item, color) =>
         },
       };
 
+const isShowingAxisLabel = (axisConfig, labelType) =>
+  axisConfig.axisLabel?.[`show${labelType}Label`] === false ||
+  (axisConfig.type === 'time' &&
+    axisConfig.axisLabel?.[`show${labelType}Label`] !== true);
+
+const computeData = (data, categories, args) => {
+  const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+  const { categoryAxisType, orientation } = args;
+  const series = getSeriesData(data, categories, categoryProperty);
+
+  return categoryAxisType !== 'time'
+    ? series
+    : series.map((item) => ({
+        ...item,
+        value:
+          orientation === 'horizontal'
+            ? [item.value, item.name]
+            : [item.name, item.value],
+      }));
+};
+
 /**
  * Renders one or more bar charts.
  *
@@ -109,6 +130,11 @@ const setItemColor = (colorMap, item, color) =>
  * : Whether to use a shared axis for all plots that accounts for the data
  *   across all series, or use a separate axis for each plot that only uses
  *   that plot's data. Valid values are: `shared`, `separate` (default)
+ *
+ * `categoryAxisType`
+ * : The type of axis the category axis represents: `category` (default) or
+ *   `time`. If set to `time`, the categories must either be `Date` objects or
+ *   Unix timestamps.
  *
  * `categoryAxisSort`
  * : How to sort the labels on the category axis: `firstSeries` (default),
@@ -313,7 +339,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the categories used within the data series in render order.
    */
   getCategories(args, series) {
-    const { categoryAxisSort = 'firstSeries' } = args;
+    const { categoryAxisSort = 'firstSeries', categoryAxisType } = args;
     const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
     const categories = getUniqueDatasetValues(series, categoryProperty);
 
@@ -327,6 +353,10 @@ export default class BarChartModifier extends AbstractChartModifier {
       } else {
         console.warn(`Invalid 'categoryAxisSort' value: ${categoryAxisSort}`);
       }
+    } else if (categoryAxisType === 'time') {
+      categories.sort(
+        (date1, date2) => (date1?.valueOf() ?? 0) - (date2?.valueOf() ?? 0)
+      );
     }
 
     return categories;
@@ -337,8 +367,16 @@ export default class BarChartModifier extends AbstractChartModifier {
    * formatter are defined, respectively.
    */
   formatTooltipParams(args, params, elementType) {
-    const { categoryAxisFormatter, valueAxisFormatter } = args;
+    const { valueAxisFormatter = echarts.format.addCommas } = args;
+    const { categoryAxisType, categoryAxisFormatter, orientation } = args;
     const { missingCategoryFormat, missingValueFormat } = args;
+
+    // The `time` axis requires tuples for the `value`; reverse this before
+    // passing into the tooltip, however. Note that this also modifies
+    // `params.data.value` since it's the same array instance
+    if (categoryAxisType === 'time') {
+      params.value = params.value[orientation === 'horizontal' ? 0 : 1];
+    }
 
     // prettier not formatting nested ternaries properly, so turn it off
     // prettier-ignore
@@ -709,20 +747,43 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   computeCategoryAxisLabels(context, categoryInfo, axisConfig) {
     const { categoryAxisFormatter } = context.args;
-    const model = new echarts.Model(axisConfig);
+    const isTimeAxis = axisConfig.type === 'time';
+    const model = new echarts.Model({
+      // defaults from `coord/axisDefault.ts` relevant to the scale
+      ...(isTimeAxis && {
+        splitNumber: 6,
+      }),
+      ...axisConfig,
+    });
 
-    model.getCategories = () => categoryInfo.categories;
+    model.ecModel = this.chart.getModel();
+
+    if (!isTimeAxis) {
+      model.getCategories = () => categoryInfo.categories;
+    }
 
     const scale = echarts.helper.createScale(
       [categoryInfo.first.valueOf(), categoryInfo.last.valueOf()],
       model
     );
 
-    let tickLabels = scale.getTicks(false).map((tick, index) =>
-      scale.getLabel(tick)
-    );
+    let tickLabels = scale
+      .getTicks(false)
+      .map((tick, index) =>
+        isTimeAxis
+          ? scale.getFormattedLabel(tick, index, categoryAxisFormatter)
+          : scale.getLabel(tick)
+      );
 
-    if (categoryAxisFormatter) {
+    if (isShowingAxisLabel(axisConfig, 'Min')) {
+      tickLabels.shift();
+    }
+
+    if (isShowingAxisLabel(axisConfig, 'Max')) {
+      tickLabels.pop();
+    }
+
+    if (!isTimeAxis && categoryAxisFormatter) {
       tickLabels = tickLabels.map(categoryAxisFormatter);
     }
 
@@ -760,6 +821,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
     const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
     const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
+    const { categoryAxisType = 'category' } = args;
     const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
@@ -817,10 +879,12 @@ export default class BarChartModifier extends AbstractChartModifier {
     // Configure category axis
     const categoryAxisConfig = {
       gridIndex,
-      type: 'category',
+      type: categoryAxisType,
       // Render labels top-to-bottom when using horizontal orientation
       inverse: isHorizontal,
-      data: categoryInfo.categories,
+      ...(categoryAxisType !== 'time' && {
+        data: categoryInfo.categories,
+      }),
       axisLabel: {
         ...(categoryAxisFormatter && {
           formatter: (value, axisIndex) =>
@@ -957,7 +1021,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? [
             {
               ...seriesBaseConfig,
-              data: getSeriesData(series.data, categoryInfo.categories, categoryProperty),
+              data: computeData(series.data, categoryInfo.categories, args),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),
@@ -966,7 +1030,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: getSeriesData(info.data, categories, categoryProperty).map(
+            data: computeData(info.data, categoryInfo.categories, args).map(
               (item) => ({
                 ...item,
                 ...setItemColor(colorMap, item, info.label),

@@ -9,11 +9,16 @@
  * @return {any[]} An array of unique property values for `property`
  */
 export default function getUniqueDatasetValues(dataset, property) {
-  const result = new Set();
+  const result = new Map();
 
   for (const series of dataset) {
     for (const item of series.data) {
-      result.add(item[property]);
+      const value = item[property];
+
+      result.set(
+        typeof value?.valueOf === 'function' ? value.valueOf() : value,
+        value
+      );
     }
   }
 

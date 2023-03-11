@@ -818,10 +818,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     }
 
     const { variant, orientation, colorMap } = args;
-    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
-    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
-    const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
     const { categoryAxisType = 'category' } = args;
+    const { categoryAxisMaxLabelCount } = args;
     const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
@@ -830,7 +828,6 @@ export default class BarChartModifier extends AbstractChartModifier {
     const isStackedVariant = this.isStackedVariant(variant);
     const isGroupedOrStacked =
       this.isGroupedVariant(variant) || isStackedVariant;
-    const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
     const categoryInfo = this.computeCategoryInfo(series, context);

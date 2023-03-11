@@ -634,6 +634,29 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
+   * Calculate the categories and range used for the category axis.
+   */
+  computeCategoryInfo(series, context) {
+    const { args, data } = context;
+    const { variant, categoryAxisScale } = args;
+    const seriesData =
+      this.isGroupedVariant(variant) || this.isStackedVariant(variant)
+        ? series.data
+        : [series];
+    const categories =
+      categoryAxisScale === 'shared'
+        ? data.categories
+        : this.getCategories(args, seriesData);
+
+    return {
+      categories,
+      first: categories[0],
+      last: categories[categories.length - 1],
+      count: categories.length,
+    };
+  }
+
+  /**
    * Calculate the values and stats used for the value axis.
    */
   computeValueInfo(series, context, categories) {
@@ -682,6 +705,31 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
+   * Calculate the labels used for the category axis.
+   */
+  computeCategoryAxisLabels(context, categoryInfo, axisConfig) {
+    const { categoryAxisFormatter } = context.args;
+    const model = new echarts.Model(axisConfig);
+
+    model.getCategories = () => categoryInfo.categories;
+
+    const scale = echarts.helper.createScale(
+      [categoryInfo.first.valueOf(), categoryInfo.last.valueOf()],
+      model
+    );
+
+    let tickLabels = scale.getTicks(false).map((tick, index) =>
+      scale.getLabel(tick)
+    );
+
+    if (categoryAxisFormatter) {
+      tickLabels = tickLabels.map(categoryAxisFormatter);
+    }
+
+    return tickLabels;
+  }
+
+  /**
    * Calculate the labels used for the value axis.
    */
   computeValueAxisLabels(context, valueInfo, axisConfig) {
@@ -723,16 +771,18 @@ export default class BarChartModifier extends AbstractChartModifier {
     const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
-    const categories =
-      categoryAxisScale === 'shared'
-        ? data.categories
-        : this.getCategories(args, seriesData);
-    const valueInfo = this.computeValueInfo(series, context, categories);
+    const categoryInfo = this.computeCategoryInfo(series, context);
+    const valueInfo = this.computeValueInfo(
+      series,
+      context,
+      categoryInfo.categories
+    );
 
     // Resolve axis styles
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
     const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const valueAxisStyle = isHorizontal ? xAxisStyle : yAxisStyle;
+    const categoryAxisStyle = isHorizontal ? yAxisStyle : xAxisStyle;
 
     // Configure value axis
     const valueAxisConfig = {
@@ -764,11 +814,44 @@ export default class BarChartModifier extends AbstractChartModifier {
       valueAxisConfig
     );
 
+    // Configure category axis
+    const categoryAxisConfig = {
+      gridIndex,
+      type: 'category',
+      // Render labels top-to-bottom when using horizontal orientation
+      inverse: isHorizontal,
+      data: categoryInfo.categories,
+      axisLabel: {
+        ...(categoryAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            categoryAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // Determine how many categories are shown on the axis
+        interval:
+          categoryAxisMaxLabelCount &&
+          categoryInfo.count > categoryAxisMaxLabelCount
+            ? Math.ceil(categoryInfo.count / categoryAxisMaxLabelCount) - 1
+            : 0,
+        ...(!isHorizontal && {
+          overflow: 'break',
+        }),
+        // margin between the axis label and the axis line
+        margin: isHorizontal
+          ? categoryAxisStyle.marginRight
+          : categoryAxisStyle.marginTop,
+      },
+    };
+    const categoryLabels = this.computeCategoryAxisLabels(
+      context,
+      categoryInfo,
+      categoryAxisConfig
+    );
+
     // Configure the Y axis
     const yAxisConfig = {};
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
-      isHorizontal ? categories : valueLabels,
+      isHorizontal ? categoryLabels : valueLabels,
       valueInfo.maximum
     );
 
@@ -780,12 +863,22 @@ export default class BarChartModifier extends AbstractChartModifier {
       args,
       layout,
       xAxisStyle,
-      isHorizontal ? valueLabels : categories,
+      isHorizontal ? valueLabels : categoryLabels,
       yAxisInfo,
       isHorizontal
     );
 
     layout = this.addAxisPointer(context, layout, xAxisConfig, xAxisInfo, 'x');
+
+    // Update the axis label for the category axis
+    categoryAxisConfig.axisLabel = {
+      ...categoryAxisConfig.axisLabel,
+      width: xAxisInfo.maxLabelWidth,
+      ...this.generateAxisLabelConfig(
+        layout,
+        isHorizontal ? yAxisStyle : xAxisStyle
+      ),
+    };
 
     // Setup base configurations
     const seriesBaseConfig = {
@@ -814,35 +907,6 @@ export default class BarChartModifier extends AbstractChartModifier {
       // Allow the double-clicking on the area to be the same as if on the line
       triggerLineEvent: true,
       z: 20,
-    };
-    const categoryAxisConfig = {
-      gridIndex,
-      type: 'category',
-      // Render labels top-to-bottom when using horizontal orientation
-      inverse: isHorizontal,
-      data: categories,
-      axisLabel: {
-        ...(categoryAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            categoryAxisFormatter(value, 'axis', axisIndex),
-        }),
-        // Determine how many categories are shown on the axis
-        interval:
-          categoryAxisMaxLabelCount &&
-          categories.length > categoryAxisMaxLabelCount
-            ? Math.ceil(categories.length / categoryAxisMaxLabelCount) - 1
-            : 0,
-        ...(!isHorizontal && {
-          overflow: 'break',
-        }),
-        width: xAxisInfo.maxLabelWidth,
-        // margin between the axis label and the axis line
-        margin: xAxisStyle.marginTop,
-        ...this.generateAxisLabelConfig(
-          layout,
-          isHorizontal ? yAxisStyle : xAxisStyle
-        ),
-      },
     };
 
     // Configure final grid style
@@ -893,7 +957,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? [
             {
               ...seriesBaseConfig,
-              data: getSeriesData(series.data, categories, categoryProperty),
+              data: getSeriesData(series.data, categoryInfo.categories, categoryProperty),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),

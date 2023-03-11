@@ -863,7 +863,9 @@ export default class BarChartModifier extends AbstractChartModifier {
             valueAxisFormatter(value, 'axis', axisIndex),
         }),
         // margin between the axis label and the axis line
-        margin: valueAxisStyle.marginRight,
+        margin: isHorizontal
+          ? valueAxisStyle.marginTop
+          : valueAxisStyle.marginRight,
         ...this.generateAxisLabelConfig(layout, valueAxisStyle),
       },
     };

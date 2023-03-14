@@ -404,8 +404,10 @@ export default class AbstractChartModifier extends Modifier {
 
     return {
       ...context.layout,
-      height: context.layout.height - textHeight,
-      y: context.layout.y + textHeight,
+      cell: {
+        ...context.layout.cell,
+        yOffset: textHeight,
+      },
     };
   }
 

@@ -978,7 +978,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       // Not sure why the 1px adjustment is needed to `x`, but it is
       x: layout.innerX + yAxisInfo.width - 1,
       y: layout.innerY + yAxisInfo.heightOverflow,
-      width: xAxisInfo.width,
+      width: xAxisInfo.width - xAxisInfo.widthOverflow,
       height: layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
     };
 
@@ -1297,12 +1297,16 @@ export default class BarChartModifier extends AbstractChartModifier {
     const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
     const height =
       labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
+    const widthOverflow = isHorizontal
+      ? computeTextMetrics(`${labels[labels.length - 1]}`, style).width / 2
+      : 0;
 
     return {
       width,
       height,
       labelMetrics,
       maxLabelWidth,
+      widthOverflow,
     };
   }
 }

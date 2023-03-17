@@ -4,6 +4,7 @@ import countBy from 'lodash/countBy';
 import flatten from 'lodash/flatten';
 import * as echarts from 'echarts';
 import mergeAtPaths from '../utils/merge-at-paths';
+import parseAxisLabel from '../utils/chart/parse-axis-label';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
@@ -743,9 +744,20 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
-   * Calculate the labels used for the category axis.
+   * Calculate the ticks used for the category axis.
+   *
+   * Each tick may have the following properties:
+   *
+   * `text`
+   * : The formatted text for this tick.
+   *
+   * `type`
+   * : The type of tick (e.g. `primary`) or `undefined` if no type is specified.
+   *
+   * `position`
+   * : A value from 0 to 1 indicating the position of the tick along the axis.
    */
-  computeCategoryAxisLabels(context, categoryInfo, axisConfig) {
+  computeCategoryAxisTicks(context, categoryInfo, axisConfig) {
     const { categoryAxisFormatter } = context.args;
     const isTimeAxis = axisConfig.type === 'time';
     const model = new echarts.Model({
@@ -767,43 +779,44 @@ export default class BarChartModifier extends AbstractChartModifier {
       model
     );
 
-    let tickLabels = scale
-      .getTicks(false)
-      .map((tick, index) =>
-        isTimeAxis
+    let ticks = scale.getTicks(false).map((tick, index) => ({
+      // prettier not formatting nested ternaries properly, so turn it off
+      // prettier-ignore
+      ...parseAxisLabel(isTimeAxis
           ? scale.getFormattedLabel(tick, index, categoryAxisFormatter)
-          : scale.getLabel(tick)
-      );
+          : categoryAxisFormatter
+            ? categoryAxisFormatter(scale.getLabel(tick))
+            : scale.getLabel(tick)
+        ),
+      position: scale.normalize(tick.value),
+    }));
 
     if (isShowingAxisLabel(axisConfig, 'Min')) {
-      tickLabels.shift();
+      ticks.shift();
     }
 
     if (isShowingAxisLabel(axisConfig, 'Max')) {
-      tickLabels.pop();
+      ticks.pop();
     }
 
-    if (!isTimeAxis && categoryAxisFormatter) {
-      tickLabels = tickLabels.map(categoryAxisFormatter);
-    }
-
-    return tickLabels;
+    return ticks;
   }
 
   /**
    * Calculate the labels used for the value axis.
    */
-  computeValueAxisLabels(context, valueInfo, axisConfig) {
+  computeValueAxisTicks(context, valueInfo, axisConfig) {
     const { args } = context;
-    const valueFormatter = args.valueAxisFormatter ?? echarts.format.addCommas;
-    const valueScale = echarts.helper.createScale(
       [valueInfo.minimum, valueInfo.maximum],
+    const formatter = args.valueAxisFormatter ?? echarts.format.addCommas;
+    const scale = echarts.helper.createScale(
       axisConfig
     );
 
-    return valueScale
-      .getTicks(false)
-      .map((tick) => (tick.value != null ? valueFormatter(tick.value) : ''));
+    return scale.getTicks(false).map((tick) => ({
+      label: tick.value != null ? formatter(tick.value) : '',
+      position: scale.normalize(tick.value),
+    }));
   }
 
   /**
@@ -869,7 +882,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ...this.generateAxisLabelConfig(layout, valueAxisStyle),
       },
     };
-    const valueLabels = this.computeValueAxisLabels(
+    const valueTicks = this.computeValueAxisTicks(
       context,
       valueInfo,
       valueAxisConfig
@@ -904,7 +917,7 @@ export default class BarChartModifier extends AbstractChartModifier {
           : categoryAxisStyle.marginTop,
       },
     };
-    const categoryLabels = this.computeCategoryAxisLabels(
+    const categoryTicks = this.computeCategoryAxisTicks(
       context,
       categoryInfo,
       categoryAxisConfig
@@ -914,8 +927,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     const yAxisConfig = {};
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
-      isHorizontal ? categoryLabels : valueLabels,
-      valueInfo.maximum
+      isHorizontal ? categoryTicks : valueTicks,
+      isHorizontal
     );
 
     layout = this.addAxisPointer(context, layout, yAxisConfig, yAxisInfo, 'y');
@@ -926,7 +939,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       args,
       layout,
       xAxisStyle,
-      isHorizontal ? valueLabels : categoryLabels,
+      isHorizontal ? valueTicks : categoryTicks,
       yAxisInfo,
       isHorizontal
     );
@@ -1257,14 +1270,23 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the Y axis for charts that use an Y axis.
    */
-  computeYAxisInfo(style, labels, maxValue) {
-    const labelMetrics = computeMaxTextMetrics(labels, style);
+  computeYAxisInfo(style, ticks, isHorizontal) {
+    const labelMetrics = computeMaxTextMetrics(
+      ticks.map((tick) => tick.label),
+      style
+    );
     const width = labelMetrics.width + style.marginLeft + style.marginRight;
 
-    // Only applies when the very top label is rendered; for now, assuming it's
-    // always there, since I don't know how to determine this on the fly
-    const topLabelMetrics = computeTextMetrics(`${maxValue}`, style);
-    const heightOverflow = topLabelMetrics.height / 2;
+    // Handle when label extends past the top of the axis.
+    //
+    // NOTE: To be fully accurate, we should use the `position` like we do in
+    //       `computeXAxisInfo`. However, since we compute the Y axis info first
+    //       we don't have an accurate axis height and for these charts we're
+    //       always rendering a label at the top of the axis anyway, so the
+    //       top tick position should always be 1. [twl 17.Mar.23]
+    const topTick = ticks[ticks.length - 1];
+    const topTickHeight = computeTextMetrics(topTick.label, style).height;
+    const heightOverflow = isHorizontal ? 0 : Math.max(0, topTickHeight / 2);
 
     return {
       width,
@@ -1280,10 +1302,10 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the X axis for charts that use an X axis.
    */
-  computeXAxisInfo(args, layout, style, labels, yAxisInfo, isHorizontal) {
+  computeXAxisInfo(args, layout, style, ticks, yAxisInfo, isHorizontal) {
     const maxLabelCount = Math.min(
-      args.categoryAxisMaxLabelCount ?? labels.length,
-      labels.length
+      args.categoryAxisMaxLabelCount ?? ticks.length,
+      ticks.length
     );
     const width =
       layout.innerWidth -
@@ -1294,12 +1316,29 @@ export default class BarChartModifier extends AbstractChartModifier {
     // 10 is arbitrary number here, since we don't know how many divisions the
     // chart will create if the X axis is a value axis
     const maxLabelWidth = width / (isHorizontal ? 10 : maxLabelCount);
-    const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
+
+    // TODO: If we want to be precise, we should be passing in a custom style
+    //       for each tick, since if a tick has a `type` of `primary`, it gets
+    //       rendered via the primary axis tick style as defined by
+    //       `axisLabel.rich.primary` in the Echarts config. However, the
+    //       default is only to make the font bold, which only causes a pixel or
+    //       two different in the final value. Skipping this for now, since it
+    //       requires a bunch of refactoring to make this work. [twl 17.Mar.23]
+    const labelMetrics = computeMaxTextMetrics(
+      ticks.map((tick) => tick.label),
+      style,
+      maxLabelWidth
+    );
     const height =
       labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
-    const widthOverflow = isHorizontal
-      ? computeTextMetrics(`${labels[labels.length - 1]}`, style).width / 2
-      : 0;
+
+    // Handle when label extends past end of axis
+    const lastTick = ticks[ticks.length - 1];
+    const lastLabelWidth = computeTextMetrics(lastTick.label, style).width;
+    const widthOverflow = Math.max(
+      0,
+      lastLabelWidth / 2 - (width - lastTick.position * width)
+    );
 
     return {
       width,

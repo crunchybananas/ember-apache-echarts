@@ -87,6 +87,7 @@
       "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
       "./modifiers/bar-chart.js": "./dist/_app_/modifiers/bar-chart.js",
       "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",
+      "./utils/chart/parse-axis-label.js": "./dist/_app_/utils/chart/parse-axis-label.js",
       "./utils/create-lookup.js": "./dist/_app_/utils/create-lookup.js",
       "./utils/data/compute-statistic.js": "./dist/_app_/utils/data/compute-statistic.js",
       "./utils/data/get-series-data.js": "./dist/_app_/utils/data/get-series-data.js",

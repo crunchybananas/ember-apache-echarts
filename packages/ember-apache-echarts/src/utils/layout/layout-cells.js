@@ -40,8 +40,8 @@ function computeCellLayoutInfo(context, chart) {
 
   // Includes margin, border and padding
   let layoutSize = {
-    width: (chart.width / chart.columns) - xOffset,
-    height: (chart.height / chart.rows) - yOffset,
+    width: chart.width / chart.columns - xOffset,
+    height: chart.height / chart.rows - yOffset,
   };
 
   const cell = {

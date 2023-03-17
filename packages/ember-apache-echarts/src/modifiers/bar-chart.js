@@ -1284,8 +1284,34 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Computes style and metrics about the Y axis for charts that use an Y axis.
    */
   computeYAxisInfo(style, ticks, isHorizontal) {
+    // HACK TODO: When ticks are too close to each other, the following tick
+    //            will be hidden. This can cause the Y axis to calculate the
+    //            width wrong if the tick that is hidden has a wider width than
+    //            the rest of the ticks.
+    //
+    //            To see this, set the `@valueAxisMax` to a number slightly
+    //            higher than the default maximum value. For example, if the
+    //            normal top tick is 15000, set it to `15400.111111`. The extra
+    //            1's will increase the width of the axis, but then this tick
+    //            will be hidden, so it will create a bunch of extra space.
+    //
+    //            In reality, we should use a label collision detection formula
+    //            here, but that requires a lot more work and this is a fairly
+    //            rare edge case in our charts, so I'm just using the magic
+    //            number of 3%. When ticks are closer than 3% of the axis
+    //            length, then the second tick is hidden. [twl 17.Mar.23]
+    const renderedTicks = [...ticks].reduce((ticks, tick) => {
+      if (
+        !ticks.length ||
+        tick.position - ticks[ticks.length - 1].position > 0.03
+      ) {
+        ticks.push(tick);
+      }
+
+      return ticks;
+    }, []);
     const labelMetrics = computeMaxTextMetrics(
-      ticks.map((tick) => tick.label),
+      renderedTicks.map((tick) => tick.label),
       style
     );
     const width = labelMetrics.width + style.marginLeft + style.marginRight;
@@ -1297,7 +1323,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     //       we don't have an accurate axis height and for these charts we're
     //       always rendering a label at the top of the axis anyway, so the
     //       top tick position should always be 1. [twl 17.Mar.23]
-    const topTick = ticks[ticks.length - 1];
+    const topTick = renderedTicks[renderedTicks.length - 1];
     const topTickHeight = computeTextMetrics(topTick.label, style).height;
     const heightOverflow = isHorizontal ? 0 : Math.max(0, topTickHeight / 2);
 

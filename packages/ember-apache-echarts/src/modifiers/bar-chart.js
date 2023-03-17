@@ -1342,8 +1342,9 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Computes style and metrics about the X axis for charts that use an X axis.
    */
   computeXAxisInfo(args, layout, style, ticks, yAxisInfo, isHorizontal) {
+    const { categoryAxisMaxLabelCount, categoryAxisType } = args;
     const maxLabelCount = Math.min(
-      args.categoryAxisMaxLabelCount ?? ticks.length,
+      categoryAxisMaxLabelCount ?? ticks.length,
       ticks.length
     );
     const width =
@@ -1372,10 +1373,10 @@ export default class BarChartModifier extends AbstractChartModifier {
     // Handle when label extends past end of axis
     const lastTick = ticks[ticks.length - 1];
     const lastLabelWidth = computeTextMetrics(lastTick.label, style).width;
-    const widthOverflow = Math.max(
-      0,
-      lastLabelWidth / 2 - (width - lastTick.position * width)
-    );
+    const widthOverflow =
+      !isHorizontal && categoryAxisType !== 'time'
+        ? 0
+        : Math.max(0, lastLabelWidth / 2 - (width - lastTick.position * width));
 
     return {
       width,

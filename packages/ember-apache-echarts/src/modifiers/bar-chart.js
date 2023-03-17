@@ -1352,9 +1352,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       layout.borderLeftWidth -
       layout.borderRightWidth;
     const lineWidth = isHorizontal ? 0 : 1;
-    // 10 is arbitrary number here, since we don't know how many divisions the
-    // chart will create if the X axis is a value axis
-    const maxLabelWidth = width / (isHorizontal ? 10 : maxLabelCount);
+    const maxLabelWidth = width / (isHorizontal ? ticks.length : maxLabelCount);
 
     // TODO: If we want to be precise, we should be passing in a custom style
     //       for each tick, since if a tick has a `type` of `primary`, it gets

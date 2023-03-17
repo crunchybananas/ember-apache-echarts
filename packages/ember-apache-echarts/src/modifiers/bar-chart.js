@@ -807,11 +807,24 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   computeValueAxisTicks(context, valueInfo, axisConfig) {
     const { args } = context;
-      [valueInfo.minimum, valueInfo.maximum],
     const formatter = args.valueAxisFormatter ?? echarts.format.addCommas;
-    const scale = echarts.helper.createScale(
-      axisConfig
-    );
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
+    const minValue =
+      axisConfig.min == null
+        ? Math.min(0, valueInfo.minimum)
+        : axisConfig.min === 'dataMin'
+          ? valueInfo.minimum
+          : axisConfig.min;
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
+    const maxValue =
+      axisConfig.max == null
+        ? valueInfo.maximum
+        : axisConfig.max === 'dataMax'
+          ? valueInfo.maximum
+          : axisConfig.max;
+    const scale = echarts.helper.createScale([minValue, maxValue], axisConfig);
 
     return scale.getTicks(false).map((tick) => ({
       label: tick.value != null ? formatter(tick.value) : '',

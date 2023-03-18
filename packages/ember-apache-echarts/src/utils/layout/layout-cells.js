@@ -35,13 +35,18 @@ function computeChartLayoutInfo(context, array) {
  * @return {object} An object containing the cell layout info
  */
 function computeCellLayoutInfo(context, chart) {
+  const xOffset = context.layout.cell?.xOffset ?? 0;
+  const yOffset = context.layout.cell?.yOffset ?? 0;
+
   // Includes margin, border and padding
   let layoutSize = {
-    width: chart.width / chart.columns,
-    height: chart.height / chart.rows,
+    width: chart.width / chart.columns - xOffset,
+    height: chart.height / chart.rows - yOffset,
   };
 
   const cell = {
+    xOffset,
+    yOffset,
     ...layoutSize,
     ...resolveStyle(context.styles.cell, layoutSize),
   };
@@ -134,8 +139,9 @@ export default function layoutCells(context, array, callback) {
   return array.map((element, index) => {
     const column = index % layoutInfo.chart.columns;
     const row = Math.floor(index / layoutInfo.chart.columns);
+    const yOffset = layoutInfo.cell.yOffset ?? 0;
     const x = context.layout.x + layoutInfo.cell.width * column;
-    const y = context.layout.y + layoutInfo.cell.height * row;
+    const y = context.layout.y + (layoutInfo.cell.height + yOffset) * row;
 
     return callback(
       element,
@@ -155,7 +161,8 @@ export default function layoutCells(context, array, callback) {
           y +
           layoutInfo.cell.marginTop +
           layoutInfo.cell.borderTopWidth +
-          layoutInfo.cell.paddingTop,
+          layoutInfo.cell.paddingTop +
+          yOffset,
       },
       layoutInfo.chart,
       array

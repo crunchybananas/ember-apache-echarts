@@ -1,3 +1,4 @@
+import compact from 'lodash/compact';
 import createLookup from '../create-lookup';
 
 /**
@@ -20,5 +21,5 @@ export default function getSeriesData(
 ) {
   const lookup = createLookup(data, categoryProperty, valueProperty);
 
-  return categories.map((category) => lookup[category]);
+  return compact(categories.map((category) => lookup[category]));
 }

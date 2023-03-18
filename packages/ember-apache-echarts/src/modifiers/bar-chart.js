@@ -1,6 +1,10 @@
 import { tracked } from '@glimmer/tracking';
+import compact from 'lodash/compact';
 import countBy from 'lodash/countBy';
+import flatten from 'lodash/flatten';
+import * as echarts from 'echarts';
 import mergeAtPaths from '../utils/merge-at-paths';
+import parseAxisLabel from '../utils/chart/parse-axis-label';
 import computeStatistic from '../utils/data/compute-statistic';
 import getSeriesData from '../utils/data/get-series-data';
 import getSeriesTotals from '../utils/data/get-series-totals';
@@ -10,6 +14,9 @@ import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 import resolveStyle from '../utils/style/resolve-style';
 import AbstractChartModifier from './abstract-chart';
+
+const DEFAULT_CATEGORY_PROPERTY = 'name';
+const DEFAULT_VALUE_PROPERTY = 'value';
 
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
@@ -23,6 +30,27 @@ const setItemColor = (colorMap, item, color) =>
           color: colorMap[color],
         },
       };
+
+const isShowingAxisLabel = (axisConfig, labelType) =>
+  axisConfig.axisLabel?.[`show${labelType}Label`] === false ||
+  (axisConfig.type === 'time' &&
+    axisConfig.axisLabel?.[`show${labelType}Label`] !== true);
+
+const computeData = (data, categories, args) => {
+  const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+  const { categoryAxisType, orientation } = args;
+  const series = getSeriesData(data, categories, categoryProperty);
+
+  return categoryAxisType !== 'time'
+    ? series
+    : series.map((item) => ({
+        ...item,
+        value:
+          orientation === 'horizontal'
+            ? [item.value, item.name]
+            : [item.name, item.value],
+      }));
+};
 
 /**
  * Renders one or more bar charts.
@@ -103,6 +131,11 @@ const setItemColor = (colorMap, item, color) =>
  * : Whether to use a shared axis for all plots that accounts for the data
  *   across all series, or use a separate axis for each plot that only uses
  *   that plot's data. Valid values are: `shared`, `separate` (default)
+ *
+ * `categoryAxisType`
+ * : The type of axis the category axis represents: `category` (default) or
+ *   `time`. If set to `time`, the categories must either be `Date` objects or
+ *   Unix timestamps.
  *
  * `categoryAxisSort`
  * : How to sort the labels on the category axis: `firstSeries` (default),
@@ -248,9 +281,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       yAxis: {
         font: 'normal 12px Montserrat,sans-serif',
         textAlign: 'right',
-        // Add extra margin to the left too, since the width calculation of the
-        // Y axis can sometimes be off a few pixels
-        margin: 8,
+        marginRight: 8,
       },
       xAxisPointer: {
         border: 'dashed 1px #555',
@@ -309,8 +340,8 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the categories used within the data series in render order.
    */
   getCategories(args, series) {
-    const { categoryAxisSort = 'firstSeries', categoryProperty = 'name' } =
-      args;
+    const { categoryAxisSort = 'firstSeries', categoryAxisType } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
     const categories = getUniqueDatasetValues(series, categoryProperty);
 
     if (categoryAxisSort !== 'firstSeries') {
@@ -323,6 +354,10 @@ export default class BarChartModifier extends AbstractChartModifier {
       } else {
         console.warn(`Invalid 'categoryAxisSort' value: ${categoryAxisSort}`);
       }
+    } else if (categoryAxisType === 'time') {
+      categories.sort(
+        (date1, date2) => (date1?.valueOf() ?? 0) - (date2?.valueOf() ?? 0)
+      );
     }
 
     return categories;
@@ -333,8 +368,16 @@ export default class BarChartModifier extends AbstractChartModifier {
    * formatter are defined, respectively.
    */
   formatTooltipParams(args, params, elementType) {
-    const { categoryAxisFormatter, valueAxisFormatter } = args;
+    const { valueAxisFormatter = echarts.format.addCommas } = args;
+    const { categoryAxisType, categoryAxisFormatter, orientation } = args;
     const { missingCategoryFormat, missingValueFormat } = args;
+
+    // The `time` axis requires tuples for the `value`; reverse this before
+    // passing into the tooltip, however. Note that this also modifies
+    // `params.data.value` since it's the same array instance
+    if (categoryAxisType === 'time') {
+      params.value = params.value[orientation === 'horizontal' ? 0 : 1];
+    }
 
     // prettier not formatting nested ternaries properly, so turn it off
     // prettier-ignore
@@ -400,7 +443,9 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-          ? series.data[dataIndex][args.categoryProperty ?? 'name']
+          ? series.data[dataIndex][
+              args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY
+            ]
           : null;
 
       if (name) {
@@ -444,7 +489,8 @@ export default class BarChartModifier extends AbstractChartModifier {
   createContextData(args, chart) {
     const context = super.createContextData(args, chart);
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
-    const { categoryProperty = 'name', valueProperty = 'value' } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
     const seriesData = rotateData
       ? rotateDataSeries(context.series, categoryProperty, valueProperty)
       : context.series;
@@ -462,6 +508,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         categories: this.getCategories(args, context.series),
       }),
       ...(valueAxisScale === 'shared' && {
+        minValue: computeStatistic(context.series, 'min'),
         maxValue: computeStatistic(context.series, 'max'),
       }),
       // If grouped or stacked, render multple series on a single chart rather
@@ -626,6 +673,166 @@ export default class BarChartModifier extends AbstractChartModifier {
   }
 
   /**
+   * Calculate the categories and range used for the category axis.
+   */
+  computeCategoryInfo(series, context) {
+    const { args, data } = context;
+    const { variant, categoryAxisScale } = args;
+    const seriesData =
+      this.isGroupedVariant(variant) || this.isStackedVariant(variant)
+        ? series.data
+        : [series];
+    const categories =
+      categoryAxisScale === 'shared'
+        ? data.categories
+        : this.getCategories(args, seriesData);
+
+    return {
+      categories,
+      first: categories[0],
+      last: categories[categories.length - 1],
+      count: categories.length,
+    };
+  }
+
+  /**
+   * Calculate the values and stats used for the value axis.
+   */
+  computeValueInfo(series, context, categories) {
+    const { args, data } = context;
+    const { variant, valueAxisScale } = args;
+    const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
+    const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
+    const isSharedScale = valueAxisScale === 'shared';
+
+    let values;
+
+    if (this.isStackedVariant(variant)) {
+      values = getSeriesTotals(
+        series.data,
+        categories,
+        categoryProperty,
+        valueProperty
+      );
+    } else if (this.isGroupedVariant(variant)) {
+      values = compact(
+        flatten(
+          series.data.map((group) =>
+            getSeriesData(
+              group.data,
+              categories,
+              categoryProperty,
+              valueProperty
+            )
+          )
+        )
+      );
+    } else {
+      values = getSeriesData(
+        series.data,
+        categories,
+        categoryProperty,
+        valueProperty
+      );
+    }
+
+    return {
+      values,
+      minimum: isSharedScale ? data.minValue : Math.min(...values),
+      maximum: isSharedScale ? data.maxValue : Math.max(...values),
+    };
+  }
+
+  /**
+   * Calculate the ticks used for the category axis.
+   *
+   * Each tick may have the following properties:
+   *
+   * `text`
+   * : The formatted text for this tick.
+   *
+   * `type`
+   * : The type of tick (e.g. `primary`) or `undefined` if no type is specified.
+   *
+   * `position`
+   * : A value from 0 to 1 indicating the position of the tick along the axis.
+   */
+  computeCategoryAxisTicks(context, categoryInfo, axisConfig) {
+    const { categoryAxisFormatter } = context.args;
+    const isTimeAxis = axisConfig.type === 'time';
+    const model = new echarts.Model({
+      // defaults from `coord/axisDefault.ts` relevant to the scale
+      ...(isTimeAxis && {
+        splitNumber: 6,
+      }),
+      ...axisConfig,
+    });
+
+    model.ecModel = this.chart.getModel();
+
+    if (!isTimeAxis) {
+      model.getCategories = () => categoryInfo.categories;
+    }
+
+    const scale = echarts.helper.createScale(
+      [categoryInfo.first.valueOf(), categoryInfo.last.valueOf()],
+      model
+    );
+
+    let ticks = scale.getTicks(false).map((tick, index) => ({
+      // prettier not formatting nested ternaries properly, so turn it off
+      // prettier-ignore
+      ...parseAxisLabel(isTimeAxis
+          ? scale.getFormattedLabel(tick, index, categoryAxisFormatter)
+          : categoryAxisFormatter
+            ? categoryAxisFormatter(scale.getLabel(tick))
+            : scale.getLabel(tick)
+        ),
+      position: scale.normalize(tick.value),
+    }));
+
+    if (isShowingAxisLabel(axisConfig, 'Min')) {
+      ticks.shift();
+    }
+
+    if (isShowingAxisLabel(axisConfig, 'Max')) {
+      ticks.pop();
+    }
+
+    return ticks;
+  }
+
+  /**
+   * Calculate the labels used for the value axis.
+   */
+  computeValueAxisTicks(context, valueInfo, axisConfig) {
+    const { args } = context;
+    const formatter = args.valueAxisFormatter ?? echarts.format.addCommas;
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
+    const minValue =
+      axisConfig.min == null
+        ? Math.min(0, valueInfo.minimum)
+        : axisConfig.min === 'dataMin'
+          ? valueInfo.minimum
+          : axisConfig.min;
+    // prettier not formatting nested ternaries properly, so turn it off
+    // prettier-ignore
+    const maxValue =
+      axisConfig.max == null
+        ? valueInfo.maximum
+        : axisConfig.max === 'dataMax'
+          ? valueInfo.maximum
+          : axisConfig.max;
+    const scale = echarts.helper.createScale([minValue, maxValue], axisConfig);
+
+    return scale.getTicks(false).map((tick) => ({
+      label: tick.value != null ? formatter(tick.value) : '',
+      position: scale.normalize(tick.value),
+    }));
+  }
+
+  /**
    * Generates the plot config for a single plot on this chart.
    */
   generatePlotConfig(series, layout, context, gridIndex) {
@@ -637,8 +844,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     }
 
     const { variant, orientation, colorMap } = args;
-    const { categoryProperty = 'name', valueProperty = 'value' } = args;
-    const { categoryAxisScale, categoryAxisMaxLabelCount } = args;
+    const { categoryAxisType = 'category' } = args;
+    const { categoryAxisMaxLabelCount } = args;
     const { categoryAxisFormatter, valueAxisFormatter } = args;
     const { valueAxisScale, valueAxisMax } = args;
     const isHorizontal = orientation === 'horizontal';
@@ -647,52 +854,120 @@ export default class BarChartModifier extends AbstractChartModifier {
     const isStackedVariant = this.isStackedVariant(variant);
     const isGroupedOrStacked =
       this.isGroupedVariant(variant) || isStackedVariant;
-    const seriesData = isGroupedOrStacked ? series.data : [series];
 
     // Analyze the data
-    const categories =
-      categoryAxisScale === 'shared'
-        ? data.categories
-        : this.getCategories(args, seriesData);
-    const maxValue =
-      valueAxisScale === 'shared'
-        ? data.maxValue
-        : computeStatistic(seriesData, 'max');
-    const values = isGroupedOrStacked
-      ? getSeriesTotals(
-          series.data,
-          categories,
-          categoryProperty,
-          valueProperty
-        )
-      : getSeriesData(series.data, categories, categoryProperty, valueProperty);
-    // Not the real labels, but good enough for now for computing the metrics
-    const valueTexts = values.map((value) => (value != null ? `${value}` : ''));
+    const categoryInfo = this.computeCategoryInfo(series, context);
+    const valueInfo = this.computeValueInfo(
+      series,
+      context,
+      categoryInfo.categories
+    );
+
+    // Resolve axis styles
+    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
+    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
+    const valueAxisStyle = isHorizontal ? xAxisStyle : yAxisStyle;
+    const categoryAxisStyle = isHorizontal ? yAxisStyle : xAxisStyle;
+
+    // Configure value axis
+    const valueAxisConfig = {
+      gridIndex,
+      type: 'value',
+      max:
+        // prettier not formatting nested ternaries properly, so turn it off
+        // prettier-ignore
+        !isGroupedOrStacked && valueAxisScale === 'shared'
+          ? valueAxisMax && valueAxisMax !== 'dataMax'
+            ? valueAxisMax
+            : data.maxValue
+          : valueAxisMax !== 'dataMaxRoundedUp'
+            ? valueAxisMax
+            : undefined,
+      axisLabel: {
+        ...(valueAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            valueAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // margin between the axis label and the axis line
+        margin: isHorizontal
+          ? valueAxisStyle.marginTop
+          : valueAxisStyle.marginRight,
+        ...this.generateAxisLabelConfig(layout, valueAxisStyle),
+      },
+    };
+    const valueTicks = this.computeValueAxisTicks(
+      context,
+      valueInfo,
+      valueAxisConfig
+    );
+
+    // Configure category axis
+    const categoryAxisConfig = {
+      gridIndex,
+      type: categoryAxisType,
+      // Render labels top-to-bottom when using horizontal orientation
+      inverse: isHorizontal,
+      ...(categoryAxisType !== 'time' && {
+        data: categoryInfo.categories,
+      }),
+      axisLabel: {
+        ...(categoryAxisFormatter && {
+          formatter: (value, axisIndex) =>
+            categoryAxisFormatter(value, 'axis', axisIndex),
+        }),
+        // Determine how many categories are shown on the axis
+        interval:
+          categoryAxisMaxLabelCount &&
+          categoryInfo.count > categoryAxisMaxLabelCount
+            ? Math.ceil(categoryInfo.count / categoryAxisMaxLabelCount) - 1
+            : 0,
+        ...(!isHorizontal && {
+          overflow: 'break',
+        }),
+        // margin between the axis label and the axis line
+        margin: isHorizontal
+          ? categoryAxisStyle.marginRight
+          : categoryAxisStyle.marginTop,
+      },
+    };
+    const categoryTicks = this.computeCategoryAxisTicks(
+      context,
+      categoryInfo,
+      categoryAxisConfig
+    );
 
     // Configure the Y axis
     const yAxisConfig = {};
-    const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
     const yAxisInfo = this.computeYAxisInfo(
       yAxisStyle,
-      isHorizontal ? categories : valueTexts,
-      maxValue
+      isHorizontal ? categoryTicks : valueTicks,
+      isHorizontal
     );
 
     layout = this.addAxisPointer(context, layout, yAxisConfig, yAxisInfo, 'y');
 
     // Configure the X axis
     const xAxisConfig = {};
-    const xAxisStyle = resolveStyle(styles.xAxis, context.layout);
     const xAxisInfo = this.computeXAxisInfo(
       args,
       layout,
       xAxisStyle,
-      isHorizontal ? valueTexts : categories,
+      isHorizontal ? valueTicks : categoryTicks,
       yAxisInfo,
       isHorizontal
     );
 
     layout = this.addAxisPointer(context, layout, xAxisConfig, xAxisInfo, 'x');
+
+    // Update the axis label for the category axis
+    categoryAxisConfig.axisLabel = {
+      ...categoryAxisConfig.axisLabel,
+      width: xAxisInfo.maxLabelWidth,
+      ...this.generateAxisLabelConfig(
+        layout,
+        isHorizontal ? yAxisStyle : xAxisStyle
+      ),
+    };
 
     // Setup base configurations
     const seriesBaseConfig = {
@@ -722,61 +997,6 @@ export default class BarChartModifier extends AbstractChartModifier {
       triggerLineEvent: true,
       z: 20,
     };
-    const valueAxisConfig = {
-      gridIndex,
-      type: 'value',
-      max:
-        // prettier not formatting nested ternaries properly, so turn it off
-        // prettier-ignore
-        valueAxisScale === 'shared'
-          ? valueAxisMax && valueAxisMax !== 'dataMax'
-            ? valueAxisMax
-            : data.maxValue
-          : valueAxisMax !== 'dataMaxRoundedUp'
-            ? valueAxisMax
-            : undefined,
-      axisLabel: {
-        ...(valueAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            valueAxisFormatter(value, 'axis', axisIndex),
-        }),
-        // margin between the axis label and the axis line
-        margin: yAxisStyle.marginRight,
-        ...this.generateAxisLabelConfig(
-          layout,
-          isHorizontal ? xAxisStyle : yAxisStyle
-        ),
-      },
-    };
-    const categoryAxisConfig = {
-      gridIndex,
-      type: 'category',
-      // Render labels top-to-bottom when using horizontal orientation
-      inverse: isHorizontal,
-      data: categories,
-      axisLabel: {
-        ...(categoryAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            categoryAxisFormatter(value, 'axis', axisIndex),
-        }),
-        // Determine how many categories are shown on the axis
-        interval:
-          categoryAxisMaxLabelCount &&
-          categories.length > categoryAxisMaxLabelCount
-            ? Math.ceil(categories.length / categoryAxisMaxLabelCount) - 1
-            : 0,
-        ...(!isHorizontal && {
-          overflow: 'break',
-        }),
-        width: xAxisInfo.maxLabelWidth,
-        // margin between the axis label and the axis line
-        margin: xAxisStyle.marginTop,
-        ...this.generateAxisLabelConfig(
-          layout,
-          isHorizontal ? yAxisStyle : xAxisStyle
-        ),
-      },
-    };
 
     // Configure final grid style
     const plotStyle = resolveStyle(styles.plot, context.layout);
@@ -784,7 +1004,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       // Not sure why the 1px adjustment is needed to `x`, but it is
       x: layout.innerX + yAxisInfo.width - 1,
       y: layout.innerY + yAxisInfo.heightOverflow,
-      width: xAxisInfo.width,
+      width: xAxisInfo.width - xAxisInfo.widthOverflow,
       height: layout.innerHeight - xAxisInfo.height - yAxisInfo.heightOverflow,
     };
 
@@ -826,7 +1046,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         ? [
             {
               ...seriesBaseConfig,
-              data: getSeriesData(series.data, categories, categoryProperty),
+              data: computeData(series.data, categoryInfo.categories, args),
               ...(isBarVariant && {
                 colorBy: 'data',
               }),
@@ -835,7 +1055,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: getSeriesData(info.data, categories, categoryProperty).map(
+            data: computeData(info.data, categoryInfo.categories, args).map(
               (item) => ({
                 ...item,
                 ...setItemColor(colorMap, item, info.label),
@@ -1063,14 +1283,49 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the Y axis for charts that use an Y axis.
    */
-  computeYAxisInfo(style, labels, maxValue) {
-    const labelMetrics = computeMaxTextMetrics(labels, style);
+  computeYAxisInfo(style, ticks, isHorizontal) {
+    // HACK TODO: When ticks are too close to each other, the following tick
+    //            will be hidden. This can cause the Y axis to calculate the
+    //            width wrong if the tick that is hidden has a wider width than
+    //            the rest of the ticks.
+    //
+    //            To see this, set the `@valueAxisMax` to a number slightly
+    //            higher than the default maximum value. For example, if the
+    //            normal top tick is 15000, set it to `15400.111111`. The extra
+    //            1's will increase the width of the axis, but then this tick
+    //            will be hidden, so it will create a bunch of extra space.
+    //
+    //            In reality, we should use a label collision detection formula
+    //            here, but that requires a lot more work and this is a fairly
+    //            rare edge case in our charts, so I'm just using the magic
+    //            number of 3%. When ticks are closer than 3% of the axis
+    //            length, then the second tick is hidden. [twl 17.Mar.23]
+    const renderedTicks = [...ticks].reduce((ticks, tick) => {
+      if (
+        !ticks.length ||
+        tick.position - ticks[ticks.length - 1].position > 0.03
+      ) {
+        ticks.push(tick);
+      }
+
+      return ticks;
+    }, []);
+    const labelMetrics = computeMaxTextMetrics(
+      renderedTicks.map((tick) => tick.label),
+      style
+    );
     const width = labelMetrics.width + style.marginLeft + style.marginRight;
 
-    // Only applies when the very top label is rendered; for now, assuming it's
-    // always there, since I don't know how to determine this on the fly
-    const topLabelMetrics = computeTextMetrics(`${maxValue}`, style);
-    const heightOverflow = topLabelMetrics.height / 2;
+    // Handle when label extends past the top of the axis.
+    //
+    // NOTE: To be fully accurate, we should use the `position` like we do in
+    //       `computeXAxisInfo`. However, since we compute the Y axis info first
+    //       we don't have an accurate axis height and for these charts we're
+    //       always rendering a label at the top of the axis anyway, so the
+    //       top tick position should always be 1. [twl 17.Mar.23]
+    const topTick = renderedTicks[renderedTicks.length - 1];
+    const topTickHeight = computeTextMetrics(topTick.label, style).height;
+    const heightOverflow = isHorizontal ? 0 : Math.max(0, topTickHeight / 2);
 
     return {
       width,
@@ -1086,10 +1341,11 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the X axis for charts that use an X axis.
    */
-  computeXAxisInfo(args, layout, style, labels, yAxisInfo, isHorizontal) {
+  computeXAxisInfo(args, layout, style, ticks, yAxisInfo, isHorizontal) {
+    const { categoryAxisMaxLabelCount, categoryAxisType } = args;
     const maxLabelCount = Math.min(
-      args.categoryAxisMaxLabelCount ?? labels.length,
-      labels.length
+      categoryAxisMaxLabelCount ?? ticks.length,
+      ticks.length
     );
     const width =
       layout.innerWidth -
@@ -1097,18 +1353,37 @@ export default class BarChartModifier extends AbstractChartModifier {
       layout.borderLeftWidth -
       layout.borderRightWidth;
     const lineWidth = isHorizontal ? 0 : 1;
-    // 10 is arbitrary number here, since we don't know how many divisions the
-    // chart will create if the X axis is a value axis
-    const maxLabelWidth = width / (isHorizontal ? 10 : maxLabelCount);
-    const labelMetrics = computeMaxTextMetrics(labels, style, maxLabelWidth);
+    const maxLabelWidth = width / (isHorizontal ? ticks.length : maxLabelCount);
+
+    // TODO: If we want to be precise, we should be passing in a custom style
+    //       for each tick, since if a tick has a `type` of `primary`, it gets
+    //       rendered via the primary axis tick style as defined by
+    //       `axisLabel.rich.primary` in the Echarts config. However, the
+    //       default is only to make the font bold, which only causes a pixel or
+    //       two different in the final value. Skipping this for now, since it
+    //       requires a bunch of refactoring to make this work. [twl 17.Mar.23]
+    const labelMetrics = computeMaxTextMetrics(
+      ticks.map((tick) => tick.label),
+      style,
+      maxLabelWidth
+    );
     const height =
       labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
+
+    // Handle when label extends past end of axis
+    const lastTick = ticks[ticks.length - 1];
+    const lastLabelWidth = computeTextMetrics(lastTick.label, style).width;
+    const widthOverflow =
+      !isHorizontal && categoryAxisType !== 'time'
+        ? 0
+        : Math.max(0, lastLabelWidth / 2 - (width - lastTick.position * width));
 
     return {
       width,
       height,
       labelMetrics,
       maxLabelWidth,
+      widthOverflow,
     };
   }
 }

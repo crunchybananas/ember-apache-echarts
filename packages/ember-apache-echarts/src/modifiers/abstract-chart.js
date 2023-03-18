@@ -3,6 +3,7 @@ import transform from 'lodash/transform';
 import { registerDestructor } from '@ember/destroyable';
 import Modifier from 'ember-modifier';
 import * as echarts from 'echarts';
+import onElementResize from '../utils/on-element-resize';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values';
 import computeInnerBox from '../utils/layout/compute-inner-box';
 import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics';
@@ -82,7 +83,24 @@ export default class AbstractChartModifier extends Modifier {
     }
   }
 
-  modify(element, [args], defaultArgs) {
+  modify(element, [args], defaultArgs, count = 0) {
+    if (!element.clientHeight || !element.clientWidth) {
+      // Escape hatch if the styling of this element doesn't allow it to have
+      // a size within its parent layout
+      if (count > 10) {
+        element.style.height = element.clientHeight || '400px';
+        element.style.width = element.clientWidth || '600px';
+      }
+
+      onElementResize(
+        element,
+        () => this.modify(element, [args], defaultArgs, count + 1),
+        true
+      );
+
+      return;
+    }
+
     const chartArgs = { ...defaultArgs, ...args };
 
     if (!this.chart) {
@@ -101,6 +119,10 @@ export default class AbstractChartModifier extends Modifier {
   createChart(element, chartArgs) {
     const chart = echarts.init(element, null, { renderer: 'canvas' });
 
+    // Initialize the chart model using default options so charts that need to
+    // access the locale via the model while being built can do so
+    chart.setOption({});
+
     // Add a `handle` method that ensures only one event listener can be
     // attached at the same time. This prevents mistakes when coding new charts
     // of forgetting to `off` an event during a reconfigure and then having
@@ -113,7 +135,7 @@ export default class AbstractChartModifier extends Modifier {
     // Resize the chart whenever the containing element resizes
     let firstResize = true;
 
-    this.resizeObserver = new ResizeObserver(() => {
+    this.resizeObserver = onElementResize(element, () => {
       if (!firstResize) {
         chart.resize();
         this.configureChart(chartArgs, chart, element);
@@ -121,8 +143,6 @@ export default class AbstractChartModifier extends Modifier {
 
       firstResize = false;
     });
-
-    this.resizeObserver.observe(element);
 
     return chart;
   }
@@ -400,8 +420,10 @@ export default class AbstractChartModifier extends Modifier {
 
     return {
       ...context.layout,
-      height: context.layout.height - textHeight,
-      y: context.layout.y + textHeight,
+      cell: {
+        ...context.layout.cell,
+        yOffset: textHeight,
+      },
     };
   }
 

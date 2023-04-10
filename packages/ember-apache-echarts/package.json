@@ -1,6 +1,6 @@
 {
   "name": "ember-apache-echarts",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Echarts for Ember",
   "keywords": [
     "ember-addon"
@@ -40,7 +40,7 @@
     "ember-cli-string-helpers": "^6.1.0",
     "ember-lodash": "^4.19.5",
     "ember-modifier": "^3.2.7",
-    "ember-style-modifier": "^0.8.0",
+    "ember-style-modifier": "^3.0.1",
     "ember-truth-helpers": "^3.1.1",
     "inputmask": "^5.0.7",
     "lodash": "^4.17.4"
@@ -63,10 +63,11 @@
     "rollup": "2.75.6"
   },
   "peerDependencies": {
-    "ember-source": "~4.0.0"
+    "ember-source": "~4.0.0",
+    "@ember/string": "^3.0.1"
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 16"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

@@ -1,6 +1,6 @@
 {
   "name": "test-app",
-  "version": "0.4.2",
+  "version": "0.1.0",
   "private": true,
   "description": "Small description for test-app goes here",
   "repository": "",
@@ -24,12 +24,14 @@
   },
   "devDependencies": {
     "@ember/optional-features": "2.0.0",
+    "@ember/string": "^3.0.1",
     "@ember/test-helpers": "2.8.1",
     "@embroider/test-setup": "1.8.0",
     "@glimmer/component": "1.1.2",
     "@glimmer/tracking": "1.1.2",
     "babel-eslint": "10.1.0",
     "broccoli-asset-rev": "3.0.0",
+    "ember-apache-echarts": "*",
     "ember-auto-import": "2.4.2",
     "ember-cli": "3.28.5",
     "ember-cli-app-version": "5.0.0",
@@ -48,7 +50,6 @@
     "ember-sinon-qunit": "6.0.0",
     "ember-source": "~4.0.0",
     "ember-source-channel-url": "3.0.0",
-    "ember-apache-echarts": "*",
     "ember-template-lint": "4.10.0",
     "ember-try": "2.0.0",
     "eslint": "7.32.0",
@@ -65,7 +66,7 @@
     "webpack": "5.73.0"
   },
   "engines": {
-    "node": "14.* || >= 16"
+    "node": ">= 16"
   },
   "ember": {
     "edition": "octane"

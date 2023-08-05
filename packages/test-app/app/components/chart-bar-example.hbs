@@ -77,6 +77,24 @@
   @valueAxisScale="shared"
 />
 
+<h3>Stacked</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="line"
+  @noDataText="No data"
+  @title={{this.stackedOptions.title}}
+  @tooltip={{this.stackedOptions.tooltip}}
+  @legend={{this.stackedOptions.legend}}
+  @legendOrientation={{this.stackedOptions.legendOrientation}}
+  @grid={{this.stackedOptions.grid}}
+  @toolbox={{this.stackedOptions.toolbox}}
+  @xAxis={{this.stackedOptions.xAxis}}
+  @yAxis={{this.stackedOptions.yAxis}}
+  @series={{this.stackedOptions.series}}
+/>
+
 <h2>Area Charts</h2>
 
 <h3>Simple</h3>

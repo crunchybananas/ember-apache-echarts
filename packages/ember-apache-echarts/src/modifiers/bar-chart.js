@@ -124,6 +124,11 @@ const computeData = (data, categories, args) => {
  * `plotStyle`
  * : CSS properties defining the style of the plot (area defined by the axes)
  *
+ * `seriesConfig`
+ * : A hash of EChart render properties for the `variant`. Use for properties
+ *   not yet supported by this chart natively. Properties used by this chart
+ *   internally are not supported.
+ *
  *
  * ## Axes
  *
@@ -837,7 +842,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
-    const { noDataText } = args;
+    const { noDataText, seriesConfig } = args;
 
     if ((!series.data || series.data.length == 0) && noDataText) {
       return undefined;
@@ -971,6 +976,7 @@ export default class BarChartModifier extends AbstractChartModifier {
 
     // Setup base configurations
     const seriesBaseConfig = {
+      ...seriesConfig,
       xAxisIndex: gridIndex,
       yAxisIndex: gridIndex,
       type: isBarVariant ? 'bar' : 'line',

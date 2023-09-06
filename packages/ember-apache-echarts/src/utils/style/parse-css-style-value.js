@@ -1,5 +1,5 @@
-import camelCase from 'lodash/camelCase';
-import transform from 'lodash/transform';
+import { camelCase } from 'lodash-es';
+import { transform } from 'lodash-es';
 
 /**
  * Parses the value of a `style` attribute for a DOM element into an object.

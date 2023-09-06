@@ -3359,7 +3359,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15":
+"@jridgewell/sourcemap-codec@npm:^1.4.13, @jridgewell/sourcemap-codec@npm:^1.4.14, @jridgewell/sourcemap-codec@npm:^1.4.15":
   version: 1.4.15
   resolution: "@jridgewell/sourcemap-codec@npm:1.4.15"
   checksum: b881c7e503db3fc7f3c1f35a1dd2655a188cc51a3612d76efc8a6eb74728bef5606e6758ee77423e564092b4a518aba569bbb21c9bac5ab7a35b0c6ae7e344c8
@@ -3444,6 +3444,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@optimize-lodash/rollup-plugin@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "@optimize-lodash/rollup-plugin@npm:4.0.3"
+  dependencies:
+    "@optimize-lodash/transform": 3.0.2
+    "@rollup/pluginutils": ~5.0.2
+  peerDependencies:
+    rollup: ">=2.x"
+  checksum: c12c98487bff20e8672ef15ef1d084781aa5fa7b9cff2a00ac3311f3bcc97c5751a4bb664f29a757349d1d3e14ff4be2e98cc26477604926a1f1c487d6f3e791
+  languageName: node
+  linkType: hard
+
+"@optimize-lodash/transform@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@optimize-lodash/transform@npm:3.0.2"
+  dependencies:
+    estree-walker: 2.x
+    magic-string: 0.27.x
+  checksum: 5b754ce91bc346ec2656484514730544f053ffdbf5e9a559d5f288f27cbbf264336d85682811036447a71fddcf47d60a374a5051d872b8c6e826b6a8e7af9159
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -3520,7 +3542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^5.0.1":
+"@rollup/pluginutils@npm:^5.0.1, @rollup/pluginutils@npm:~5.0.2":
   version: 5.0.4
   resolution: "@rollup/pluginutils@npm:5.0.4"
   dependencies:
@@ -6798,6 +6820,7 @@ __metadata:
     "@embroider/addon-dev": 4.1.0
     "@embroider/addon-shim": ^1.0.0
     "@glimmer/component": ^1.1.2
+    "@optimize-lodash/rollup-plugin": ^4.0.3
     "@rollup/plugin-babel": ^6.0.3
     babel-eslint: 10.1.0
     echarts: ^5.3.2
@@ -6815,6 +6838,7 @@ __metadata:
     eslint-plugin-qunit: 8.0.0
     inputmask: ^5.0.7
     lodash: ^4.17.4
+    lodash-es: ^4.17.21
     npm-run-all: 4.1.5
     rollup: 3.29.0
   peerDependencies:
@@ -8216,7 +8240,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"estree-walker@npm:^2.0.1, estree-walker@npm:^2.0.2":
+"estree-walker@npm:2.x, estree-walker@npm:^2.0.1, estree-walker@npm:^2.0.2":
   version: 2.0.2
   resolution: "estree-walker@npm:2.0.2"
   checksum: 6151e6f9828abe2259e57f5fd3761335bb0d2ebd76dc1a01048ccee22fabcfef3c0859300f6d83ff0d1927849368775ec5a6d265dde2f6de5a1be1721cd94efc
@@ -11167,7 +11191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:^4.17.4":
+"lodash-es@npm:^4.17.21, lodash-es@npm:^4.17.4":
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 05cbffad6e2adbb331a4e16fbd826e7faee403a1a04873b82b42c0f22090f280839f85b95393f487c1303c8a3d2a010048bf06151a6cbe03eee4d388fb0a12d2
@@ -11490,6 +11514,15 @@ __metadata:
   version: 10.0.1
   resolution: "lru-cache@npm:10.0.1"
   checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
+  languageName: node
+  linkType: hard
+
+"magic-string@npm:0.27.x":
+  version: 0.27.0
+  resolution: "magic-string@npm:0.27.0"
+  dependencies:
+    "@jridgewell/sourcemap-codec": ^1.4.13
+  checksum: 273faaa50baadb7a2df6e442eac34ad611304fc08fe16e24fe2e472fd944bfcb73ffb50d2dc972dc04e92784222002af46868cb9698b1be181c81830fd95a13e
   languageName: node
   linkType: hard
 
@@ -13080,15 +13113,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.7.1":
-  version: 2.7.1
-  resolution: "prettier@npm:2.7.1"
-  bin:
-    prettier: bin-prettier.js
-  checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b
-  languageName: node
-  linkType: hard
-
 "prettier@npm:3.0.3":
   version: 3.0.3
   resolution: "prettier@npm:3.0.3"
@@ -13874,7 +13898,7 @@ __metadata:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     npm-run-all: 4.1.5
-    prettier: 2.7.1
+    prettier: 3.0.3
   languageName: unknown
   linkType: soft
 

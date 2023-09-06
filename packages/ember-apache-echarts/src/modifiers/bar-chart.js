@@ -1,7 +1,7 @@
 import { tracked } from '@glimmer/tracking';
-import compact from 'lodash/compact';
-import countBy from 'lodash/countBy';
-import flatten from 'lodash/flatten';
+import { compact } from 'lodash-es';
+import { countBy } from 'lodash-es';
+import { flatten } from 'lodash-es';
 import * as echarts from 'echarts';
 import mergeAtPaths from '../utils/merge-at-paths';
 import parseAxisLabel from '../utils/chart/parse-axis-label';

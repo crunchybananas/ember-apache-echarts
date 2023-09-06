@@ -1,5 +1,5 @@
-import flatten from 'lodash/flatten';
-import transform from 'lodash/transform';
+import { flatten } from 'lodash-es';
+import { transform } from 'lodash-es';
 
 /**
  * Compute the sum of all values in the series in `data` for each category in

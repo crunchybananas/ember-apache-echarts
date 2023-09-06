@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'lodash-es';
 import getUniqueDatasetValues from './get-unique-dataset-values';
 
 /**

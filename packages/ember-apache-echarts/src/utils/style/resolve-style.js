@@ -1,4 +1,4 @@
-import mapValues from 'lodash/mapValues';
+import { mapValues } from 'lodash-es';
 import formatCssStyleValue from './format-css-style-value';
 import parseCssStyleValue from './parse-css-style-value';
 

@@ -1,5 +1,5 @@
-import merge from 'lodash/merge';
-import transform from 'lodash/transform';
+import { merge } from 'lodash-es';
+import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
 import Modifier from 'ember-modifier';
 import * as echarts from 'echarts';

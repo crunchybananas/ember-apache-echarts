@@ -1,4 +1,4 @@
-import pickBy from 'lodash/pickBy';
+import { pickBy } from 'lodash-es';
 import resolveStyle from '../style/resolve-style';
 
 /**

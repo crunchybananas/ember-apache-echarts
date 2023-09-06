@@ -1,5 +1,5 @@
-import get from 'lodash/get';
-import set from 'lodash/set';
+import { get } from 'lodash-es';
+import { set } from 'lodash-es';
 
 /**
  * Merges the existing value at `path` within `object` with the `value`, if

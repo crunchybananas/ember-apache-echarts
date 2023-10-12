@@ -58,11 +58,17 @@ jobs:
           - embroider-optimized
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
-      - uses: ./.github/actions/download-built-package
-      - name: Run Tests
-        working-directory: ./test-app
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */node_modules
+          key: node_modules-${{runner.os}}-${{hashFiles('**/pnpm-lock.yaml')}}-v2
+      - name: Install dependencies
+        run: CI=true pnpm i --frozen-lockfile
+      - name: Test
         run: >-
           node_modules/.bin/ember try:one ${{ matrix.try-scenario }}
           --skip-cleanup
+        working-directory: ./test-app

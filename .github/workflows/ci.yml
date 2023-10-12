@@ -60,8 +60,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'pnpm'
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */node_modules
+          key: node_modules-${{runner.os}}-${{hashFiles('**/pnpm-lock.yaml')}}-v2
+
       - name: Install dependencies
-        uses: bahmutov/npm-install@v1
+        run: CI=true pnpm i --frozen-lockfile
       - name: Test
         run: pnpm ember try:one ${{ matrix.scenario }}
         working-directory: packages/test-app

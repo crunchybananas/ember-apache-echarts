@@ -7,18 +7,23 @@ jobs:
     concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            */node_modules
+          key: node_modules-${{runner.os}}-${{hashFiles('**/pnpm-lock.yaml')}}-v2
+
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      
+        run: CI=true pnpm i --frozen-lockfile
+
       - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
-        working-directory: packages/test-app
+        working-directory: test-app
         run: |
-          yarn build
+          pnpm build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: packages/test-app/dist # The folder the action should deploy.
+          folder: test-app/dist # The folder the action should deploy.

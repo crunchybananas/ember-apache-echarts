@@ -4,20 +4,20 @@
 
 * `git clone <repository-url>`
 * `cd ember-apache-echarts`
-* `yarn install`
+* `pnpm install`
 
 ## Linting
 
-* `yarn lint`
-* `yarn lint:fix`
+* `pnpm lint`
+* `pnpm lint:fix`
 
 ## Running tests
 
-* `yarn test` – Runs the test suite on the current Ember version
+* `pnpm test` – Runs the test suite on the current Ember version
 
 ## Running the test-app application
 
-* `yarm start`
+* `pnpm start`
 * Visit the application at [http://localhost:4200](http://localhost:4200).
 
 For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).

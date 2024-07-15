@@ -27,5 +27,5 @@ export default helper(function cssSize(positional /*, named*/) {
     ? size.toString() !== '0'
       ? `${size}px`
       : '0'
-    : size ?? '0';
+    : (size ?? '0');
 });

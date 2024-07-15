@@ -1,6 +1,6 @@
 {
   "name": "ember-apache-echarts",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Echarts for Ember",
   "keywords": [
     "ember-addon"
@@ -33,38 +33,38 @@
     "prepare": "pnpm build"
   },
   "dependencies": {
-    "@ember/render-modifiers": "^2.0.0",
-    "@embroider/addon-shim": "^1.0.0",
+    "@ember/render-modifiers": "^2.1.0",
+    "@embroider/addon-shim": "^1.8.9",
     "@glimmer/component": "^1.1.2",
-    "echarts": "^5.3.2",
+    "echarts": "^5.5.1",
     "ember-cli-string-helpers": "^6.1.0",
     "ember-lodash": "^4.19.5",
-    "ember-modifier": "^3.2.7",
-    "ember-style-modifier": "^3.0.1",
-    "ember-truth-helpers": "^3.1.1",
-    "inputmask": "^5.0.7",
+    "ember-modifier": "^4.2.0",
+    "ember-style-modifier": "^4.3.1",
+    "ember-truth-helpers": "^4.0.3",
+    "inputmask": "^5.0.9",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
-    "@babel/core": "7.22.15",
+    "@babel/core": "7.22.20",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.22.15",
-    "@embroider/addon-dev": "4.1.0",
-    "@optimize-lodash/rollup-plugin": "^4.0.3",
-    "@rollup/plugin-babel": "^6.0.3",
+    "@babel/plugin-proposal-decorators": "7.24.7",
+    "@embroider/addon-dev": "4.3.1",
+    "@optimize-lodash/rollup-plugin": "^4.0.4",
+    "@rollup/plugin-babel": "^6.0.4",
     "babel-eslint": "10.1.0",
-    "ember-template-lint": "5.11.2",
-    "eslint": "8.48.0",
-    "eslint-config-prettier": "9.0.0",
-    "eslint-plugin-ember": "11.11.1",
+    "ember-template-lint": "5.13.0",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-ember": "11.12.0",
     "eslint-plugin-node": "11.1.0",
-    "eslint-plugin-prettier": "5.0.0",
-    "eslint-plugin-qunit": "8.0.0",
+    "eslint-plugin-prettier": "5.0.1",
+    "eslint-plugin-qunit": "8.0.1",
     "npm-run-all": "4.1.5",
-    "rollup": "3.29.0"
+    "rollup": "4.18.1"
   },
   "peerDependencies": {
-    "@ember/string": ">=3.1.1",
+    "@ember/string": ">=4.0.0",
     "ember-source": ">=5.0.0"
   },
   "engines": {
@@ -72,6 +72,7 @@
     "yarn": "use pnpm",
     "npm": "use pnpm"
   },
+  "packageManager": "pnpm@9.5.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
@@ -109,7 +110,7 @@
       "./utils/style/format-css-style-value.js": "./dist/_app_/utils/style/format-css-style-value.js",
       "./utils/style/parse-css-style-value.js": "./dist/_app_/utils/style/parse-css-style-value.js",
       "./utils/style/resolve-style.js": "./dist/_app_/utils/style/resolve-style.js",
-      "./_rollupPluginBabelHelpers-7ae2993d.js": "./dist/_app_/_rollupPluginBabelHelpers-7ae2993d.js"
+      "./_rollupPluginBabelHelpers-BRnyJ4b7.js": "./dist/_app_/_rollupPluginBabelHelpers-BRnyJ4b7.js"
     }
   }
 }

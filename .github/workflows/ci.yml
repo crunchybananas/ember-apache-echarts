@@ -8,7 +8,6 @@ on:
       - '*'
   pull_request:
 
-
 jobs:
   test:
     name: Tests
@@ -20,7 +19,7 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'pnpm'
       - name: Setup pnpm cache
         uses: actions/cache@v4

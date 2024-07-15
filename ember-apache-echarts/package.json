@@ -72,6 +72,7 @@
     "yarn": "use pnpm",
     "npm": "use pnpm"
   },
+  "packageManager": "pnpm@9.5.0",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },

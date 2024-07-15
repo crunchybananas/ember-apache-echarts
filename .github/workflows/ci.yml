@@ -57,6 +57,12 @@ jobs:
           - embroider-optimized
 
     steps:
+      - uses: pnpm/action-setup@v4
+      - name: Setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:

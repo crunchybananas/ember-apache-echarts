@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
       - name: Setup node.js
         uses: actions/setup-node@v4
         with:
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Setup pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             node_modules

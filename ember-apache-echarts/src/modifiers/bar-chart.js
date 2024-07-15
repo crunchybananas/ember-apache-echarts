@@ -448,10 +448,10 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-          ? series.data[dataIndex][
-              args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY
-            ]
-          : null;
+            ? series.data[dataIndex][
+                args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY
+              ]
+            : null;
 
       if (name) {
         chart.dispatchAction({

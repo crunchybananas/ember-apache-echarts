@@ -34,8 +34,8 @@ function resolveStyle(style, context) {
     isPixelDimension.test(value)
       ? parseFloat(value.slice(0, -2))
       : isPercentDimension.test(value)
-      ? resolvePercentDimension(value, property, context)
-      : value
+        ? resolvePercentDimension(value, property, context)
+        : value
   );
 }
 

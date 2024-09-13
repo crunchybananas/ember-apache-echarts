@@ -133,8 +133,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       ember-apache-echarts:
-        specifier: '*'
-        version: 0.4.1(@babel/core@7.24.9)(@ember/string@4.0.0)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))(webpack@5.93.0)
+        specifier: workspace:*
+        version: link:../ember-apache-echarts
       ember-auto-import:
         specifier: 2.7.4
         version: 2.7.4(webpack@5.93.0)
@@ -2865,13 +2865,6 @@ packages:
   electron-to-chromium@1.4.827:
     resolution: {integrity: sha512-VY+J0e4SFcNfQy19MEoMdaIcZLmDCprqvBtkii1WTCTQHpRvf5N8+3kTYCgL/PcntvwQvmMJWTuDPsq+IlhWKQ==}
 
-  ember-apache-echarts@0.4.1:
-    resolution: {integrity: sha512-gO6I8jqybHv6ua6md9+P9EMCK1MGBMb9+goxzCPz+jGIfu9ia4AzzolBbm52JP33ixKbPUmo9yrOjQtur1mQzA==}
-    engines: {node: '>= 16'}
-    peerDependencies:
-      '@ember/string': '>=3.1.1'
-      ember-source: '>=5.0.0'
-
   ember-auto-import@2.6.3:
     resolution: {integrity: sha512-uLhrRDJYWCRvQ4JQ1e64XlSrqAKSd6PXaJ9ZsZI6Tlms9T4DtQFxNXasqji2ZRJBVrxEoLCRYX3RTldsQ0vNGQ==}
     engines: {node: 12.* || 14.* || >= 16}
@@ -3015,10 +3008,6 @@ packages:
     resolution: {integrity: sha512-bnaKF1LLKMkBNeDoetvIJ4vhwRPKIIumWr6dbVuW6W6p4QV8ZiO+GdF8J7mxDNlog9CeL9Z/7wam4YS86G8BYA==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  ember-modifier@3.2.7:
-    resolution: {integrity: sha512-ezcPQhH8jUfcJQbbHji4/ZG/h0yyj1jRDknfYue/ypQS8fM8LrGcCMo0rjDZLzL1Vd11InjNs3BD7BdxFlzGoA==}
-    engines: {node: 12.* || >= 14}
-
   ember-modifier@4.2.0:
     resolution: {integrity: sha512-BJ48eTEGxD8J7+lofwVmee7xDgNDgpr5dd6+MSu4gk+I6xb35099RMNorXY5hjjwMJEyi/IRR6Yn3M7iJMz8Zw==}
     peerDependencies:
@@ -3073,12 +3062,6 @@ packages:
     peerDependencies:
       '@glimmer/component': ^1.1.2
 
-  ember-style-modifier@3.1.1:
-    resolution: {integrity: sha512-J91YLKVp3/m7LrcLEWNSG2sJlSFhE5Ny75empU048qYJtdJMe788Ks/EpKEi953o1mJujVRg792YGrwbrpTzNA==}
-    engines: {node: 14.* || 16.* || >= 18}
-    peerDependencies:
-      '@ember/string': ^3.0.1
-
   ember-style-modifier@4.3.1:
     resolution: {integrity: sha512-QO7w7WX0nbM9L2XGjsTuLDWOvh073XXSLUXRnuKRGbG2iLHDuoCXZsRCZu2Ov6yFt9vB7vnNszQ+C0bUxqloeg==}
     peerDependencies:
@@ -3103,10 +3086,6 @@ packages:
     resolution: {integrity: sha512-fCh+rOK6z+/tsdkTbOE+e7f84P6ObnIRQrCCrnu21E4X05hPeradikIkRMhJdxn4NWrxitfZskQDd37TR/lsNQ==}
     engines: {node: 12.* || 14.* || >= 16.*}
     hasBin: true
-
-  ember-truth-helpers@3.1.1:
-    resolution: {integrity: sha512-FHwJAx77aA5q27EhdaaiBFuy9No+8yaWNT5A7zs0sIFCmf14GbcLn69vJEp6mW7vkITezizGAWhw7gL0Wbk7DA==}
-    engines: {node: 10.* || >= 12}
 
   ember-truth-helpers@4.0.3:
     resolution: {integrity: sha512-T6Ogd3pk9FxYiZfSxdjgn3Hb3Ksqgw7CD23V9qfig9jktNdkNEHo4+3PA3cSD/+3a2kdH3KmNvKyarVuzdtEkA==}
@@ -8037,16 +8016,6 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  '@ember/render-modifiers@2.1.0(@babel/core@7.24.9)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))':
-    dependencies:
-      '@embroider/macros': 1.16.5
-      ember-cli-babel: 7.26.11
-      ember-modifier-manager-polyfill: 1.2.0(@babel/core@7.24.9)
-      ember-source: 5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - supports-color
-
   '@ember/string@4.0.0': {}
 
   '@ember/test-helpers@3.2.1(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))(webpack@5.93.0)':
@@ -10217,13 +10186,6 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
 
-  decorator-transforms@2.0.0(@babel/core@7.24.9):
-    dependencies:
-      '@babel/plugin-syntax-decorators': 7.24.7(@babel/core@7.24.9)
-      babel-import-util: 3.0.0
-    transitivePeerDependencies:
-      - '@babel/core'
-
   deep-extend@0.6.0: {}
 
   deep-is@0.1.4: {}
@@ -10346,27 +10308,6 @@ snapshots:
   electron-to-chromium@1.4.551: {}
 
   electron-to-chromium@1.4.827: {}
-
-  ember-apache-echarts@0.4.1(@babel/core@7.24.9)(@ember/string@4.0.0)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))(webpack@5.93.0):
-    dependencies:
-      '@ember/render-modifiers': 2.1.0(@babel/core@7.24.9)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))
-      '@ember/string': 4.0.0
-      '@embroider/addon-shim': 1.8.9
-      '@glimmer/component': 1.1.2(@babel/core@7.24.9)
-      echarts: 5.5.1
-      ember-cli-string-helpers: 6.1.0
-      ember-lodash: 4.19.5
-      ember-modifier: 3.2.7(@babel/core@7.24.9)
-      ember-source: 5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0)
-      ember-style-modifier: 3.1.1(@babel/core@7.24.9)(@ember/string@4.0.0)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))(webpack@5.93.0)
-      ember-truth-helpers: 3.1.1
-      inputmask: 5.0.9
-      lodash-es: 4.17.21
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@glint/template'
-      - supports-color
-      - webpack
 
   ember-auto-import@2.6.3(webpack@5.93.0):
     dependencies:
@@ -10921,26 +10862,6 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  ember-modifier-manager-polyfill@1.2.0(@babel/core@7.24.9):
-    dependencies:
-      ember-cli-babel: 7.26.11
-      ember-cli-version-checker: 2.2.0
-      ember-compatibility-helpers: 1.2.6(@babel/core@7.24.9)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - supports-color
-
-  ember-modifier@3.2.7(@babel/core@7.24.9):
-    dependencies:
-      ember-cli-babel: 7.26.11
-      ember-cli-normalize-entity-name: 1.0.0
-      ember-cli-string-utils: 1.1.0
-      ember-cli-typescript: 5.2.1
-      ember-compatibility-helpers: 1.2.6(@babel/core@7.24.9)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - supports-color
-
   ember-modifier@4.2.0(@babel/core@7.22.20)(ember-source@5.3.0(@babel/core@7.22.20)(@glimmer/component@1.1.2(@babel/core@7.22.20))(rsvp@4.8.5)(webpack@5.93.0)):
     dependencies:
       '@embroider/addon-shim': 1.8.9
@@ -10949,18 +10870,6 @@ snapshots:
       ember-cli-string-utils: 1.1.0
     optionalDependencies:
       ember-source: 5.3.0(@babel/core@7.22.20)(@glimmer/component@1.1.2(@babel/core@7.22.20))(rsvp@4.8.5)(webpack@5.93.0)
-    transitivePeerDependencies:
-      - '@babel/core'
-      - supports-color
-
-  ember-modifier@4.2.0(@babel/core@7.24.9)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0)):
-    dependencies:
-      '@embroider/addon-shim': 1.8.9
-      decorator-transforms: 2.0.0(@babel/core@7.24.9)
-      ember-cli-normalize-entity-name: 1.0.0
-      ember-cli-string-utils: 1.1.0
-    optionalDependencies:
-      ember-source: 5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -11113,19 +11022,6 @@ snapshots:
       - supports-color
       - webpack
 
-  ember-style-modifier@3.1.1(@babel/core@7.24.9)(@ember/string@4.0.0)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))(webpack@5.93.0):
-    dependencies:
-      '@ember/string': 4.0.0
-      ember-auto-import: 2.7.4(webpack@5.93.0)
-      ember-cli-babel: 7.26.11
-      ember-modifier: 4.2.0(@babel/core@7.24.9)(ember-source@5.10.1(@glimmer/component@1.1.2(@babel/core@7.24.9))(rsvp@4.8.5)(webpack@5.93.0))
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@glint/template'
-      - ember-source
-      - supports-color
-      - webpack
-
   ember-style-modifier@4.3.1(@babel/core@7.22.20)(@ember/string@4.0.0)(ember-source@5.3.0(@babel/core@7.22.20)(@glimmer/component@1.1.2(@babel/core@7.22.20))(rsvp@4.8.5)(webpack@5.93.0)):
     dependencies:
       '@ember/string': 4.0.0
@@ -11211,12 +11107,6 @@ snapshots:
       slash: 3.0.0
       tmp: 0.2.1
       workerpool: 6.5.1
-    transitivePeerDependencies:
-      - supports-color
-
-  ember-truth-helpers@3.1.1:
-    dependencies:
-      ember-cli-babel: 7.26.11
     transitivePeerDependencies:
       - supports-color
 

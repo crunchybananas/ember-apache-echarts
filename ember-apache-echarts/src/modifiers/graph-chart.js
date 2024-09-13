@@ -8,6 +8,187 @@ import AbstractChartModifier from './abstract-chart';
 import resolveStyle from '../utils/style/resolve-style';
 import computeTextMetrics from '../utils/layout/compute-text-metrics';
 
+const INPUT_DATA = {
+  "TA": {
+      "amount": null,
+      "annual_amount": null,
+      "level": null,
+      "label": null,
+      "children": [
+          "1350145173011563451",
+          "1289163964941336949",
+          "1310418064060187318",
+          "1371777411830514481",
+          "1309521223441449642",
+          "1360874423658217633",
+          "1473543349289877592",
+          "1441486675783975305",
+          "1289163944028537165",
+          "1350740936640954616",
+          "1442032456739848688",
+          "1289163940077502789",
+          "1289163975108329861",
+          "1441623536376480161",
+          "1440663828509492175",
+          "1350723719283081457",
+          "1499303874703393104",
+          "1443479929899451011",
+          "1310948024529191660"
+      ]
+  },
+  "1350145173011563451": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "50% Reimbursement Program",
+      "children": []
+  },
+  "1289163964941336949": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "All Approval Workflow - DEMO",
+      "children": []
+  },
+  "1310418064060187318": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Certificate Program",
+      "children": []
+  },
+  "1371777411830514481": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Claims Financials Program",
+      "children": []
+  },
+  "1309521223441449642": {
+      "amount": null,
+      "annual_amount": 350000,
+      "level": 3,
+      "label": "Continuing Education - PART_TIME",
+      "children": []
+  },
+  "1360874423658217633": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Course Receipt Date",
+      "children": []
+  },
+  "1473543349289877592": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Course Start Date Test",
+      "children": []
+  },
+  "1441486675783975305": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Dependent Program",
+      "children": []
+  },
+  "1289163944028537165": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Educational Assistance Program",
+      "children": []
+  },
+  "1350740936640954616": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Multiple Course Approvers",
+      "children": []
+  },
+  "1442032456739848688": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "No Approvals Needed",
+      "children": []
+  },
+  "1289163940077502789": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "OSHA Certification",
+      "children": []
+  },
+  "1289163975108329861": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Prepaid test program",
+      "children": []
+  },
+  "1441623536376480161": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Program Major Text Test",
+      "children": []
+  },
+  "1440663828509492175": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Semester Code",
+      "children": []
+  },
+  "1350723719283081457": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "SLR Plan Key ",
+      "children": []
+  },
+  "1499303874703393104": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "Type 2 Template 1",
+      "children": []
+  },
+  "1443479929899451011": {
+      "amount": null,
+      "annual_amount": 525000,
+      "level": 3,
+      "label": "UPMC Course PDF Test",
+      "children": []
+  },
+  "1310948024529191660": {
+      "amount": 0,
+      "annual_amount": 200000,
+      "level": 3,
+      "label": "Wellstar - Educational Assistance Program - PART_TIME",
+      "children": []
+  }
+};
+
+function wrapText(text, maxLineLength) {
+  const words = text.split(' ');
+  let result = '';
+  let currentLine = '';
+
+  words.forEach((word) => {
+    if ((currentLine + word).length > maxLineLength) {
+      result += currentLine + '\n';
+      currentLine = word + ' ';
+    } else {
+      currentLine += word + ' ';
+    }
+  });
+
+  result += currentLine.trim();
+  return result;
+}
+
 export default class GraphChartModifier extends AbstractChartModifier {
   @tracked drillPath = [];
 
@@ -17,24 +198,69 @@ export default class GraphChartModifier extends AbstractChartModifier {
   configureChart(args, chart) {
     const { tooltipFormatter, onSelect } = args;
     const { config } = this.buildLayout(args, chart);
+    ;
+    const { nodes, links } = this.transformGraphData(INPUT_DATA);
 
     chart.setOption({
       ...config,
       tooltip: {
         formatter: tooltipFormatter,
       },
+      // animationThreshold: 1000, // Threshold to disable animation for large datasets
+      // layoutAnimation: false,
       series: [
         {
           type: 'graph',
           layout: 'force',
-          data: args.data,
-          links: args.links,
+          animation: false,
+          data: nodes,
+          links: links,
           roam: true,
+          edgeSymbol: ['none', 'arrow'], // Add arrows
+          edgeSymbolSize: [10, 10], // Adjust arrow size
+          edgeShape: 'polyline',
+          lineStyle: {
+            width: 2, // Edge thickness
+            color: 'gray', // Edge color
+            curveness: 0.3, // Slight curve to avoid overlap
+          },
           label: {
             show: true,
+            position: 'inside', // Keep label inside the rectangle
+            backgroundColor: '#fff', // Box background
+            borderColor: '#000', // Box border
+            borderWidth: 1, // Border thickness
+            padding: [3, 5], // Padding inside the box
+            fontSize: 12, // Text size
+            rich: {
+              wrap: {
+                width: 150, // Set max width to wrap text
+                lineHeight: 20, // Control line height for better readability
+                overflow: 'break', // Break long words if necessary
+              },
+            },
+            // formatter: function (params) {
+            //   const wrappedText = wrapText(`${params.name}: $${params.value ? params.value.toLocaleString() : 'N/A'}`, 15); // Wrap at 15 characters
+            //   return wrappedText;
+            // },
+            color: '#000',
           },
           force: {
-            repulsion: 1000,
+            repulsion: 500, // Space nodes apart
+            gravity: 0.05, // Control the grouping of nodes
+            edgeLength: [100, 150], // Distance between connected nodes
+          },
+          zoom: 2,
+          symbolSize: [150, 60], // Node size (rectangle)
+          symbolKeepAspect: true, // Keep aspect ratio of rectangle
+          symbol: 'rect', // Use rectangle nodes,
+          emphasis: {
+            focus: 'adjacent'
+          },
+          itemStyle: {
+            color: 'transparent', // Remove the blue background of the node
+            borderColor: '#000', // Keep the border color
+            borderWidth: 1, // Set the border thickness
           },
         },
       ],
@@ -269,4 +495,65 @@ export default class GraphChartModifier extends AbstractChartModifier {
       },
     };
   }
+
+  // will not be part of final component. Caller will do transform.
+
+  transformGraphData(inputData) {
+    const nodes = [];
+    const links = [];
+
+    // Recursively process each node and its children
+    function processNode(nodeId, data) {
+      const node = data[nodeId];
+
+      // Add node to the nodes array with label and value
+      nodes.push({
+        name: node.label || nodeId, // Use label if available, otherwise nodeId
+        value: node.annual_amount || 0, // Use annual_amount, default to 0 if not available
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: `{b}: ${node.annual_amount ? `$${node.annual_amount}` : 'N/A'}`, // Display "label: $annual_amount"
+          backgroundColor: '#fff',
+          borderColor: '#000',
+          borderWidth: 1,
+          padding: [3, 5],
+          fontSize: 12,
+          color: '#000',
+          formatter: function (params) {
+            const wrappedText = wrapText(`${params.name}: $${params.value ? params.value.toLocaleString() : 'N/A'}`, 15); // Wrap at 15 characters
+            return wrappedText;
+          },
+          rich: {
+            wrap: {
+              width: 80, // Set max width to wrap text
+              overflow: 'break', // Break long words if necessary
+              lineHeight: 14, // Control line height
+            }
+          }
+        },
+        symbolSize: [80, 40], // Customize size of the rectangle
+        symbol: 'rect', // Use rectangular shape
+      });
+
+      // Add links to children
+      if (node.children) {
+        node.children.forEach((childId) => {
+          links.push({
+            source: node.label || nodeId,
+            target: data[childId].label || childId, // Use label for source and target if available
+          });
+
+          // Recursively process child nodes
+          processNode(childId, data);
+        });
+      }
+    }
+
+    // Start processing from the root node ('TA' in this case)
+    processNode('TA', inputData);
+
+    return { nodes, links };
+  }
+
 }

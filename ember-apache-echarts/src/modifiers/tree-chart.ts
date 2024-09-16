@@ -1,57 +1,73 @@
 import AbstractChartModifier from './abstract-chart.ts';
 import { tracked } from '@glimmer/tracking';
 
+function deepMerge(...sources) {
+  const target = {};
+
+  for (const source of sources) {
+    for (const key of Object.keys(source)) {
+      if (source[key] instanceof Object && key in target) {
+        Object.assign(source[key], deepMerge(target[key], source[key]));
+      }
+    }
+    Object.assign(target || {}, source);
+  }
+
+  return target;
+}
+
+
 export default class GraphChartModifier extends AbstractChartModifier {
   @tracked drillPath = [];
 
   /**
    * Configures the chart with the provided arguments.
    */
-  configureChart(args, chart) {
+  configureChart(args, chart, seriesConfig = {}) {
     const { tooltipFormatter, onSelect } = args;
     const { config } = this.buildLayout(args, chart);
     const { data } = args;
+
+    const defaultSeriesConfig = {
+      type: 'tree',
+      layout: 'orthogonal',
+      symbol: 'circle',
+      symbolSize: 10,
+      label: {
+        position: 'top',
+        rotate: 0,
+        verticalAlign: 'middle',
+        align: 'right',
+        fontSize: 9,
+      },
+      leaves: {
+        label: {
+          position: 'bottom',
+          rotate: 0,
+          verticalAlign: 'middle',
+          align: 'left',
+        },
+      },
+      emphasis: {
+        focus: 'descendant',
+      },
+      expandAndCollapse: true,
+      animationDuration: 550,
+      animationDurationUpdate: 750,
+    };
+
+    const finalSeriesConfig = deepMerge(
+      defaultSeriesConfig,
+      seriesConfig,
+      { data }
+    );
 
     chart.setOption({
       ...config,
       tooltip: {
         formatter: tooltipFormatter,
       },
-      animationThreshold: 1000, // Threshold to disable animation for large datasets
-      layoutAnimation: false,
-      series: [
-        {
-          type: 'tree',
-          roam: true,
-          data: [data],
-          left: '10',
-          right: '20%',
-          // top: '10%',
-          // bottom: '10%',
-          symbol: 'emptyCircle',
-          orient: 'LR',
-          zoom: 0.5,
-          expandAndCollapse: true,
-          label: {
-            position: 'bottom',
-            rotate: 0,
-            verticalAlign: 'middle',
-            align: 'left',
-          },
-          leaves: {
-            label: {
-              position: 'bottom',
-              rotate: 0,
-              verticalAlign: 'middle',
-              align: 'left',
-            },
-          },
-          emphasis: {
-            focus: 'descendant',
-          },
-          animationDurationUpdate: 750,
-        },
-      ],
+      series: [finalSeriesConfig],
     });
 
     chart.handle('selectchanged', (event) => {

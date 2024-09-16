@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 
-export default class ChartGraphExample extends Component {
+export default class ChartTreeExample extends Component {
   chartData = {
     ROOT_NODE: {
       amount: null,
@@ -165,71 +165,30 @@ export default class ChartGraphExample extends Component {
 
   constructor() {
     super(...arguments);
-    const { nodes, links } = this.transformGraphData('ROOT_NODE', this.chartData);
-    this.graphData = nodes;
-    this.graphLinks = links;
+    this.treeData = this.convertToTree(this.chartData, 'ROOT_NODE');
   }
 
-   // will not be part of final component. Caller will do transform.
-   transformGraphData(root, inputData) {
-    const nodes = [];
-    const links = [];
-
-    // Recursively process each node and its children
-    function processNode(nodeId, data) {
+  convertToTree(data, rootId) {
+    // Helper function to recursively build the tree
+    function buildTree(nodeId) {
       const node = data[nodeId];
 
-      // Add node to the nodes array with label and value
-      nodes.push({
-        name: node.label || nodeId, // Use label if available, otherwise nodeId
-        value: node.annual_amount || 0, // Use annual_amount, default to 0 if not available
-        // Uncomment to customize node appearance
+      // Recursively build children
+      const children = node.children.map((childId) => buildTree(childId));
+
+      // Return the node with its children
+      return {
+        ...node,
         label: {
-          // show: true,
-          position: 'inside',
-          backgroundColor: '#fff',
-          // borderColor: '#777',
-          // borderWidth: 5,
-          // padding: [3, 5],
-          // fontSize: 12,
-          // color: '#543',
-          // formatter: function (params) {
-          //   return wrapText(
-          //     `${params.name}: $${params.value ? params.value.toLocaleString() : 'N/A'}`,
-          //     15
-          //   ); // Wrap at 15 characters
-          // },
-          // rich: {
-          //   wrap: {
-          //     width: 90, // Set max width to wrap text
-          //     overflow: 'break', // Break long words if necessary
-          //     lineHeight: 14, // Control line height
-          //   },
-          // },
+          position: 'top',
+          padding: [10, 150],
         },
-        edgeShape: 'polyline',
-        edgePosition: 'end', // Position of the edge
-        symbolSize: [180, 40], // Customize size of the rectangle
-        symbol: 'circle', // Use rect, circle
-      });
-
-      // Add links to children
-      if (node.children) {
-        node.children.forEach((childId) => {
-          links.push({
-            source: node.label || nodeId,
-            target: data[childId].label || childId, // Use label for source and target if available
-          });
-
-          // Recursively process child nodes
-          processNode(childId, data);
-        });
-      }
+        name: node.label || rootId, // Rename label to name
+        children: children, // Replace children IDs with actual objects
+      };
     }
 
-    // Start processing from the root node ('TA' in this case)
-    processNode(root, inputData);
-
-    return { nodes, links };
+    // Start building the tree from the root node (e.g., 'TA')
+    return buildTree(rootId);
   }
 }

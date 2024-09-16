@@ -9,7 +9,7 @@
     "environment": ["ember-loose", "ember-template-imports"]
   },
   "compilerOptions": {
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "allowJs": true,
 
     "declarationDir": "declarations",

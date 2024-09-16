@@ -11,7 +11,7 @@ import { transform } from 'lodash-es';
  *                  `styleString` (e.g., `fontSize` when only `font` was in
  *                  `styleString`)
  */
-function parseCssStyleValue(styleString) {
+function parseCssStyleValue(styleString: string) {
   const div = document.createElement('div');
 
   div.setAttribute('style', styleString);

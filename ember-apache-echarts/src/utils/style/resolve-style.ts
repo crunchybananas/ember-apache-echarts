@@ -5,7 +5,7 @@ import parseCssStyleValue from './parse-css-style-value.ts';
 const isPixelDimension = /^-?\d+\.?\d*\px$/;
 const isPercentDimension = /^-?\d+\.?\d*%+$/;
 
-function resolvePercentDimension(value, side, context) {
+function resolvePercentDimension(value: number, side: string, context: unknown) {
   value = value.slice(0, -1) / 100.0;
 
   return side.endsWith('Top') || side.endsWith('Bottom')
@@ -27,7 +27,7 @@ function resolvePercentDimension(value, side, context) {
  *
  * @return {object} An object containing the resolved CSS properties
  */
-function resolveStyle(style, context) {
+function resolveStyle(style: unknown, context: unknown) {
   const result = parseCssStyleValue(formatCssStyleValue(style));
 
   return mapValues(result, (value, property) =>

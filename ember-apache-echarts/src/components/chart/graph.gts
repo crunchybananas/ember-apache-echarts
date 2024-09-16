@@ -9,13 +9,30 @@ import graphChart from '../../modifiers/graph-chart.ts';
 import setupChart from '../../modifiers/setup-chart.ts';
 import style from 'ember-style-modifier';
 
+type TooltipAxis = {
+  id: string;
+  index: number;
+  label: string;
+  value: number;
+};
+
+type TooltipItem = {
+  label: string;
+  value: number;
+  marker: string;
+  dataIndex: number;
+  data: unknown;
+};
+
+type TooltipFormatterParams = TooltipItem | TooltipItem[];
+
 export default class GraphChartComponent extends Component {
   axisTooltipElement;
   itemTooltipElement;
 
-  @tracked tooltipItem;
-  @tracked tooltipItems;
-  @tracked tooltipAxis;
+  @tracked tooltipItem?: TooltipItem;
+  @tracked tooltipItems: TooltipItem[] = [];
+  @tracked tooltipAxis: TooltipAxis;
 
   @action
   setup(element: HTMLElement) {
@@ -24,7 +41,7 @@ export default class GraphChartComponent extends Component {
   }
 
   @action
-  tooltipFormatter(params, dataset) {
+  tooltipFormatter(params: TooltipFormatterParams, dataset) {
     if (params.length) {
       this.tooltipAxis = toTooltipAxis(params);
       this.tooltipItems = params.map((param) => toTooltipItem(param, dataset));

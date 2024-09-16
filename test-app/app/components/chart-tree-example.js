@@ -185,6 +185,7 @@ export default class ChartTreeExample extends Component {
         ...node,
         label: {
           position: 'top',
+          top: '-20%',
           padding: [10, 150],
           formatter: function (params) {
             return `${params.name}\n Annual Amount: ${penniesToDollars(params.data.annual_amount)}`;

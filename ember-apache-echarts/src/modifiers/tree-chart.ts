@@ -26,8 +26,8 @@ export default class GraphChartModifier extends AbstractChartModifier {
           data: [data],
           left: '10',
           right: '20%',
-          top: '-200%',
-          bottom: '-200%',
+          // top: '10%',
+          // bottom: '10%',
           symbol: 'emptyCircle',
           orient: 'LR',
           zoom: 0.5,
@@ -36,14 +36,14 @@ export default class GraphChartModifier extends AbstractChartModifier {
             position: 'bottom',
             rotate: 0,
             verticalAlign: 'middle',
-            align: 'middle',
+            align: 'left',
           },
           leaves: {
             label: {
               position: 'bottom',
               rotate: 0,
               verticalAlign: 'middle',
-              align: 'middle',
+              align: 'left',
             },
           },
           emphasis: {
@@ -232,16 +232,13 @@ export default class GraphChartModifier extends AbstractChartModifier {
         // Example configuration
         series: [
           {
-            type: 'graph',
+            type: 'tree',
             layout: 'force',
             data: info.data,
             links: info.links,
             roam: true,
             label: {
               show: true,
-            },
-            force: {
-              repulsion: 1000,
             },
           },
         ],
@@ -259,7 +256,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
         plot: {},
         node: {
           font: 'normal 12px Montserrat,sans-serif',
-          textAlign: 'center',
+          textAlign: 'left',
           marginTop: 8,
         },
         link: {

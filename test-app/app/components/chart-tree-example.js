@@ -1,5 +1,9 @@
 import Component from '@glimmer/component';
 
+const penniesToDollars = (pennies) => {
+  return `$${(pennies / 100).toFixed(2)}`;
+};
+
 export default class ChartTreeExample extends Component {
   chartData = {
     ROOT_NODE: {
@@ -182,6 +186,9 @@ export default class ChartTreeExample extends Component {
         label: {
           position: 'top',
           padding: [10, 150],
+          formatter: function (params) {
+            return `${params.name}\n Annual Amount: ${penniesToDollars(params.data.annual_amount)}`;
+          },
         },
         name: node.label || rootId, // Rename label to name
         children: children, // Replace children IDs with actual objects

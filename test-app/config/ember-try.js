@@ -8,6 +8,54 @@ module.exports = async function () {
     usePnpm: true,
     scenarios: [
       {
+        name: 'ember-3.28',
+        npm: {
+          devDependencies: {
+            'ember-source': '~3.28.0',
+          },
+        },
+      },
+      {
+        name: 'ember-4.0.0',
+        npm: {
+          devDependencies: {
+            'ember-source': '~4.0.0',
+          },
+        },
+      },
+      {
+        name: 'ember-4.4',
+        npm: {
+          devDependencies: {
+            'ember-source': '~4.4.0',
+          },
+        },
+      },
+      {
+        name: 'ember-4.8',
+        npm: {
+          devDependencies: {
+            'ember-source': '~4.8.0',
+          },
+        },
+      },
+      {
+        name: 'ember-4.12',
+        npm: {
+          devDependencies: {
+            'ember-source': '~4.12.0',
+          },
+        },
+      },
+      {
+        name: 'ember-5.4',
+        npm: {
+          devDependencies: {
+            'ember-source': '~5.4.0',
+          },
+        },
+      },
+      {
         name: 'ember-release',
         npm: {
           devDependencies: {
@@ -31,8 +79,20 @@ module.exports = async function () {
           },
         },
       },
-      embroiderSafe(),
-      embroiderOptimized(),
+      embroiderSafe({
+        npm: {
+          devDependencies: {
+            'ember-source': await getChannelURL('release'),
+          },
+        },
+      }),
+      embroiderOptimized({
+        npm: {
+          devDependencies: {
+            'ember-source': await getChannelURL('release'),
+          },
+        },
+      }),
     ],
   };
 };

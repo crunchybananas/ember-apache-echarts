@@ -1,6 +1,6 @@
 {
   "name": "ember-apache-echarts",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Echarts for Ember",
   "keywords": [
     "ember-addon"

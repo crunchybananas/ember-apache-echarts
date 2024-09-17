@@ -18,7 +18,7 @@ runs:
           dist/utils/deep-merge.js
 
       ' >> assert-contents.config.yml
-      # npx assert-folder-contents
+      npx assert-folder-contents
 
   - name: Upload dist assets to cache
     uses: actions/upload-artifact@v4

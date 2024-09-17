@@ -19,7 +19,12 @@ type DataItem = {
 
  * @return {number[]} An array of the sums for the values for each category
  */
-export default function getSeriesTotals(data: DataItem[], categories: string[], categoryProperty: string, valueProperty: string) {
+export default function getSeriesTotals(
+  data: DataItem[],
+  categories: string[],
+  categoryProperty: string,
+  valueProperty: string
+) {
   const allData = flatten(data.map((info) => info.data));
 
   return Object.values(

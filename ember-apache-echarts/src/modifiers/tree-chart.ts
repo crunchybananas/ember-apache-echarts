@@ -206,7 +206,6 @@ export default class GraphChartModifier extends AbstractChartModifier {
   // @ts-expect-error: Need to figure out what these do
   generateDrillUpButtonConfig(_text, _layout, _style) {
     // const textMetrics = computeTextMetrics(text, style);
-
     // return {
     //   'graphic.elements': [
     //     {

@@ -18,7 +18,12 @@ type Data = {
  *
  * @return {number[]} An array of data values
  */
-export default function getSeriesData(data: Data[], categories: string[], categoryProperty: string, valueProperty: string) {
+export default function getSeriesData(
+  data: Data[],
+  categories: string[],
+  categoryProperty: string,
+  valueProperty: string
+) {
   const lookup = createLookup(data, categoryProperty, valueProperty);
 
   return compact(categories.map((category) => lookup[category]));

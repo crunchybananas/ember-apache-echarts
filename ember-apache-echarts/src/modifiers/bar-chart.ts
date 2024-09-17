@@ -15,7 +15,14 @@ import resolveStyle from '../utils/style/resolve-style.ts';
 import AbstractChartModifier from './abstract-chart.ts';
 import type { ECharts, SelectChangedPayload } from 'echarts';
 
-type Variant = 'bar' | 'line' | 'area' | 'groupedBar' | 'groupedLine' | 'stackedBar' | 'stackedArea';
+type Variant =
+  | 'bar'
+  | 'line'
+  | 'area'
+  | 'groupedBar'
+  | 'groupedLine'
+  | 'stackedBar'
+  | 'stackedArea';
 
 type AxisConfig = {
   type: string;
@@ -53,8 +60,8 @@ const computeData = (data, categories, args) => {
 
   return categoryAxisType !== 'time'
     ? series
-    // @ts-expect-error
-    : series.map((item) => ({
+    : // @ts-expect-error
+      series.map((item) => ({
         ...item,
         value: orientation === 'horizontal' ? [item.value, item.name] : [item.name, item.value],
       }));
@@ -472,12 +479,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       //       on how the axis is being rendered. [twl 20.Jul.22]
       const name =
         categoryAxisScale === 'shared'
-          // @ts-expect-error: until the abstract is typed this needs to wait
-          ? context.data.categories[dataIndex]
-          // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
-          : series.data[dataIndex]
-            // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
-            ? series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
+          ? // @ts-expect-error: until the abstract is typed this needs to wait
+            context.data.categories[dataIndex]
+          : // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
+            series.data[dataIndex]
+            ? // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
+              series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
             : null;
 
       if (name) {
@@ -626,7 +633,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       width: layout.width - (buttonBox?.width ?? 0) - xMargins,
       height: layout.height - (buttonBox?.height ?? 0) - yMargins,
       x: layout.x + (buttonBox?.width ?? 0) + xMargins,
-      y: layout.y + (buttonBox?.height ?? 0)  + yMargins
+      y: layout.y + (buttonBox?.height ?? 0) + yMargins,
     };
   }
 
@@ -1048,8 +1055,8 @@ export default class BarChartModifier extends AbstractChartModifier {
               }),
             },
           ]
-          // @ts-expect-error
-        : series.data.map((info) => ({
+        : // @ts-expect-error
+          series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
             // @ts-expect-error

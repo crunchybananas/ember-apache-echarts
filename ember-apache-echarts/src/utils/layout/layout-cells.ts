@@ -72,7 +72,9 @@ function computeCellLayoutInfo(context, chart) {
 
   Object.assign(
     cell,
-    pickBy(resolveStyle(context.styles.cell, layoutSize), (_value: unknown, key: string) => key.startsWith('padding'))
+    pickBy(resolveStyle(context.styles.cell, layoutSize), (_value: unknown, key: string) =>
+      key.startsWith('padding')
+    )
   );
 
   // Store the dimensions inside of the padding

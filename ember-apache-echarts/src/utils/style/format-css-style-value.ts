@@ -16,7 +16,7 @@ const pixelProperties = [
   'borderRightRadius',
 ];
 
-const addPixelsToValue = (key: string, value: number|string) =>
+const addPixelsToValue = (key: string, value: number | string) =>
   typeof value === 'number' && pixelProperties.find((property) => key.startsWith(property))
     ? `${value}px`
     : value;

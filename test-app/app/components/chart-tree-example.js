@@ -114,7 +114,7 @@ export default class ChartTreeExample extends Component {
     }
     return node.children.reduce(
       (sum, child) => sum + this.countLeafNodes(child),
-      0
+      0,
     );
   }
 
@@ -168,85 +168,85 @@ const chartData = {
       '18',
     ],
   },
-  '1': {
+  1: {
     annual_amount: 525000,
     level: 3,
     label: '50% Restaurant Program',
     children: [],
   },
-  '2': {
+  2: {
     annual_amount: 525000,
     level: 3,
     label: 'All Approval Workflow - DEMO',
     children: [],
   },
-  '3': {
+  3: {
     annual_amount: 525000,
     level: 3,
     label: 'Certificate Program',
     children: [],
   },
-  '4': {
+  4: {
     annual_amount: 525000,
     level: 3,
     label: 'Some Financial Program',
     children: [],
   },
-  '5': {
+  5: {
     annual_amount: 350000,
     level: 3,
     label: 'Continuing Education - PART_TIME',
     children: [],
   },
-  '6': {
+  6: {
     annual_amount: 525000,
     level: 3,
     label: 'Course Receipt Date',
     children: [],
   },
-  '7': {
+  7: {
     annual_amount: 525000,
     level: 3,
     label: 'Course Start Date Test',
     children: [],
   },
-  '8': {
+  8: {
     annual_amount: 525000,
     level: 3,
     label: 'Dependent Program',
     children: [],
   },
-  '9': {
+  9: {
     annual_amount: 525000,
     level: 3,
     label: 'Educational Assistance Program',
     children: [],
   },
-  '10': {
+  10: {
     annual_amount: 525000,
     level: 3,
     label: 'Multiple Course Approvers',
     children: [],
   },
-  '11': {
+  11: {
     annual_amount: 525000,
     level: 3,
     label: 'No Approvals Needed',
     children: [],
   },
-  '12': {
+  12: {
     annual_amount: 525000,
     level: 3,
     label: 'A Fun Certification',
     children: [],
   },
-  '13': {
+  13: {
     annual_amount: 525000,
     level: 3,
     label: 'Prepaid test program',
     children: [],
   },
-  '14': {
+  14: {
     annual_amount: 525000,
     level: 3,
     label: 'Program Major Text Test',
@@ -258,25 +258,25 @@ const chartData = {
     label: 'Semester Code',
     children: [],
   },
-  '15': {
+  15: {
     annual_amount: 525000,
     level: 3,
     label: 'My Plan Key ',
     children: ['1440663828509492175'],
   },
-  '16': {
+  16: {
     annual_amount: 525000,
     level: 3,
     label: 'Type 2 Template 1',
     children: [],
   },
-  '17': {
+  17: {
     annual_amount: 525000,
     level: 3,
     label: 'University Course PDF Test',
     children: [],
   },
-  '18': {
+  18: {
     amount: 0,
     annual_amount: 200000,
     level: 3,

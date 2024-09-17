@@ -7,6 +7,30 @@ import mergeAtPaths from '../utils/merge-at-paths.ts';
 import AbstractChartModifier from './abstract-chart.ts';
 import resolveStyle from '../utils/style/resolve-style.ts';
 import computeTextMetrics from '../utils/layout/compute-text-metrics.ts';
+import deepMerge from '../utils/deep-merge.ts';
+
+const defaultSeriesConfig = {
+  type: 'graph',
+  layout: 'force',
+  animation: false,
+  roam: true,
+  symbol: 'rect',
+  symbolKeepAspect: true,
+  symbolSize: [150, 60],
+  edgeSymbol: ['none', 'arrow'],
+  edgeShape: 'polyline',
+  label: {
+    show: true,
+    position: 'top',
+    color: '#000',
+  },
+  force: {
+    repulsion: 600,
+    gravity: 0.01,
+    edgeLength: [200, 350],
+  },
+};
+
 
 export default class GraphChartModifier extends AbstractChartModifier {
   @tracked drillPath = [];
@@ -15,49 +39,19 @@ export default class GraphChartModifier extends AbstractChartModifier {
    * Configures the chart with the provided arguments.
    */
   configureChart(args, chart) {
-    const { tooltipFormatter, onSelect } = args;
+    const { tooltipFormatter, onSelect, data, links, seriesConfig = {} } = args;
     const { config } = this.buildLayout(args, chart);
-    const { data, links } = args;
+
+    const finalSeriesConfig = deepMerge(defaultSeriesConfig, { ...seriesConfig, data, links });
 
     chart.setOption({
       ...config,
       tooltip: {
         formatter: tooltipFormatter,
       },
-      animationThreshold: 1000, // Threshold to disable animation for large datasets
+      animationThreshold: 1000,
       layoutAnimation: false,
-      series: [
-        {
-          type: 'graph',
-          layout: 'force',
-          animation: false,
-          data,
-          links,
-
-          roam: true,
-          symbol: 'rect', // Use rectangle nodes,
-          symbolKeepAspect: true, // Keep aspect ratio of rectangle
-          symbolSize: [150, 60], // Node size (rectangle)
-
-          edgeSymbol: ['none', 'arrow'], // Add arrows
-          edgeShape: 'polyline',
-          label: {
-            show: true,
-            position: 'top', // Keep label inside the rectangle
-            color: '#000',
-          },
-          force: {
-            repulsion: 600, // Space nodes apart
-            gravity: 0.01, // Control the grouping of nodes
-            edgeLength: [200, 350], // Distance between connected nodes
-          },
-          itemStyle: {
-            color: 'transparent', // Remove the blue background of the node
-            borderColor: '#000', // Keep the border color
-            borderWidth: 1, // Set the border thickness
-          },
-        },
-      ],
+      series: [finalSeriesConfig],
     });
 
     chart.handle('selectchanged', (event) => {

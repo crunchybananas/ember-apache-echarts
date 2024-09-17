@@ -44,7 +44,7 @@ export default class ChartTreeExample extends Component {
       rich: {
         outline: {
           textBorderColor: '#fff',
-          textBorderWidth: 2,
+          textBorderWidth: 4,
         },
       },
       formatter: '{outline|{b}}',
@@ -152,105 +152,105 @@ const chartData = {
   ROOT_NODE: {
     label: null,
     children: [
-      '1350145173011563451',
-      '1289163964941336949',
-      '1310418064060187318',
-      '1371777411830514481',
-      '1309521223441449642',
-      '1360874423658217633',
-      '1473543349289877592',
-      '1441486675783975305',
-      '1289163944028537165',
-      '1350740936640954616',
-      '1442032456739848688',
-      '1289163940077502789',
-      '1289163975108329861',
-      '1441623536376480161',
-      '1350723719283081457',
-      '1499303874703393104',
-      '1443479929899451011',
-      '1310948024529191660',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      '11',
+      '12',
+      '13',
+      '14',
+      '15',
+      '16',
+      '17',
+      '18',
     ],
   },
-  '1350145173011563451': {
+  '1': {
     annual_amount: 525000,
     level: 3,
-    label: '50% Reimbursement Program',
+    label: '50% Restaurant Program',
     children: [],
   },
-  '1289163964941336949': {
+  '2': {
     annual_amount: 525000,
     level: 3,
     label: 'All Approval Workflow - DEMO',
     children: [],
   },
-  '1310418064060187318': {
+  '3': {
     annual_amount: 525000,
     level: 3,
     label: 'Certificate Program',
     children: [],
   },
-  '1371777411830514481': {
+  '4': {
     annual_amount: 525000,
     level: 3,
     label: 'Some Financial Program',
     children: [],
   },
-  '1309521223441449642': {
+  '5': {
     annual_amount: 350000,
     level: 3,
     label: 'Continuing Education - PART_TIME',
     children: [],
   },
-  '1360874423658217633': {
+  '6': {
     annual_amount: 525000,
     level: 3,
     label: 'Course Receipt Date',
     children: [],
   },
-  '1473543349289877592': {
+  '7': {
     annual_amount: 525000,
     level: 3,
     label: 'Course Start Date Test',
     children: [],
   },
-  '1441486675783975305': {
+  '8': {
     annual_amount: 525000,
     level: 3,
     label: 'Dependent Program',
     children: [],
   },
-  '1289163944028537165': {
+  '9': {
     annual_amount: 525000,
     level: 3,
     label: 'Educational Assistance Program',
     children: [],
   },
-  '1350740936640954616': {
+  '10': {
     annual_amount: 525000,
     level: 3,
     label: 'Multiple Course Approvers',
     children: [],
   },
-  '1442032456739848688': {
+  '11': {
     annual_amount: 525000,
     level: 3,
     label: 'No Approvals Needed',
     children: [],
   },
-  '1289163940077502789': {
+  '12': {
     annual_amount: 525000,
     level: 3,
     label: 'A Fun Certification',
     children: [],
   },
-  '1289163975108329861': {
+  '13': {
     annual_amount: 525000,
     level: 3,
     label: 'Prepaid test program',
     children: [],
   },
-  '1441623536376480161': {
+  '14': {
     annual_amount: 525000,
     level: 3,
     label: 'Program Major Text Test',
@@ -262,25 +262,25 @@ const chartData = {
     label: 'Semester Code',
     children: [],
   },
-  '1350723719283081457': {
+  '15': {
     annual_amount: 525000,
     level: 3,
     label: 'My Plan Key ',
     children: ['1440663828509492175'],
   },
-  '1499303874703393104': {
+  '16': {
     annual_amount: 525000,
     level: 3,
     label: 'Type 2 Template 1',
     children: [],
   },
-  '1443479929899451011': {
+  '17': {
     annual_amount: 525000,
     level: 3,
     label: 'University Course PDF Test',
     children: [],
   },
-  '1310948024529191660': {
+  '18': {
     amount: 0,
     annual_amount: 200000,
     level: 3,

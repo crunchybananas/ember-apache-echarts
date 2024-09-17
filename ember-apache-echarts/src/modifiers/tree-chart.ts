@@ -1,21 +1,22 @@
 import AbstractChartModifier from './abstract-chart.ts';
 import { tracked } from '@glimmer/tracking';
+import deepMerge from '../utils/deep-merge.ts';
 
-function deepMerge(...sources) {
-  const target = {};
-
-  for (const source of sources) {
-    for (const key of Object.keys(source)) {
-      if (source[key] instanceof Object && key in target) {
-        Object.assign(source[key], deepMerge(target[key], source[key]));
-      }
-    }
-    Object.assign(target || {}, source);
-  }
-
-  return target;
-}
-
+const defaultSeriesConfig = {
+  type: 'tree',
+  layout: 'orthogonal',
+  symbol: 'emptyCircle',
+  symbolSize: 10,
+  roam: true,
+  orient: 'LR', // Left to right
+  zoom: 1,
+  emphasis: {
+    focus: 'descendant',
+  },
+  expandAndCollapse: true,
+  animationDuration: 550,
+  animationDurationUpdate: 750,
+};
 
 export default class GraphChartModifier extends AbstractChartModifier {
   @tracked drillPath = [];
@@ -23,50 +24,20 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Configures the chart with the provided arguments.
    */
-  configureChart(args, chart, seriesConfig = {}) {
+  configureChart(args, chart) {
     const { tooltipFormatter, onSelect } = args;
     const { config } = this.buildLayout(args, chart);
-    const { data } = args;
+    const { data, seriesConfig = {} } = args;
 
-    const defaultSeriesConfig = {
-      type: 'tree',
-      layout: 'orthogonal',
-      symbol: 'circle',
-      symbolSize: 10,
-      label: {
-        position: 'top',
-        rotate: 0,
-        verticalAlign: 'middle',
-        align: 'right',
-        fontSize: 9,
-      },
-      leaves: {
-        label: {
-          position: 'bottom',
-          rotate: 0,
-          verticalAlign: 'middle',
-          align: 'left',
-        },
-      },
-      emphasis: {
-        focus: 'descendant',
-      },
-      expandAndCollapse: true,
-      animationDuration: 550,
-      animationDurationUpdate: 750,
-    };
-
-    const finalSeriesConfig = deepMerge(
-      defaultSeriesConfig,
-      seriesConfig,
-      { data }
-    );
+    const finalSeriesConfig = deepMerge(defaultSeriesConfig, { ...seriesConfig, data: [data] });
 
     chart.setOption({
       ...config,
       tooltip: {
         formatter: tooltipFormatter,
       },
+      animationThreshold: 1000,
+      layoutAnimation: false,
       series: [finalSeriesConfig],
     });
 

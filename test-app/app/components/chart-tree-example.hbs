@@ -1,8 +1,14 @@
 <h2>Tree Chart Example</h2>
-<Chart::Tree
-  class="border"
-  @width="100%"
-  @height="600"
-  @data={{this.treeData}}
-  @noDataText="No data"
-/>
+
+<button type="button" {{on "click" this.toggleDirection}}>Toggle Direction</button>
+
+<div class="chart-container">
+  <Chart::Tree
+    class="border"
+    @width="100%"
+    @height={{this.estimatedHeight}}
+    @data={{this.treeData}}
+    @noDataText="No data"
+    @seriesConfig={{this.seriesConfig}}
+  />
+</div>

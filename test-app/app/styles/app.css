@@ -1,3 +1,8 @@
 .border {
   border: 1px solid #7d7d7d;
 }
+
+.chart-container {
+  overflow-y: auto;
+  max-height: 800px; /* Set a maximum height */
+}

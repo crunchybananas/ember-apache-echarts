@@ -44,31 +44,13 @@ export default class GraphChartModifier extends AbstractChartModifier {
           label: {
             show: true,
             position: 'top', // Keep label inside the rectangle
-            //   backgroundColor: '#1ff', // Box background
-            //   borderColor: '#000', // Box border
-            //   // borderWidth: 5, // Border thickness
-            //   width: 200, // Set max width to wrap text
-            //   padding: [13, 5], // Padding inside the box
-            //   fontSize: 12, // Text size
-            // rich: {
-            //   wrap: {
-            //     width: 90, // Set max width to wrap text
-            //     // lineHeight: 20, // Control line height for better readability
-            //     overflow: 'break', // Break long words if necessary
-            //   },
-            // },
             color: '#000',
           },
           force: {
             repulsion: 600, // Space nodes apart
-            // gravity: 0.01, // Control the grouping of nodes
+            gravity: 0.01, // Control the grouping of nodes
             edgeLength: [200, 350], // Distance between connected nodes
           },
-          // zoom: 2,
-          // symbolSize: [150, 60], // Node size (rectangle)
-          // emphasis: {
-          //   focus: 'adjacent',
-          // },
           itemStyle: {
             color: 'transparent', // Remove the blue background of the node
             borderColor: '#000', // Keep the border color

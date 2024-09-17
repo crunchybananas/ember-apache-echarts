@@ -141,6 +141,7 @@
       "./utils/data/get-series-totals.js": "./dist/_app_/utils/data/get-series-totals.js",
       "./utils/data/get-unique-dataset-values.js": "./dist/_app_/utils/data/get-unique-dataset-values.js",
       "./utils/data/rotate-data-series.js": "./dist/_app_/utils/data/rotate-data-series.js",
+      "./utils/deep-merge.js": "./dist/_app_/utils/deep-merge.js",
       "./utils/layout/compute-inner-box.js": "./dist/_app_/utils/layout/compute-inner-box.js",
       "./utils/layout/compute-max-text-metrics.js": "./dist/_app_/utils/layout/compute-max-text-metrics.js",
       "./utils/layout/compute-text-height.js": "./dist/_app_/utils/layout/compute-text-height.js",

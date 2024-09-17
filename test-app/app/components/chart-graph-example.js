@@ -185,31 +185,12 @@ export default class ChartGraphExample extends Component {
         value: node.annual_amount || 0, // Use annual_amount, default to 0 if not available
         // Uncomment to customize node appearance
         label: {
-          // show: true,
           position: 'inside',
           backgroundColor: '#fff',
-          // borderColor: '#777',
-          // borderWidth: 5,
-          // padding: [3, 5],
-          // fontSize: 12,
-          // color: '#543',
-          // formatter: function (params) {
-          //   return wrapText(
-          //     `${params.name}: $${params.value ? params.value.toLocaleString() : 'N/A'}`,
-          //     15
-          //   ); // Wrap at 15 characters
-          // },
-          // rich: {
-          //   wrap: {
-          //     width: 90, // Set max width to wrap text
-          //     overflow: 'break', // Break long words if necessary
-          //     lineHeight: 14, // Control line height
-          //   },
-          // },
         },
         edgeShape: 'polyline',
         edgePosition: 'end', // Position of the edge
-        symbolSize: [180, 40], // Customize size of the rectangle
+        symbolSize: 100, // Customize size of the rectangle
         symbol: 'circle', // Use rect, circle
       });
 

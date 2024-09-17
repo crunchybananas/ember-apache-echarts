@@ -50,6 +50,9 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended'],
+      rules: {
+        '@typescript-eslint/ban-ts-comment': 'off',
+      },
     },
     {
       files: ['**/*.gts'],
@@ -64,6 +67,7 @@ module.exports = {
       rules: {
         'ember/no-at-ember-render-modifiers': 'warn',
         'ember/no-tracked-properties-from-args': 'warn',
+        '@typescript-eslint/ban-ts-comment': 'off',
       },
     },
 

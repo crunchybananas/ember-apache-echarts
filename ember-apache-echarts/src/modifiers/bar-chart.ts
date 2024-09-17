@@ -33,8 +33,7 @@ const setItemColor = (colorMap, item, color) =>
 
 const isShowingAxisLabel = (axisConfig, labelType) =>
   axisConfig.axisLabel?.[`show${labelType}Label`] === false ||
-  (axisConfig.type === 'time' &&
-    axisConfig.axisLabel?.[`show${labelType}Label`] !== true);
+  (axisConfig.type === 'time' && axisConfig.axisLabel?.[`show${labelType}Label`] !== true);
 
 const computeData = (data, categories, args) => {
   const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
@@ -45,10 +44,7 @@ const computeData = (data, categories, args) => {
     ? series
     : series.map((item) => ({
         ...item,
-        value:
-          orientation === 'horizontal'
-            ? [item.value, item.name]
-            : [item.name, item.value],
+        value: orientation === 'horizontal' ? [item.value, item.name] : [item.name, item.value],
       }));
 };
 
@@ -360,9 +356,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         console.warn(`Invalid 'categoryAxisSort' value: ${categoryAxisSort}`);
       }
     } else if (categoryAxisType === 'time') {
-      categories.sort(
-        (date1, date2) => (date1?.valueOf() ?? 0) - (date2?.valueOf() ?? 0)
-      );
+      categories.sort((date1, date2) => (date1?.valueOf() ?? 0) - (date2?.valueOf() ?? 0));
     }
 
     return categories;
@@ -417,9 +411,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             formatter: (params) =>
               tooltipFormatter(
                 params.length != null
-                  ? params.map((param) =>
-                      this.formatTooltipParams(args, param, 'axisTooltip')
-                    )
+                  ? params.map((param) => this.formatTooltipParams(args, param, 'axisTooltip'))
                   : this.formatTooltipParams(args, params, 'itemTooltip'),
                 context.data.dataset
               ),
@@ -448,9 +440,7 @@ export default class BarChartModifier extends AbstractChartModifier {
         categoryAxisScale === 'shared'
           ? context.data.categories[dataIndex]
           : series.data[dataIndex]
-            ? series.data[dataIndex][
-                args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY
-              ]
+            ? series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
             : null;
 
       if (name) {
@@ -470,10 +460,7 @@ export default class BarChartModifier extends AbstractChartModifier {
 
       // If the only one selected is the one that just changed, or if nothing is
       // selected, then invert the selection
-      if (
-        (counts.false === 1 && selected[name] === false) ||
-        counts.false === selections.length
-      ) {
+      if ((counts.false === 1 && selected[name] === false) || counts.false === selections.length) {
         chart.dispatchAction({
           type: 'legendInverseSelect',
         });
@@ -519,8 +506,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       // If grouped or stacked, render multple series on a single chart rather
       // than one chart per series
       series:
-        this.isStackedVariant(args.variant) ||
-        this.isGroupedVariant(args.variant)
+        this.isStackedVariant(args.variant) || this.isGroupedVariant(args.variant)
           ? [{ data: series }]
           : series,
       dataset: series,
@@ -586,11 +572,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     style.marginTop += titleStyle.marginTop;
     style.marginLeft += titleStyle.marginLeft;
 
-    const buttonConfig = this.generateDrillUpButtonConfig(
-      drillUpButtonText,
-      layout,
-      style
-    );
+    const buttonConfig = this.generateDrillUpButtonConfig(drillUpButtonText, layout, style);
 
     mergeAtPaths(config, [buttonConfig]);
 
@@ -622,12 +604,8 @@ export default class BarChartModifier extends AbstractChartModifier {
             {
               type: 'rect',
               shape: {
-                width:
-                  textMetrics.width + style.paddingLeft + style.paddingRight,
-                height:
-                  textMetrics.fontHeight +
-                  style.paddingTop +
-                  style.paddingBottom,
+                width: textMetrics.width + style.paddingLeft + style.paddingRight,
+                height: textMetrics.fontHeight + style.paddingTop + style.paddingBottom,
                 r: [
                   style.borderTopLeftRadius ?? 0,
                   style.borderTopRightRadius ?? 0,
@@ -666,10 +644,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Returns the labels for the legend.
    */
   getLegendLabels(series, args) {
-    if (
-      !this.isStackedVariant(args.variant) &&
-      !this.isGroupedVariant(args.variant)
-    ) {
+    if (!this.isStackedVariant(args.variant) && !this.isGroupedVariant(args.variant)) {
       return super.getLegendLabels(series, args);
     }
 
@@ -684,13 +659,9 @@ export default class BarChartModifier extends AbstractChartModifier {
     const { args, data } = context;
     const { variant, categoryAxisScale } = args;
     const seriesData =
-      this.isGroupedVariant(variant) || this.isStackedVariant(variant)
-        ? series.data
-        : [series];
+      this.isGroupedVariant(variant) || this.isStackedVariant(variant) ? series.data : [series];
     const categories =
-      categoryAxisScale === 'shared'
-        ? data.categories
-        : this.getCategories(args, seriesData);
+      categoryAxisScale === 'shared' ? data.categories : this.getCategories(args, seriesData);
 
     return {
       categories,
@@ -713,32 +684,17 @@ export default class BarChartModifier extends AbstractChartModifier {
     let values;
 
     if (this.isStackedVariant(variant)) {
-      values = getSeriesTotals(
-        series.data,
-        categories,
-        categoryProperty,
-        valueProperty
-      );
+      values = getSeriesTotals(series.data, categories, categoryProperty, valueProperty);
     } else if (this.isGroupedVariant(variant)) {
       values = compact(
         flatten(
           series.data.map((group) =>
-            getSeriesData(
-              group.data,
-              categories,
-              categoryProperty,
-              valueProperty
-            )
+            getSeriesData(group.data, categories, categoryProperty, valueProperty)
           )
         )
       );
     } else {
-      values = getSeriesData(
-        series.data,
-        categories,
-        categoryProperty,
-        valueProperty
-      );
+      values = getSeriesData(series.data, categories, categoryProperty, valueProperty);
     }
 
     return {
@@ -784,7 +740,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       model
     );
 
-    let ticks = scale.getTicks(false).map((tick, index) => ({
+    const ticks = scale.getTicks(false).map((tick, index) => ({
       // prettier not formatting nested ternaries properly, so turn it off
       // prettier-ignore
       ...parseAxisLabel(isTimeAxis
@@ -857,16 +813,11 @@ export default class BarChartModifier extends AbstractChartModifier {
     const isBarVariant = this.isBarVariant(variant);
     const isAreaVariant = this.isAreaVariant(variant);
     const isStackedVariant = this.isStackedVariant(variant);
-    const isGroupedOrStacked =
-      this.isGroupedVariant(variant) || isStackedVariant;
+    const isGroupedOrStacked = this.isGroupedVariant(variant) || isStackedVariant;
 
     // Analyze the data
     const categoryInfo = this.computeCategoryInfo(series, context);
-    const valueInfo = this.computeValueInfo(
-      series,
-      context,
-      categoryInfo.categories
-    );
+    const valueInfo = this.computeValueInfo(series, context, categoryInfo.categories);
 
     // Resolve axis styles
     const yAxisStyle = resolveStyle(styles.yAxis, context.layout);
@@ -890,21 +841,14 @@ export default class BarChartModifier extends AbstractChartModifier {
             : undefined,
       axisLabel: {
         ...(valueAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            valueAxisFormatter(value, 'axis', axisIndex),
+          formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
         }),
         // margin between the axis label and the axis line
-        margin: isHorizontal
-          ? valueAxisStyle.marginTop
-          : valueAxisStyle.marginRight,
+        margin: isHorizontal ? valueAxisStyle.marginTop : valueAxisStyle.marginRight,
         ...this.generateAxisLabelConfig(layout, valueAxisStyle),
       },
     };
-    const valueTicks = this.computeValueAxisTicks(
-      context,
-      valueInfo,
-      valueAxisConfig
-    );
+    const valueTicks = this.computeValueAxisTicks(context, valueInfo, valueAxisConfig);
 
     // Configure category axis
     const categoryAxisConfig = {
@@ -917,29 +861,21 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       axisLabel: {
         ...(categoryAxisFormatter && {
-          formatter: (value, axisIndex) =>
-            categoryAxisFormatter(value, 'axis', axisIndex),
+          formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
         }),
         // Determine how many categories are shown on the axis
         interval:
-          categoryAxisMaxLabelCount &&
-          categoryInfo.count > categoryAxisMaxLabelCount
+          categoryAxisMaxLabelCount && categoryInfo.count > categoryAxisMaxLabelCount
             ? Math.ceil(categoryInfo.count / categoryAxisMaxLabelCount) - 1
             : 0,
         ...(!isHorizontal && {
           overflow: 'break',
         }),
         // margin between the axis label and the axis line
-        margin: isHorizontal
-          ? categoryAxisStyle.marginRight
-          : categoryAxisStyle.marginTop,
+        margin: isHorizontal ? categoryAxisStyle.marginRight : categoryAxisStyle.marginTop,
       },
     };
-    const categoryTicks = this.computeCategoryAxisTicks(
-      context,
-      categoryInfo,
-      categoryAxisConfig
-    );
+    const categoryTicks = this.computeCategoryAxisTicks(context, categoryInfo, categoryAxisConfig);
 
     // Configure the Y axis
     const yAxisConfig = {};
@@ -968,10 +904,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     categoryAxisConfig.axisLabel = {
       ...categoryAxisConfig.axisLabel,
       width: xAxisInfo.maxLabelWidth,
-      ...this.generateAxisLabelConfig(
-        layout,
-        isHorizontal ? yAxisStyle : xAxisStyle
-      ),
+      ...this.generateAxisLabelConfig(layout, isHorizontal ? yAxisStyle : xAxisStyle),
     };
 
     // Setup base configurations
@@ -1061,12 +994,10 @@ export default class BarChartModifier extends AbstractChartModifier {
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
-            data: computeData(info.data, categoryInfo.categories, args).map(
-              (item) => ({
-                ...item,
-                ...setItemColor(colorMap, item, info.label),
-              })
-            ),
+            data: computeData(info.data, categoryInfo.categories, args).map((item) => ({
+              ...item,
+              ...setItemColor(colorMap, item, info.label),
+            })),
             ...(isStackedVariant && {
               stack: 'total',
             }),
@@ -1136,12 +1067,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       borderColor: style.borderTopColor,
       borderType: style.borderTopType,
       borderRadius: style.borderRadius,
-      padding: [
-        style.paddingTop,
-        style.paddingRight,
-        style.paddingBottom,
-        style.paddingLeft,
-      ],
+      padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
     };
   }
 
@@ -1243,14 +1169,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       case 'top':
         newLayout.innerHeight -= labelSize + labelMargins;
         newLayout.innerY += axisInfo.height + labelMargins;
-        config.axisPointer.label.margin =
-          labelSize + labelStyle.marginTop - layout.innerHeight;
+        config.axisPointer.label.margin = labelSize + labelStyle.marginTop - layout.innerHeight;
         break;
 
       case 'right':
         newLayout.innerWidth -= labelSize + labelMargins;
-        config.axisPointer.label.margin =
-          labelSize - labelStyle.marginLeft - layout.innerWidth;
+        config.axisPointer.label.margin = labelSize - labelStyle.marginLeft - layout.innerWidth;
         break;
 
       case 'bottom':
@@ -1307,10 +1231,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     //            number of 3%. When ticks are closer than 3% of the axis
     //            length, then the second tick is hidden. [twl 17.Mar.23]
     const renderedTicks = [...ticks].reduce((ticks, tick) => {
-      if (
-        !ticks.length ||
-        tick.position - ticks[ticks.length - 1].position > 0.03
-      ) {
+      if (!ticks.length || tick.position - ticks[ticks.length - 1].position > 0.03) {
         ticks.push(tick);
       }
 
@@ -1349,15 +1270,9 @@ export default class BarChartModifier extends AbstractChartModifier {
    */
   computeXAxisInfo(args, layout, style, ticks, yAxisInfo, isHorizontal) {
     const { categoryAxisMaxLabelCount, categoryAxisType } = args;
-    const maxLabelCount = Math.min(
-      categoryAxisMaxLabelCount ?? ticks.length,
-      ticks.length
-    );
+    const maxLabelCount = Math.min(categoryAxisMaxLabelCount ?? ticks.length, ticks.length);
     const width =
-      layout.innerWidth -
-      yAxisInfo.width -
-      layout.borderLeftWidth -
-      layout.borderRightWidth;
+      layout.innerWidth - yAxisInfo.width - layout.borderLeftWidth - layout.borderRightWidth;
     const lineWidth = isHorizontal ? 0 : 1;
     const maxLabelWidth = width / (isHorizontal ? ticks.length : maxLabelCount);
 
@@ -1373,8 +1288,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       style,
       maxLabelWidth
     );
-    const height =
-      labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
+    const height = labelMetrics.height + style.marginTop + style.marginBottom + lineWidth;
 
     // Handle when label extends past end of axis
     const lastTick = ticks[ticks.length - 1];

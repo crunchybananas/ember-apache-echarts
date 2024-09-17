@@ -36,7 +36,10 @@ import mergeAt from './merge-at.ts';
  *                              appended at the end, and object properties
  *                              override existing properties
  */
-export default function mergeAtPaths(object, values) {
+export default function mergeAtPaths(
+  object: Record<string, unknown>,
+  values?: Record<string, unknown> | Array<Record<string, unknown>>
+) {
   if (!values) {
     return;
   }

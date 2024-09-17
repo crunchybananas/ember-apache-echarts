@@ -1,3 +1,4 @@
+// @ts-nocheck - will need to spend real time on this file with types.
 import { merge } from 'lodash-es';
 import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
@@ -77,9 +78,7 @@ export default class AbstractChartModifier extends Modifier {
     registerDestructor(this, () => this.cleanup());
 
     if (this.constructor == AbstractChartModifier) {
-      throw new Error(
-        "AbstractChartModifier is abstract and can't be instantiated."
-      );
+      throw new Error("AbstractChartModifier is abstract and can't be instantiated.");
     }
   }
 
@@ -92,11 +91,7 @@ export default class AbstractChartModifier extends Modifier {
         element.style.width = element.clientWidth || '600px';
       }
 
-      onElementResize(
-        element,
-        () => this.modify(element, [args], defaultArgs, count + 1),
-        true
-      );
+      onElementResize(element, () => this.modify(element, [args], defaultArgs, count + 1), true);
 
       return;
     }
@@ -110,10 +105,8 @@ export default class AbstractChartModifier extends Modifier {
     this.configureChart(chartArgs, this.chart, element);
   }
 
-  configureChart(args, chart, element) {
-    throw new Error(
-      '`configureChart` needs to be overridden. No implementation exists.'
-    );
+  configureChart(_args, _chart, _element) {
+    throw new Error('`configureChart` needs to be overridden. No implementation exists.');
   }
 
   createChart(element, chartArgs) {
@@ -261,9 +254,7 @@ export default class AbstractChartModifier extends Modifier {
 
     const style = resolveStyle(context.styles.chartTitle, context.layout);
 
-    mergeAtPaths(config, [
-      this.generateTitleConfig(title, context.layout, style),
-    ]);
+    mergeAtPaths(config, [this.generateTitleConfig(title, context.layout, style)]);
 
     const textHeight = computeTextHeight(style);
 
@@ -288,12 +279,7 @@ export default class AbstractChartModifier extends Modifier {
     const style = resolveStyle(context.styles.legend, context.layout);
 
     mergeAtPaths(config, [
-      this.generateLegendConfig(
-        context.data.series,
-        context.args,
-        context.layout,
-        style
-      ),
+      this.generateLegendConfig(context.data.series, context.args, context.layout, style),
     ]);
 
     const legendMetrics = this.computeLegendMetrics(context, config, style);
@@ -324,10 +310,7 @@ export default class AbstractChartModifier extends Modifier {
     const { args, layout, styles } = context;
     const { xAxisZoom, yAxisZoom } = args;
 
-    if (
-      (!xAxisZoom || xAxisZoom === 'none') &&
-      (!yAxisZoom || yAxisZoom === 'none')
-    ) {
+    if ((!xAxisZoom || xAxisZoom === 'none') && (!yAxisZoom || yAxisZoom === 'none')) {
       return context.layout;
     }
 
@@ -346,10 +329,7 @@ export default class AbstractChartModifier extends Modifier {
       const sliderHeight = config.dataZoom[0].height ?? 30;
       const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
       const xAxisZoomHeight =
-        sliderHeight +
-        brushSelectHeight +
-        xAxisZoomStyle.marginTop +
-        xAxisZoomStyle.marginBottom;
+        sliderHeight + brushSelectHeight + xAxisZoomStyle.marginTop + xAxisZoomStyle.marginBottom;
 
       newLayout.height = layout.height - xAxisZoomHeight;
       newLayout.y = layout.y + (xAxisZoom === 'top' ? xAxisZoomHeight : 0);
@@ -360,10 +340,7 @@ export default class AbstractChartModifier extends Modifier {
       const sliderWidth = yAxisConfig.height ?? 30;
       const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
       const yAxisZoomWidth =
-        sliderWidth +
-        brushSelectWidth +
-        yAxisZoomStyle.marginLeft +
-        yAxisZoomStyle.marginRight;
+        sliderWidth + brushSelectWidth + yAxisZoomStyle.marginLeft + yAxisZoomStyle.marginRight;
 
       newLayout.width = layout.width - yAxisZoomWidth;
       newLayout.x = layout.x + (yAxisZoom === 'left' ? yAxisZoomWidth : 0);
@@ -378,9 +355,7 @@ export default class AbstractChartModifier extends Modifier {
   addCellBoxes(context, config) {
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) =>
-        this.generateBoxConfig(cell)
-      )
+      layoutCells(context, context.data.series, (info, cell) => this.generateBoxConfig(cell))
     );
 
     return context.layout;
@@ -415,8 +390,7 @@ export default class AbstractChartModifier extends Modifier {
       )
     );
 
-    const textHeight =
-      computeTextHeight(style) + style.marginTop + style.marginBottom;
+    const textHeight = computeTextHeight(style) + style.marginTop + style.marginBottom;
 
     return {
       ...context.layout,
@@ -544,12 +518,7 @@ export default class AbstractChartModifier extends Modifier {
       borderWidth: style.borderTopWidth,
       borderColor: style.borderTopColor,
       borderRadius: style.borderRadius,
-      padding: [
-        style.paddingTop,
-        style.paddingRight,
-        style.paddingBottom,
-        style.paddingLeft,
-      ],
+      padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
       textStyle: {
         color: style.color,
         fontStyle: style.fontStyle,
@@ -569,8 +538,7 @@ export default class AbstractChartModifier extends Modifier {
 
       case 'right':
         merge(config, {
-          right:
-            layout.chartWidth - (layout.x + layout.width) + style.marginRight,
+          right: layout.chartWidth - (layout.x + layout.width) + style.marginRight,
         });
         break;
 
@@ -611,12 +579,7 @@ export default class AbstractChartModifier extends Modifier {
         borderWidth: style.borderTopWidth,
         borderColor: style.borderTopColor,
         borderRadius: style.borderRadius,
-        padding: [
-          style.paddingTop,
-          style.paddingRight,
-          style.paddingBottom,
-          style.paddingLeft,
-        ],
+        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
         textStyle: {
           color: style.color,
           fontStyle: style.fontStyle,
@@ -832,8 +795,7 @@ export default class AbstractChartModifier extends Modifier {
 
       case 'right':
         merge(config, {
-          right:
-            layout.chartWidth - (layout.x + layout.width) + style.marginRight,
+          right: layout.chartWidth - (layout.x + layout.width) + style.marginRight,
         });
         break;
 
@@ -922,9 +884,7 @@ export default class AbstractChartModifier extends Modifier {
 
       metrics.width = metrics.width + markerWidth + labelMetrics.width;
       metrics.height =
-        metrics.height +
-        labelMetrics.height * labels.length +
-        itemGap * (labels.length - 1);
+        metrics.height + labelMetrics.height * labels.length + itemGap * (labels.length - 1);
     }
 
     return metrics;

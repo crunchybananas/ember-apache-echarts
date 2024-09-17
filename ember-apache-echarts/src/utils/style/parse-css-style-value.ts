@@ -1,5 +1,5 @@
-import { camelCase } from 'lodash-es';
-import { transform } from 'lodash-es';
+// @ts-expect-error: Eventually remove lodash-es
+import { camelCase, transform } from 'lodash-es';
 
 /**
  * Parses the value of a `style` attribute for a DOM element into an object.
@@ -17,13 +17,16 @@ function parseCssStyleValue(styleString: string) {
   div.setAttribute('style', styleString);
 
   const keys = Object.keys(div.style)
+    // @ts-expect-error: I think this was trying to ensure that only numeric keys are used
     .filter((key) => parseInt(key) == key)
+    // @ts-expect-error: but if we only want numeric keys, why are we doing this?
     .map((key) => div.style[key]);
   const keysWithValues = keys.filter((key) => div.style[key]);
 
   return transform(
     keysWithValues,
-    (style, key) => (style[camelCase(key)] = div.style[key]),
+    // @ts-expect-error: Return to this. Seems like a lot of code for a simple transformation
+    (style: HTMLStyleElement, key: string) => (style[camelCase(key)] = div.style[key]),
     {}
   );
 }

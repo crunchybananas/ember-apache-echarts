@@ -1,12 +1,13 @@
 import AbstractChartModifier from './abstract-chart.ts';
+import type { ECharts, SelectChangedPayload } from 'echarts';
 
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
 
 type ChartArgs = {
-  series?: any[];
-  data?: any[];
-  tooltipFormatter?: (params: any) => string;
+  series?: unknown[];
+  data?: unknown[];
+  tooltipFormatter?: (params: unknown) => string;
   onSelect?: (name: string | null) => void;
   variant?: 'pie' | 'donut';
   noDataText?: string;
@@ -46,7 +47,7 @@ type ChartArgs = {
  * : Whether to render a `pie` or a `donut`
  */
 export default class PieChartModifier extends AbstractChartModifier {
-  configureChart(args: ChartArgs, chart) {
+  configureChart(args: ChartArgs, chart: ECharts) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { tooltipFormatter, onSelect } = args;
     const { config } = this.buildLayout(args, chart);
@@ -58,16 +59,17 @@ export default class PieChartModifier extends AbstractChartModifier {
       },
     });
 
-    chart.handle('selectchanged', (event) => {
-      const { fromAction, fromActionPayload, isFromClick } = event;
+    chart.on('selectchanged', (event) => {
+      const { fromAction, fromActionPayload, isFromClick } = event as SelectChangedPayload;
 
       if (!isFromClick) {
         return;
       }
 
-      const seriesIndex = fromActionPayload.seriesIndex;
-      const dataIndex = fromActionPayload.dataIndexInside;
+      const seriesIndex = fromActionPayload['seriesIndex'];
+      const dataIndex = fromActionPayload['dataIndexInside'];
       const series = allSeries[seriesIndex];
+      // @ts-expect-error: until the abstract is typed this needs to wait
       const name = series.data[dataIndex] ? series.data[dataIndex].name : null;
 
       if (name) {
@@ -84,6 +86,7 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot config for a single plot on this chart.
    */
+  // @ts-expect-error: until the abstract is typed this needs to wait
   generatePlotConfig(series, layout, context) {
     const { variant, noDataText } = context.args;
 
@@ -94,10 +97,7 @@ export default class PieChartModifier extends AbstractChartModifier {
             {
               type: 'pie',
               ...(variant === 'donut' && {
-                radius: [
-                  (layout.innerHeight * 0.3) / 2,
-                  (layout.innerHeight * 0.7) / 2,
-                ],
+                radius: [(layout.innerHeight * 0.3) / 2, (layout.innerHeight * 0.7) / 2],
               }),
               center: [
                 layout.innerX + layout.innerWidth / 2 - 0.5,
@@ -114,6 +114,7 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates text to overlay on each cell of the chart, if any.
    */
+  // @ts-expect-error: until the abstract is typed this needs to wait
   generateTextOverlayConfig(series, args, layout, style) {
     const { noDataText } = args;
 

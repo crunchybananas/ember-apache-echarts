@@ -4,9 +4,13 @@
 import 'ember-source/types';
 import 'ember-source/types/preview';
 import Ember from 'ember';
-
+import 'lodash-es';
 import '@glint/environment-ember-loose';
 import '@glint/environment-ember-template-imports';
+
+declare global {
+  declare module 'lodash-es/*';
+}
 
 declare module '@glint/environment-ember-loose/registry' {
   // Remove this once entries have been added! 👇

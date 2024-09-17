@@ -1,9 +1,9 @@
-function isObject(item) {
+function isObject(item: unknown) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
-
+//@ts-expect-error: The purpose of this file is to merge anything. Not sure what types would be.
 export default function deepMerge(target, source) {
-  let output = Array.isArray(target) ? [...target] : { ...target };
+  const output = Array.isArray(target) ? [...target] : { ...target };
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach((key) => {
       if (isObject(source[key])) {

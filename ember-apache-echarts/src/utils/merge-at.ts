@@ -25,8 +25,6 @@ export default function mergeAt(object, path, value) {
   } else if (typeof value === 'object' && typeof existingValue === 'object') {
     set(object, path, Object.assign({}, existingValue, value));
   } else {
-    throw new Error(
-      `The value at ${path} cannot be merged. It must be an object or array.`
-    );
+    throw new Error(`The value at ${path} cannot be merged. It must be an object or array.`);
   }
 }

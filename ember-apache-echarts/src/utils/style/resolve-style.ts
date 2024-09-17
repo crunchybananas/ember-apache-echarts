@@ -1,3 +1,4 @@
+// @ts-expect-error: Remove lodash-es
 import { mapValues } from 'lodash-es';
 import formatCssStyleValue from './format-css-style-value.ts';
 import parseCssStyleValue from './parse-css-style-value.ts';
@@ -5,13 +6,22 @@ import parseCssStyleValue from './parse-css-style-value.ts';
 const isPixelDimension = /^-?\d+\.?\d*\px$/;
 const isPercentDimension = /^-?\d+\.?\d*%+$/;
 
-function resolvePercentDimension(value: number, side: string, context: unknown) {
-  value = value.slice(0, -1) / 100.0;
+type Context = {
+  width: number;
+  height: number;
+};
+
+function resolvePercentDimension(value: string, side: string, context?: Context) {
+  const rawValue = parseFloat(value.slice(0, -1)) / 100.0;
 
   return side.endsWith('Top') || side.endsWith('Bottom')
-    ? value * (context?.height ?? 1)
-    : value * (context?.width ?? 1);
+    ? rawValue * (context?.height ?? 1)
+    : rawValue * (context?.width ?? 1);
 }
+
+type Style = {
+  [key: string]: string | number;
+};
 
 /**
  * Parses the CSS values in `style` into a style object containing the
@@ -27,9 +37,9 @@ function resolvePercentDimension(value: number, side: string, context: unknown) 
  *
  * @return {object} An object containing the resolved CSS properties
  */
-function resolveStyle(style: unknown, context: unknown) {
+function resolveStyle(style: Style, context: Context) {
   const result = parseCssStyleValue(formatCssStyleValue(style));
-
+  // @ts-expect-error: Can we use normal browser types?
   return mapValues(result, (value, property) =>
     isPixelDimension.test(value)
       ? parseFloat(value.slice(0, -2))

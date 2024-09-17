@@ -14,12 +14,7 @@ import { transform } from 'lodash-es';
 
  * @return {number[]} An array of the sums for the values for each category
  */
-export default function getSeriesTotals(
-  data,
-  categories,
-  categoryProperty,
-  valueProperty
-) {
+export default function getSeriesTotals(data, categories, categoryProperty, valueProperty) {
   const allData = flatten(data.map((info) => info.data));
 
   return Object.values(
@@ -27,8 +22,7 @@ export default function getSeriesTotals(
       allData,
       (totals, item) => {
         totals[item?.[categoryProperty]] =
-          (totals[item?.[categoryProperty]] ?? 0) +
-          (item?.[valueProperty] ?? 0);
+          (totals[item?.[categoryProperty]] ?? 0) + (item?.[valueProperty] ?? 0);
       },
       {}
     )

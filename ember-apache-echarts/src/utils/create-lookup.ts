@@ -15,6 +15,7 @@
  *                  then the value property will be an an array of values.
  */
 export default function createLookup(
+  // @ts-expect-error: Return to these as I am not sure what the purpose of this is.
   array,
   keyProperty = 'id',
   valueProperty = undefined,
@@ -22,7 +23,8 @@ export default function createLookup(
 ) {
   return !array
     ? {}
-    : array.reduce((lookup, item) => {
+    : // @ts-expect-error: Return to these as I am not sure what the purpose of this is.
+      array.reduce((lookup, item) => {
         const key = item[keyProperty];
         const value = valueProperty ? item[valueProperty] : item;
 

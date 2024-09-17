@@ -157,106 +157,106 @@ export default class GraphChartModifier extends AbstractChartModifier {
     };
   }
 
-    /**
+  /**
    * Generates the configuration for the drill up button.
    */
-    generateDrillUpButtonConfig(text, layout, style) {
-      const textMetrics = computeTextMetrics(text, style);
+  generateDrillUpButtonConfig(text, layout, style) {
+    const textMetrics = computeTextMetrics(text, style);
 
-      return {
-        'graphic.elements': [
-          {
-            type: 'group',
-            left: style.marginLeft,
-            top: style.marginTop,
-            children: [
-              // NOTE: This element is referenced by path in `addDrillUpButton`
-              {
-                type: 'rect',
-                shape: {
-                  width: textMetrics.width + style.paddingLeft + style.paddingRight,
-                  height: textMetrics.fontHeight + style.paddingTop + style.paddingBottom,
-                  r: [
-                    style.borderTopLeftRadius ?? 0,
-                    style.borderTopRightRadius ?? 0,
-                    style.borderBottomRightRadius ?? 0,
-                    style.borderBottomLeftRadius ?? 0,
-                  ],
-                },
-                style: {
-                  stroke: style.borderColor ?? '#fff',
-                  fill: style.backgroundColor ?? '#fff',
-                },
+    return {
+      'graphic.elements': [
+        {
+          type: 'group',
+          left: style.marginLeft,
+          top: style.marginTop,
+          children: [
+            // NOTE: This element is referenced by path in `addDrillUpButton`
+            {
+              type: 'rect',
+              shape: {
+                width: textMetrics.width + style.paddingLeft + style.paddingRight,
+                height: textMetrics.fontHeight + style.paddingTop + style.paddingBottom,
+                r: [
+                  style.borderTopLeftRadius ?? 0,
+                  style.borderTopRightRadius ?? 0,
+                  style.borderBottomRightRadius ?? 0,
+                  style.borderBottomLeftRadius ?? 0,
+                ],
               },
-              {
-                type: 'text',
-                x: style.paddingLeft,
-                y: style.paddingTop,
-                style: {
-                  fill: style.color,
-                  text,
-                  font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
-                },
-                textConfig: {
-                  distance: 0,
-                  inside: true,
-                  position: [10, 0],
-                },
+              style: {
+                stroke: style.borderColor ?? '#fff',
+                fill: style.backgroundColor ?? '#fff',
               },
-            ],
-            onclick: () => this.drillPath.popObject(),
-          },
-        ],
-      };
-    }
-
-    /**
-     * Generates the plot configuration for the graph chart.
-     */
-    generatePlotConfig(info, _cell, _context, _gridIndex) {
-      // Implement the logic to generate the plot configuration
-      return {
-        // Example configuration
-        series: [
-          {
-            type: 'tree',
-            layout: 'force',
-            data: info.data,
-            links: info.links,
-            roam: true,
-            label: {
-              show: true,
             },
+            {
+              type: 'text',
+              x: style.paddingLeft,
+              y: style.paddingTop,
+              style: {
+                fill: style.color,
+                text,
+                font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
+              },
+              textConfig: {
+                distance: 0,
+                inside: true,
+                position: [10, 0],
+              },
+            },
+          ],
+          onclick: () => this.drillPath.popObject(),
+        },
+      ],
+    };
+  }
+
+  /**
+   * Generates the plot configuration for the graph chart.
+   */
+  generatePlotConfig(info, _cell, _context, _gridIndex) {
+    // Implement the logic to generate the plot configuration
+    return {
+      // Example configuration
+      series: [
+        {
+          type: 'tree',
+          layout: 'force',
+          data: info.data,
+          links: info.links,
+          roam: true,
+          label: {
+            show: true,
           },
-        ],
-      };
-    }
+        },
+      ],
+    };
+  }
 
-    /**
-     * Default styles for the graph chart.
-     */
-    get defaultStyles() {
-      const styles = super.defaultStyles;
+  /**
+   * Default styles for the graph chart.
+   */
+  get defaultStyles() {
+    const styles = super.defaultStyles;
 
-      return {
-        ...styles,
-        plot: {},
-        node: {
-          font: 'normal 12px Montserrat,sans-serif',
-          textAlign: 'left',
-          marginTop: 8,
-        },
-        link: {
-          color: '#000',
-          font: 'normal 12px Montserrat,sans-serif',
-          marginRight: 8,
-        },
-        drillUpButton: {
-          margin: 0,
-          color: '#000',
-          font: 'normal 22px Montserrat,sans-serif',
-          marginRight: 10,
-        },
-      };
-    }
+    return {
+      ...styles,
+      plot: {},
+      node: {
+        font: 'normal 12px Montserrat,sans-serif',
+        textAlign: 'left',
+        marginTop: 8,
+      },
+      link: {
+        color: '#000',
+        font: 'normal 12px Montserrat,sans-serif',
+        marginRight: 8,
+      },
+      drillUpButton: {
+        margin: 0,
+        color: '#000',
+        font: 'normal 22px Montserrat,sans-serif',
+        marginRight: 10,
+      },
+    };
+  }
 }

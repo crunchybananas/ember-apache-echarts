@@ -16,8 +16,7 @@ const pixelProperties = [
 ];
 
 const addPixelsToValue = (key, value) =>
-  typeof value === 'number' &&
-  pixelProperties.find((property) => key.startsWith(property))
+  typeof value === 'number' && pixelProperties.find((property) => key.startsWith(property))
     ? `${value}px`
     : value;
 
@@ -31,8 +30,7 @@ const addPixelsToValue = (key, value) =>
  */
 const formatCssStyleValue = (style) =>
   Object.keys(style).reduce(
-    (styleValue, key) =>
-      styleValue + `${kebabCase(key)}: ${addPixelsToValue(key, style[key])}; `,
+    (styleValue, key) => styleValue + `${kebabCase(key)}: ${addPixelsToValue(key, style[key])}; `,
     ''
   );
 

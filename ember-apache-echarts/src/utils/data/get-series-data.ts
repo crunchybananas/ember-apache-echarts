@@ -13,12 +13,7 @@ import createLookup from '../create-lookup.ts';
  *
  * @return {number[]} An array of data values
  */
-export default function getSeriesData(
-  data,
-  categories,
-  categoryProperty,
-  valueProperty
-) {
+export default function getSeriesData(data, categories, categoryProperty, valueProperty) {
   const lookup = createLookup(data, categoryProperty, valueProperty);
 
   return compact(categories.map((category) => lookup[category]));

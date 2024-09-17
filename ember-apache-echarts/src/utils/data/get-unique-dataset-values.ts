@@ -15,10 +15,7 @@ export default function getUniqueDatasetValues(dataset, property) {
     for (const item of series.data) {
       const value = item[property];
 
-      result.set(
-        typeof value?.valueOf === 'function' ? value.valueOf() : value,
-        value
-      );
+      result.set(typeof value?.valueOf === 'function' ? value.valueOf() : value, value);
     }
   }
 

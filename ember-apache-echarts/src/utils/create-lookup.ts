@@ -18,7 +18,7 @@ export default function createLookup(
   // @ts-expect-error: Return to these as I am not sure what the purpose of this is.
   array,
   keyProperty = 'id',
-  valueProperty = undefined,
+  valueProperty?: string,
   duplicateKeys = false
 ) {
   return !array

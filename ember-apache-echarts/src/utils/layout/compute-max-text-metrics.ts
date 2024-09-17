@@ -13,7 +13,8 @@ import computeTextMetrics from './compute-text-metrics.ts';
  *                  sufficient to contain each of the strings in `array` when
  *                  rendered
  */
-const computeMaxTextMetrics = (array, style, maxWidth) =>
+// @ts-expect-error: not sure
+const computeMaxTextMetrics = (array: string[], style, maxWidth: number) =>
   array.reduce(
     (maxMetrics, text) => {
       const textMetrics = computeTextMetrics(text, style);

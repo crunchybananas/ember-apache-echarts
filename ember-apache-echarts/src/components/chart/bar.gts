@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
 import { or } from 'ember-truth-helpers';

@@ -8,6 +8,7 @@
  *
  * @return {object} The `width`, `height`, `x` and `y` of the inner box
  */
+// @ts-expect-error: not sure
 const computeInnerBox = (outerBox, style) => ({
   ...outerBox,
   width:

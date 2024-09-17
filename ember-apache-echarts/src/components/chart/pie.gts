@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { pick } from 'lodash-es';
 import { action } from '@ember/object';
 import Component from '@glimmer/component';

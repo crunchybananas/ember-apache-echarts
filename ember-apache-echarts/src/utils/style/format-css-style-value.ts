@@ -1,3 +1,4 @@
+// @ts-expect-error: remove lodash
 import { kebabCase } from 'lodash-es';
 
 const pixelProperties = [
@@ -15,7 +16,7 @@ const pixelProperties = [
   'borderRightRadius',
 ];
 
-const addPixelsToValue = (key, value) =>
+const addPixelsToValue = (key: string, value: number|string) =>
   typeof value === 'number' && pixelProperties.find((property) => key.startsWith(property))
     ? `${value}px`
     : value;
@@ -28,8 +29,9 @@ const addPixelsToValue = (key, value) =>
  * @return {string} A string representation of the CSS properties suitable for a
  *                  `style` attribute
  */
-const formatCssStyleValue = (style) =>
+const formatCssStyleValue = (style: Record<string, unknown>) =>
   Object.keys(style).reduce(
+    // @ts-expect-error: not sure
     (styleValue, key) => styleValue + `${kebabCase(key)}: ${addPixelsToValue(key, style[key])}; `,
     ''
   );

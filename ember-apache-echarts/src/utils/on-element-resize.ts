@@ -11,7 +11,7 @@
  *
  * @return {ResizeObserver} The observer used to watch for resize events
  */
-export default function onElementResize(element, callback, onceOnly = false) {
+export default function onElementResize(element: HTMLElement, callback: ((element: HTMLElement) => void), onceOnly = false) {
   const resizeObserver = new ResizeObserver(() => {
     callback(element);
 

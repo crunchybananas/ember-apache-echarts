@@ -1,5 +1,10 @@
-import { flatten } from 'lodash-es';
-import { transform } from 'lodash-es';
+// @ts-expect-error: remove lodash
+import { flatten, transform } from 'lodash-es';
+
+type DataItem = {
+  data: { [key: string]: any }[];
+  [key: string]: any;
+};
 
 /**
  * Compute the sum of all values in the series in `data` for each category in
@@ -14,12 +19,13 @@ import { transform } from 'lodash-es';
 
  * @return {number[]} An array of the sums for the values for each category
  */
-export default function getSeriesTotals(data, categories, categoryProperty, valueProperty) {
+export default function getSeriesTotals(data: DataItem[], categories: string[], categoryProperty: string, valueProperty: string) {
   const allData = flatten(data.map((info) => info.data));
 
   return Object.values(
     transform(
       allData,
+      // @ts-expect-error: remove lodash
       (totals, item) => {
         totals[item?.[categoryProperty]] =
           (totals[item?.[categoryProperty]] ?? 0) + (item?.[valueProperty] ?? 0);

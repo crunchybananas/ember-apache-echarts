@@ -9,6 +9,7 @@ const stringToMeasure = 'ABCDEFGHIJKLMNOPQRSTUVWYXZabcdefghijklmnopqrstuvwxyz';
  *
  * @return {number} The height of any text rendered using this style in pixels
  */
+// @ts-expect-error: not sure
 const computeTextHeight = (style) =>
   computeTextMetrics(stringToMeasure, style).height +
   style.marginTop +

@@ -2,10 +2,6 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 
-const penniesToDollars = (pennies) => {
-  return `$${(pennies / 100).toFixed(2)}`;
-};
-
 /**
  * ChartTreeExample component renders a tree chart with adjustable orientation.
  */

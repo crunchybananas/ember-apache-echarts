@@ -1,5 +1,5 @@
-import { get } from 'lodash-es';
-import { set } from 'lodash-es';
+// @ts-expect-error: remove lodash
+import { get, set } from 'lodash-es';
 
 /**
  * Merges the existing value at `path` within `object` with the `value`, if
@@ -11,7 +11,7 @@ import { set } from 'lodash-es';
  *                              appended at the end, and object properties for
  *                              `value` override existing properties
  */
-export default function mergeAt(object, path, value) {
+export default function mergeAt(object: Record<string, unknown>, path: string, value: unknown) {
   if (!value) {
     return;
   }

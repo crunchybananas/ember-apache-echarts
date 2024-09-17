@@ -1,7 +1,6 @@
 import { tracked } from '@glimmer/tracking';
-import { compact } from 'lodash-es';
-import { countBy } from 'lodash-es';
-import { flatten } from 'lodash-es';
+// @ts-expect-error
+import { compact, countBy, flatten } from 'lodash-es';
 import * as echarts from 'echarts';
 import mergeAtPaths from '../utils/merge-at-paths.ts';
 import parseAxisLabel from '../utils/chart/parse-axis-label.ts';
@@ -14,13 +13,24 @@ import computeMaxTextMetrics from '../utils/layout/compute-max-text-metrics.ts';
 import computeTextMetrics from '../utils/layout/compute-text-metrics.ts';
 import resolveStyle from '../utils/style/resolve-style.ts';
 import AbstractChartModifier from './abstract-chart.ts';
+import type { ECharts, SelectChangedPayload } from 'echarts';
+
+type Variant = 'bar' | 'line' | 'area' | 'groupedBar' | 'groupedLine' | 'stackedBar' | 'stackedArea';
+
+type AxisConfig = {
+  type: string;
+  axisLabel?: {
+    showMinLabel?: boolean;
+    showMaxLabel?: boolean;
+  };
+};
 
 const DEFAULT_CATEGORY_PROPERTY = 'name';
 const DEFAULT_VALUE_PROPERTY = 'value';
 
 // TODO: Import only the required components to keep the bundle size small. See
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
-
+// @ts-expect-error
 const setItemColor = (colorMap, item, color) =>
   !colorMap?.[color]
     ? item
@@ -31,21 +41,42 @@ const setItemColor = (colorMap, item, color) =>
         },
       };
 
-const isShowingAxisLabel = (axisConfig, labelType) =>
+const isShowingAxisLabel = (axisConfig: AxisConfig, labelType: 'Min' | 'Max') =>
   axisConfig.axisLabel?.[`show${labelType}Label`] === false ||
   (axisConfig.type === 'time' && axisConfig.axisLabel?.[`show${labelType}Label`] !== true);
-
+// @ts-expect-error
 const computeData = (data, categories, args) => {
   const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
   const { categoryAxisType, orientation } = args;
+  // @ts-expect-error - not sure what the 4th arg should be
   const series = getSeriesData(data, categories, categoryProperty);
 
   return categoryAxisType !== 'time'
     ? series
+    // @ts-expect-error
     : series.map((item) => ({
         ...item,
         value: orientation === 'horizontal' ? [item.value, item.name] : [item.name, item.value],
       }));
+};
+
+type ChartArgs = {
+  tooltipFormatter?: (params: unknown) => string;
+  onSelect?: (name: string | null) => void;
+  data: unknown[];
+  series?: unknown[];
+  rotateData?: boolean;
+  categoryProperty?: string;
+  valueProperty?: string;
+  variant?: Variant;
+  categoryAxisScale?: 'shared' | 'separate';
+  valueAxisScale?: 'shared' | 'separate';
+  categoryAxisType?: 'category' | 'time';
+  categoryAxisSort?: 'firstSeries' | 'asc' | 'desc' | ((a: string, b: string) => number);
+  missingCategoryFormat?: string;
+  missingValueFormat?: string;
+  drillUpButtonText?: string;
+  title?: string;
 };
 
 /**
@@ -321,25 +352,26 @@ export default class BarChartModifier extends AbstractChartModifier {
     };
   }
 
-  isGroupedVariant(variant) {
+  isGroupedVariant(variant: Variant) {
     return ['groupedBar', 'groupedLine'].includes(variant);
   }
 
-  isStackedVariant(variant) {
+  isStackedVariant(variant: Variant) {
     return ['stackedArea', 'stackedBar'].includes(variant);
   }
 
-  isBarVariant(variant) {
+  isBarVariant(variant: Variant) {
     return ['bar', 'groupedBar', 'stackedBar'].includes(variant ?? 'bar');
   }
 
-  isAreaVariant(variant) {
+  isAreaVariant(variant: Variant) {
     return ['area', 'stackedArea'].includes(variant);
   }
 
   /**
    * Returns the categories used within the data series in render order.
    */
+  // @ts-expect-error
   getCategories(args, series) {
     const { categoryAxisSort = 'firstSeries', categoryAxisType } = args;
     const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
@@ -366,6 +398,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Formats the `name` and `value` within `params` when a category or value
    * formatter are defined, respectively.
    */
+  // @ts-expect-error
   formatTooltipParams(args, params, elementType) {
     const { valueAxisFormatter = echarts.format.addCommas } = args;
     const { categoryAxisType, categoryAxisFormatter, orientation } = args;
@@ -397,7 +430,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     };
   }
 
-  configureChart(args, chart) {
+  configureChart(args: ChartArgs, chart: ECharts) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { categoryAxisScale, tooltipFormatter, onSelect } = args;
     const { config, context } = this.buildLayout(args, chart);
@@ -408,11 +441,12 @@ export default class BarChartModifier extends AbstractChartModifier {
         tooltip: {
           trigger: 'item',
           ...(tooltipFormatter && {
-            formatter: (params) =>
+            formatter: (params: unknown[]) =>
               tooltipFormatter(
                 params.length != null
                   ? params.map((param) => this.formatTooltipParams(args, param, 'axisTooltip'))
                   : this.formatTooltipParams(args, params, 'itemTooltip'),
+                // @ts-expect-error
                 context.data.dataset
               ),
           }),
@@ -423,23 +457,26 @@ export default class BarChartModifier extends AbstractChartModifier {
       }
     );
 
-    chart.handle('selectchanged', (event) => {
-      const { fromAction, fromActionPayload, isFromClick } = event;
+    chart.on('selectchanged', (event) => {
+      const { fromAction, fromActionPayload, isFromClick } = event as SelectChangedPayload;
 
       if (!isFromClick) {
         return;
       }
 
-      const seriesIndex = fromActionPayload.seriesIndex;
-      const dataIndex = fromActionPayload.dataIndexInside;
+      const seriesIndex = fromActionPayload['seriesIndex'];
+      const dataIndex = fromActionPayload['dataIndexInside'];
       const series = allSeries[seriesIndex];
       // NOTE: `dataIndex` isn't actually the data index. It's the index of the
       //       category on the X axis. Thus we need to look up the value based
       //       on how the axis is being rendered. [twl 20.Jul.22]
       const name =
         categoryAxisScale === 'shared'
+          // @ts-expect-error: until the abstract is typed this needs to wait
           ? context.data.categories[dataIndex]
+          // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
           : series.data[dataIndex]
+            // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
             ? series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
             : null;
 
@@ -454,7 +491,8 @@ export default class BarChartModifier extends AbstractChartModifier {
     });
 
     // Change the default behavior of how selections work on the legend
-    chart.handle('legendselectchanged', ({ name, selected }) => {
+    // @ts-expect-error
+    chart.on('legendselectchanged', ({ name, selected }) => {
       const selections = Object.values(selected);
       const counts = countBy(selections);
 
@@ -468,8 +506,10 @@ export default class BarChartModifier extends AbstractChartModifier {
     });
 
     // Handle the drill in action
-    chart.handle('dblclick', ({ seriesIndex }) => {
+    chart.on('dblclick', ({ seriesIndex }) => {
+      // @ts-expect-error
       if (context.data.dataset[seriesIndex].series) {
+        // @ts-expect-error
         this.drillPath.pushObject(seriesIndex);
       }
     });
@@ -478,8 +518,9 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Generates the `data` section of the context used to construct this chart.
    */
-  createContextData(args, chart) {
-    const context = super.createContextData(args, chart);
+  // @ts-expect-error
+  createContextData(args, chart: ECharts) {
+    const context = super.createContextData(args);
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
     const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;
     const { valueProperty = DEFAULT_VALUE_PROPERTY } = args;
@@ -518,6 +559,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Adds the title to `config` as defined in the data or by `args` and returns
    * the new context layout.
    */
+  // @ts-expect-error
   addTitle(context, config) {
     const buttonLayout = this.addDrillUpButton(context, config);
     const buttonWidth = context.layout.width - buttonLayout.width;
@@ -556,6 +598,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Adds the drill up button to `config` and returns the new context layout.
    */
+  // @ts-expect-error
   addDrillUpButton(context, config) {
     if (!this.drillPath.length) {
       return context.layout;
@@ -575,22 +618,23 @@ export default class BarChartModifier extends AbstractChartModifier {
     const buttonConfig = this.generateDrillUpButtonConfig(drillUpButtonText, layout, style);
 
     mergeAtPaths(config, [buttonConfig]);
-
+    // @ts-expect-error
     const buttonBox = buttonConfig['graphic.elements'][0].children[0].shape;
 
     return {
       ...layout,
-      width: layout.width - buttonBox.width - xMargins,
-      height: layout.height - buttonBox.height - yMargins,
-      x: layout.x + buttonBox.width + xMargins,
-      y: layout.y + buttonBox.height + yMargins,
+      width: layout.width - (buttonBox?.width ?? 0) - xMargins,
+      height: layout.height - (buttonBox?.height ?? 0) - yMargins,
+      x: layout.x + (buttonBox?.width ?? 0) + xMargins,
+      y: layout.y + (buttonBox?.height ?? 0)  + yMargins
     };
   }
 
   /**
    * Generates the configuration for the drill up button.
    */
-  generateDrillUpButtonConfig(text, layout, style) {
+  // @ts-expect-error
+  generateDrillUpButtonConfig(text: string, layout, style) {
     const textMetrics = computeTextMetrics(text, style);
 
     return {
@@ -634,6 +678,7 @@ export default class BarChartModifier extends AbstractChartModifier {
               },
             },
           ],
+          // @ts-expect-error
           onclick: () => this.drillPath.popObject(),
         },
       ],
@@ -643,18 +688,21 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Returns the labels for the legend.
    */
+  // @ts-expect-error
   getLegendLabels(series, args) {
     if (!this.isStackedVariant(args.variant) && !this.isGroupedVariant(args.variant)) {
       return super.getLegendLabels(series, args);
     }
 
     // Grouped and stacked datasets may have a dummy root node
+    // @ts-expect-error
     return series[0].data.map((info) => info.label ?? info.name);
   }
 
   /**
    * Calculate the categories and range used for the category axis.
    */
+  // @ts-expect-error
   computeCategoryInfo(series, context) {
     const { args, data } = context;
     const { variant, categoryAxisScale } = args;
@@ -674,6 +722,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Calculate the values and stats used for the value axis.
    */
+  // @ts-expect-error
   computeValueInfo(series, context, categories) {
     const { args, data } = context;
     const { variant, valueAxisScale } = args;
@@ -688,6 +737,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     } else if (this.isGroupedVariant(variant)) {
       values = compact(
         flatten(
+          // @ts-expect-error
           series.data.map((group) =>
             getSeriesData(group.data, categories, categoryProperty, valueProperty)
           )
@@ -718,6 +768,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * `position`
    * : A value from 0 to 1 indicating the position of the tick along the axis.
    */
+  // @ts-expect-error
   computeCategoryAxisTicks(context, categoryInfo, axisConfig) {
     const { categoryAxisFormatter } = context.args;
     const isTimeAxis = axisConfig.type === 'time';
@@ -732,6 +783,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     model.ecModel = this.chart.getModel();
 
     if (!isTimeAxis) {
+      // @ts-expect-error
       model.getCategories = () => categoryInfo.categories;
     }
 
@@ -739,11 +791,12 @@ export default class BarChartModifier extends AbstractChartModifier {
       [categoryInfo.first.valueOf(), categoryInfo.last.valueOf()],
       model
     );
-
+    // @ts-expect-error
     const ticks = scale.getTicks(false).map((tick, index) => ({
       // prettier not formatting nested ternaries properly, so turn it off
       // prettier-ignore
       ...parseAxisLabel(isTimeAxis
+          // @ts-expect-error
           ? scale.getFormattedLabel(tick, index, categoryAxisFormatter)
           : categoryAxisFormatter
             ? categoryAxisFormatter(scale.getLabel(tick))
@@ -766,6 +819,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Calculate the labels used for the value axis.
    */
+  // @ts-expect-error
   computeValueAxisTicks(context, valueInfo, axisConfig) {
     const { args } = context;
     const formatter = args.valueAxisFormatter ?? echarts.format.addCommas;
@@ -786,7 +840,7 @@ export default class BarChartModifier extends AbstractChartModifier {
           ? valueInfo.maximum
           : axisConfig.max;
     const scale = echarts.helper.createScale([minValue, maxValue], axisConfig);
-
+    // @ts-expect-error
     return scale.getTicks(false).map((tick) => ({
       label: tick.value != null ? formatter(tick.value) : '',
       position: scale.normalize(tick.value),
@@ -796,6 +850,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot config for a single plot on this chart.
    */
+  // @ts-expect-error
   generatePlotConfig(series, layout, context, gridIndex) {
     const { args, styles, data } = context;
     const { noDataText, seriesConfig } = args;
@@ -841,6 +896,7 @@ export default class BarChartModifier extends AbstractChartModifier {
             : undefined,
       axisLabel: {
         ...(valueAxisFormatter && {
+          // @ts-expect-error
           formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
         }),
         // margin between the axis label and the axis line
@@ -861,6 +917,7 @@ export default class BarChartModifier extends AbstractChartModifier {
       }),
       axisLabel: {
         ...(categoryAxisFormatter && {
+          // @ts-expect-error
           formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
         }),
         // Determine how many categories are shown on the axis
@@ -991,9 +1048,11 @@ export default class BarChartModifier extends AbstractChartModifier {
               }),
             },
           ]
+          // @ts-expect-error
         : series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
+            // @ts-expect-error
             data: computeData(info.data, categoryInfo.categories, args).map((item) => ({
               ...item,
               ...setItemColor(colorMap, item, info.label),
@@ -1052,6 +1111,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Generates the configuration for an axis label.
    */
+  // @ts-expect-error
   generateAxisLabelConfig(layout, style) {
     return {
       color: style.color,
@@ -1075,6 +1135,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Adds the configuration for the axis pointer for the `axis` to `config` and
    * returns an updated `layout`.
    */
+  // @ts-expect-error
   addAxisPointer(context, layout, config, axisInfo, axis) {
     const { args, styles } = context;
     const name = `${axis}AxisPointer`;
@@ -1126,6 +1187,7 @@ export default class BarChartModifier extends AbstractChartModifier {
           }
         : {
             ...(formatter && {
+              // @ts-expect-error
               formatter: (params) => formatter(params.value),
             }),
             color: labelStyle.color,
@@ -1193,6 +1255,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Generates text to overlay on each cell of the chart, if any.
    */
+  // @ts-expect-error
   generateTextOverlayConfig(series, args, layout, style) {
     const { noDataText } = args;
 
@@ -1213,6 +1276,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the Y axis for charts that use an Y axis.
    */
+  // @ts-expect-error
   computeYAxisInfo(style, ticks, isHorizontal) {
     // HACK TODO: When ticks are too close to each other, the following tick
     //            will be hidden. This can cause the Y axis to calculate the
@@ -1237,7 +1301,9 @@ export default class BarChartModifier extends AbstractChartModifier {
 
       return ticks;
     }, []);
+    // @ts-expect-error
     const labelMetrics = computeMaxTextMetrics(
+      // @ts-expect-error
       renderedTicks.map((tick) => tick.label),
       style
     );
@@ -1268,6 +1334,7 @@ export default class BarChartModifier extends AbstractChartModifier {
   /**
    * Computes style and metrics about the X axis for charts that use an X axis.
    */
+  // @ts-expect-error
   computeXAxisInfo(args, layout, style, ticks, yAxisInfo, isHorizontal) {
     const { categoryAxisMaxLabelCount, categoryAxisType } = args;
     const maxLabelCount = Math.min(categoryAxisMaxLabelCount ?? ticks.length, ticks.length);
@@ -1284,6 +1351,7 @@ export default class BarChartModifier extends AbstractChartModifier {
     //       two different in the final value. Skipping this for now, since it
     //       requires a bunch of refactoring to make this work. [twl 17.Mar.23]
     const labelMetrics = computeMaxTextMetrics(
+      // @ts-expect-error
       ticks.map((tick) => tick.label),
       style,
       maxLabelWidth

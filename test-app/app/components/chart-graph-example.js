@@ -14,8 +14,6 @@ export default class ChartGraphExample extends Component {
    * @returns {Object} The series configuration object for the chart.
    */
   get seriesConfig() {
-    const isVertical = this.isVertical;
-
     // Common label styles
     const commonLabelStyles = {
       position: 'inside',

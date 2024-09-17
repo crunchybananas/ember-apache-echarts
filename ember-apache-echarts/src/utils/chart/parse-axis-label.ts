@@ -9,7 +9,7 @@
  *
  * @return {object} An object containing the `label` and an optional `type`
  */
-export default function parseAxisLabel(label) {
+export default function parseAxisLabel(label: string) {
   if (label.startsWith('{') && label.endsWith('}') && label.includes('|')) {
     const [type, text] = label.substring(1, label.length - 2).split('|');
 

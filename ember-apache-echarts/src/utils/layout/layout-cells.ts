@@ -1,3 +1,4 @@
+// @ts-expect-error: remove lodash
 import { pickBy } from 'lodash-es';
 import resolveStyle from '../style/resolve-style.ts';
 
@@ -10,6 +11,7 @@ import resolveStyle from '../style/resolve-style.ts';
  *
  * @return {object} An object containing the chart layout info
  */
+// @ts-expect-error: not sure
 function computeChartLayoutInfo(context, array) {
   const { maxColumns } = context.args;
   const cellCount = array.length;
@@ -34,6 +36,7 @@ function computeChartLayoutInfo(context, array) {
  *
  * @return {object} An object containing the cell layout info
  */
+// @ts-expect-error: not sure
 function computeCellLayoutInfo(context, chart) {
   const xOffset = context.layout.cell?.xOffset ?? 0;
   const yOffset = context.layout.cell?.yOffset ?? 0;
@@ -69,7 +72,7 @@ function computeCellLayoutInfo(context, chart) {
 
   Object.assign(
     cell,
-    pickBy(resolveStyle(context.styles.cell, layoutSize), (value, key) => key.startsWith('padding'))
+    pickBy(resolveStyle(context.styles.cell, layoutSize), (_value: unknown, key: string) => key.startsWith('padding'))
   );
 
   // Store the dimensions inside of the padding
@@ -90,6 +93,7 @@ function computeCellLayoutInfo(context, chart) {
  * @return {object} An object containing `chart` and `cell` keys which provide
  *                  layout information for these aspects of the layout
  */
+// @ts-expect-error: not sure
 function computeLayoutInfo(context, array) {
   const chart = computeChartLayoutInfo(context, array);
   const cell = computeCellLayoutInfo(context, chart);
@@ -131,9 +135,10 @@ function computeLayoutInfo(context, array) {
  *
  * @return {object[]} An array of chart configuration elements
  */
+// @ts-expect-error: not sure
 export default function layoutCells(context, array, callback) {
   const layoutInfo = computeLayoutInfo(context, array);
-
+  // @ts-expect-error: not sure
   return array.map((element, index) => {
     const column = index % layoutInfo.chart.columns;
     const row = Math.floor(index / layoutInfo.chart.columns);

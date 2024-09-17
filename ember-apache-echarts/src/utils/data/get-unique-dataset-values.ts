@@ -1,3 +1,7 @@
+type DataSeries = {
+  data: { [key: string]: any }[];
+};
+
 /**
  * Extracts an array of unique values of `property` from `dataset`, where
  * `dataset` is an array of data series. Each series should be an object that
@@ -8,7 +12,7 @@
  *
  * @return {any[]} An array of unique property values for `property`
  */
-export default function getUniqueDatasetValues(dataset, property) {
+export default function getUniqueDatasetValues(dataset: DataSeries[], property: string) {
   const result = new Map();
 
   for (const series of dataset) {

@@ -1,3 +1,4 @@
+// @ts-expect-error: remove lodash
 import { omit } from 'lodash-es';
 import getUniqueDatasetValues from './get-unique-dataset-values.ts';
 
@@ -18,10 +19,13 @@ import getUniqueDatasetValues from './get-unique-dataset-values.ts';
  *
  * @return {object[]} data An array of data objects
  */
-const rotateDataSeries = (data, categoryProperty, valueProperty) =>
+// @ts-expect-error: not sure
+const rotateDataSeries = (data, categoryProperty: string, valueProperty: string) =>
   getUniqueDatasetValues(data, categoryProperty).map((label) => ({
     label,
+    // @ts-expect-error: not sure
     data: data.map((series) => {
+      // @ts-expect-error: not sure
       const item = series.data.find((item) => item[categoryProperty] === label);
 
       return !item

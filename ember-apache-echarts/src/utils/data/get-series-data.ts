@@ -1,5 +1,10 @@
+// @ts-expect-error: remove lodash
 import { compact } from 'lodash-es';
 import createLookup from '../create-lookup.ts';
+
+type Data = {
+  [key: string]: any;
+};
 
 /**
  * Returns the data values from the `data` array.
@@ -13,7 +18,7 @@ import createLookup from '../create-lookup.ts';
  *
  * @return {number[]} An array of data values
  */
-export default function getSeriesData(data, categories, categoryProperty, valueProperty) {
+export default function getSeriesData(data: Data[], categories: string[], categoryProperty: string, valueProperty: string) {
   const lookup = createLookup(data, categoryProperty, valueProperty);
 
   return compact(categories.map((category) => lookup[category]));

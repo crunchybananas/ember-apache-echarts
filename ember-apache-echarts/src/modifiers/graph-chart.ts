@@ -205,7 +205,9 @@ export default class GraphChartModifier extends AbstractChartModifier {
 
     const { layout, args, styles } = context;
     const { drillUpButtonText = '<' } = args;
+    // @ts-expect-error: Need to figure out what these do
     const style = resolveStyle(styles.drillUpButton, layout);
+    // @ts-expect-error: Need to figure out what these do
     const titleStyle = resolveStyle(styles.chartTitle, layout);
     const xMargins = style.marginLeft + style.marginRight;
     const yMargins = style.marginTop + style.marginBottom;
@@ -232,6 +234,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the configuration for the drill up button.
    */
+  // @ts-expect-error: Need to figure out what these do
   generateDrillUpButtonConfig(text: string, layout, style) {
     const textMetrics = computeTextMetrics(text, style);
 
@@ -276,6 +279,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
               },
             },
           ],
+          // @ts-expect-error: Need to figure out what these do
           onclick: () => this.drillPath.popObject(),
         },
       ],
@@ -285,6 +289,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot configuration for the graph chart.
    */
+  // @ts-expect-error: Need to figure out what these do
   generatePlotConfig(info, _cell, _context, _gridIndex) {
     // Implement the logic to generate the plot configuration
     return {

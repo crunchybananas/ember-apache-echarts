@@ -3,7 +3,7 @@ import { compact } from 'lodash-es';
 import createLookup from '../create-lookup.ts';
 
 type Data = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 /**

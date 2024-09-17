@@ -2,8 +2,8 @@
 import { flatten, transform } from 'lodash-es';
 
 type DataItem = {
-  data: { [key: string]: any }[];
-  [key: string]: any;
+  data: { [key: string]: unknown }[];
+  [key: string]: unknown;
 };
 
 /**

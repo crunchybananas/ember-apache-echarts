@@ -3,7 +3,7 @@ import { compact } from 'lodash-es';
 import getUniqueDatasetValues from './get-unique-dataset-values.ts';
 
 type DataSeries = {
-  data: { [key: string]: any }[];
+  data: { [key: string]: unknown }[];
 };
 
 type Stat = 'min' | 'max';

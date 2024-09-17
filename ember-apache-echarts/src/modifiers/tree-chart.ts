@@ -204,7 +204,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
    * Generates the configuration for the drill up button.
    */
   // @ts-expect-error: Need to figure out what these do
-  generateDrillUpButtonConfig(text, layout, style) {
+  generateDrillUpButtonConfig(_text, _layout, _style) {
     // const textMetrics = computeTextMetrics(text, style);
 
     // return {

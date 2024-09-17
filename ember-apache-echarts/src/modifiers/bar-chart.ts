@@ -519,7 +519,7 @@ export default class BarChartModifier extends AbstractChartModifier {
    * Generates the `data` section of the context used to construct this chart.
    */
   // @ts-expect-error
-  createContextData(args, chart: ECharts) {
+  createContextData(args) {
     const context = super.createContextData(args);
     const { rotateData, categoryAxisScale, valueAxisScale } = args;
     const { categoryProperty = DEFAULT_CATEGORY_PROPERTY } = args;

@@ -1,5 +1,5 @@
 type DataSeries = {
-  data: { [key: string]: any }[];
+  data: { [key: string]: unknown }[];
 };
 
 /**

@@ -91,7 +91,7 @@ type TitleConfig = {
 };
 
 export default class GraphChartModifier extends AbstractChartModifier {
-  @tracked drillPath = [];
+  @tracked drillPath: number[] = [];
 
   /**
    * Configures the chart with the provided arguments.
@@ -122,7 +122,6 @@ export default class GraphChartModifier extends AbstractChartModifier {
       const seriesIndex = fromActionPayload['seriesIndex'];
       const dataIndex = fromActionPayload['dataIndexInside'];
       const series = args.series[seriesIndex];
-      // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
       const name = series.data[dataIndex] ? series.data[dataIndex].name : null;
 
       if (name) {
@@ -205,9 +204,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
 
     const { layout, args, styles } = context;
     const { drillUpButtonText = '<' } = args;
-    // @ts-expect-error: Need to figure out what these do
     const style = resolveStyle(styles.drillUpButton, layout);
-    // @ts-expect-error: Need to figure out what these do
     const titleStyle = resolveStyle(styles.chartTitle, layout);
     const xMargins = style.marginLeft + style.marginRight;
     const yMargins = style.marginTop + style.marginBottom;
@@ -234,8 +231,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the configuration for the drill up button.
    */
-  // @ts-expect-error: Need to figure out what these do
-  generateDrillUpButtonConfig(text: string, layout, style) {
+  generateDrillUpButtonConfig(text: string, layout: { width: number; height: number; x: number; y: number }, style: { marginLeft: number; marginTop: number; paddingLeft: number; paddingRight: number; paddingTop: number; paddingBottom: number; borderTopLeftRadius?: number; borderTopRightRadius?: number; borderBottomRightRadius?: number; borderBottomLeftRadius?: number; borderColor?: string; backgroundColor?: string; color: string; fontStyle: string; fontWeight: string; fontSize: number; fontFamily: string }) {
     const textMetrics = computeTextMetrics(text, style);
 
     return {
@@ -279,8 +275,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
               },
             },
           ],
-          // @ts-expect-error: Need to figure out what these do
-          onclick: () => this.drillPath.popObject(),
+          onclick: () => this.drillPath.pop(),
         },
       ],
     };
@@ -289,8 +284,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot configuration for the graph chart.
    */
-  // @ts-expect-error: Need to figure out what these do
-  generatePlotConfig(info, _cell, _context, _gridIndex) {
+  generatePlotConfig(info: { data: unknown[]; links: unknown[] }, _cell: unknown, _context: unknown, _gridIndex: unknown) {
     // Implement the logic to generate the plot configuration
     return {
       // Example configuration

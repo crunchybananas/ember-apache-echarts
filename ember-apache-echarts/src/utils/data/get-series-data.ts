@@ -1,4 +1,3 @@
-// @ts-expect-error: remove lodash
 import { compact } from 'lodash-es';
 import createLookup from '../create-lookup.ts';
 
@@ -23,7 +22,7 @@ export default function getSeriesData(
   categories: string[],
   categoryProperty: string,
   valueProperty: string
-) {
+): number[] {
   const lookup = createLookup(data, categoryProperty, valueProperty);
 
   return compact(categories.map((category) => lookup[category]));

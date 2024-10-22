@@ -1,4 +1,3 @@
-// @ts-expect-error: remove lodash
 import { flatten, transform } from 'lodash-es';
 
 type DataItem = {
@@ -24,18 +23,17 @@ export default function getSeriesTotals(
   categories: string[],
   categoryProperty: string,
   valueProperty: string
-) {
+): number[] {
   const allData = flatten(data.map((info) => info.data));
 
   return Object.values(
     transform(
       allData,
-      // @ts-expect-error: remove lodash
       (totals, item) => {
         totals[item?.[categoryProperty]] =
           (totals[item?.[categoryProperty]] ?? 0) + (item?.[valueProperty] ?? 0);
       },
-      {}
+      {} as Record<string, number>
     )
   );
 }

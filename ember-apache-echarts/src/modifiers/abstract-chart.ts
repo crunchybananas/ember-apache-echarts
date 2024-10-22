@@ -1,4 +1,3 @@
-// @ts-nocheck - will need to spend real time on this file with types.
 import { merge } from 'lodash-es';
 import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
@@ -14,8 +13,205 @@ import layoutCells from '../utils/layout/layout-cells.ts';
 import resolveStyle from '../utils/style/resolve-style.ts';
 import mergeAtPaths from '../utils/merge-at-paths.ts';
 
-// These should be composite properties so they can be overridden either by
-// composite properties or individual constituent properties
+type Layout = {
+  chartWidth: number;
+  chartHeight: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  cell?: {
+    yOffset: number;
+  };
+};
+
+type Style = {
+  font: string;
+  textAlign: string;
+  margin: number;
+  padding: number;
+  backgroundColor?: string;
+  borderTopWidth?: number;
+  borderTopColor?: string;
+  borderRadius?: number;
+  paddingTop?: number;
+  paddingRight?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  color?: string;
+  fontStyle?: string;
+  fontWeight?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  marginTop?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+  marginRight?: number;
+  borderLeftWidth?: number;
+  borderRightWidth?: number;
+  borderBottomWidth?: number;
+  borderLeftColor?: string;
+  borderRightColor?: string;
+  borderBottomColor?: string;
+  borderLeftStyle?: string;
+  borderRightStyle?: string;
+  borderBottomStyle?: string;
+  opacity?: number;
+  zIndex?: number;
+  verticalAlign?: string;
+};
+
+type Context = {
+  layout: Layout;
+  args: any;
+  chart: echarts.ECharts;
+  styles: Record<string, Style>;
+  data: any;
+  index?: number;
+};
+
+type Box = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  marginTop: number;
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+  borderLeftWidth: number;
+  borderRightWidth: number;
+  borderTopWidth: number;
+  borderBottomWidth: number;
+  backgroundColor?: string;
+  borderTopColor?: string;
+};
+
+type TitleConfig = {
+  text: string;
+  top: number;
+  backgroundColor?: string;
+  borderWidth?: number;
+  borderColor?: string;
+  borderRadius?: number;
+  padding: number[];
+  textStyle: {
+    color?: string;
+    fontStyle?: string;
+    fontWeight?: string;
+    fontFamily?: string;
+    fontSize?: number;
+  };
+  left?: number;
+  textAlign?: string;
+  right?: number;
+};
+
+type LegendConfig = {
+  type: string;
+  data: {
+    name: string;
+    icon: string;
+    itemStyle: {
+      color?: string;
+    };
+  }[];
+  itemGap: number;
+  align: string;
+  width: number;
+  orient: string;
+  backgroundColor?: string;
+  borderWidth?: number;
+  borderColor?: string;
+  borderRadius?: number;
+  padding: number[];
+  textStyle: {
+    color?: string;
+    fontStyle?: string;
+    fontWeight?: string;
+    fontFamily?: string;
+    fontSize?: number;
+  };
+  top?: number | string;
+  bottom?: number | string;
+  left?: number | string;
+  right?: number | string;
+};
+
+type DataZoomConfig = {
+  type: string;
+  brushSelect?: boolean;
+  borderColor?: string;
+  show: boolean;
+  start: number;
+  end: number;
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  xAxisIndex?: number[];
+  yAxisIndex?: number[];
+};
+
+type TextConfig = {
+  type: string;
+  style: {
+    font: string;
+    fill: string;
+    text: string;
+  };
+  silent: boolean;
+  z?: number;
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+};
+
+type PlotConfig = {
+  grid: any[];
+  yAxis: any[];
+  xAxis: any[];
+  series: any[];
+  'graphic.elements'?: any[];
+};
+
+type Cell = {
+  width: number;
+  height: number;
+  innerX: number;
+  innerY: number;
+};
+
+type Series = {
+  label?: string;
+  name?: string;
+  data: any[];
+};
+
+type ChartArgs = {
+  title?: string;
+  legend?: string;
+  legendOrientation?: string;
+  colorMap?: Record<string, string>;
+  xAxisZoom?: string;
+  yAxisZoom?: string;
+  xAxisZoomBrush?: boolean;
+  yAxisZoomBrush?: boolean;
+  series?: Series[];
+  data?: any[];
+  [key: string]: any;
+};
+
+type ContextData = {
+  series: Series[];
+};
+
+type LegendMetrics = {
+  width: number;
+  height: number;
+};
+
 const baseStyle = {
   border: '0px solid #000',
   font: 'bold 16px Montserrat,sans-serif',
@@ -24,12 +220,11 @@ const baseStyle = {
   padding: 0,
 };
 
-// The index for the overlay layer
 const Z_OVERLAY = 100;
 
 export default class AbstractChartModifier extends Modifier {
-  chart;
-  resizeObserver;
+  chart: echarts.ECharts | undefined;
+  resizeObserver: ResizeObserver | undefined;
 
   get defaultStyles() {
     return {
@@ -71,8 +266,8 @@ export default class AbstractChartModifier extends Modifier {
       },
     };
   }
-
-  constructor(...args) {
+  // TODO: This may be the wrong way to register the destructor
+  constructor(...args: any[]) {
     super(...args);
 
     registerDestructor(this, () => this.cleanup());
@@ -82,7 +277,7 @@ export default class AbstractChartModifier extends Modifier {
     }
   }
 
-  modify(element, [args], defaultArgs, count = 0) {
+  modify(element: HTMLElement, [args]: [ChartArgs], defaultArgs: ChartArgs, count = 0) {
     if (!element.clientHeight || !element.clientWidth) {
       // Escape hatch if the styling of this element doesn't allow it to have
       // a size within its parent layout
@@ -105,22 +300,22 @@ export default class AbstractChartModifier extends Modifier {
     this.configureChart(chartArgs, this.chart, element);
   }
 
-  configureChart(_args, _chart, _element) {
+  configureChart(_args: ChartArgs, _chart: echarts.ECharts, _element: HTMLElement) {
     throw new Error('`configureChart` needs to be overridden. No implementation exists.');
   }
 
-  createChart(element, chartArgs) {
+  createChart(element: HTMLElement, chartArgs: ChartArgs): echarts.ECharts {
     const chart = echarts.init(element, null, { renderer: 'canvas' });
 
     // Initialize the chart model using default options so charts that need to
     // access the locale via the model while being built can do so
     chart.setOption({});
 
-    // Add a `handle` method that ensures only one event listener can be
-    // attached at the same time. This prevents mistakes when coding new charts
-    // of forgetting to `off` an event during a reconfigure and then having
-    // multiple handlers attached to the chart.
-    chart.handle = (eventName, ...args) => {
+    chart.handle = (eventName: string, ...args: any[]) => {
+      // Add a `handle` method that ensures only one event listener can be
+      // attached at the same time. This prevents mistakes when coding new charts
+      // of forgetting to `off` an event during a reconfigure and then having
+      // multiple handlers attached to the chart.
       chart.off(eventName);
       chart.on(eventName, ...args);
     };
@@ -140,7 +335,7 @@ export default class AbstractChartModifier extends Modifier {
     return chart;
   }
 
-  /**
+ /**
    * Builds a basic layout for this chart, returning the `context` and `config`
    * that can be used to extend the layout further.
    *
@@ -150,8 +345,8 @@ export default class AbstractChartModifier extends Modifier {
    * calculate their size and position based on how other components are laid
    * out.
    */
-  buildLayout(args, chart) {
-    const config = {};
+  buildLayout(args: ChartArgs, chart: echarts.ECharts) {
+    const config: any = {};
     const context = this.createContext(args, chart);
 
     // These must be called in the order from outsidemost layout to innermost
@@ -171,8 +366,8 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   cleanup() {
-    this.resizeObserver.disconnect();
-    this.chart.dispose();
+    this.resizeObserver?.disconnect();
+    this.chart?.dispose();
   }
 
   // ---------------------------------------------------------------------------
@@ -181,8 +376,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Creates the context used when laying out elements on this chart.
    */
-  createContext(args, chart) {
-    const layout = {
+  createContext(args: ChartArgs, chart: echarts.ECharts): Context {
+    const layout: Layout = {
       chartWidth: chart.getWidth(),
       chartHeight: chart.getHeight(),
       width: chart.getWidth(),
@@ -192,7 +387,7 @@ export default class AbstractChartModifier extends Modifier {
     };
     const styles = transform(
       Object.keys(this.defaultStyles),
-      (styles, type) =>
+      (styles: Record<string, Style>, type: string) =>
         (styles[type] = {
           ...baseStyle,
           ...this.defaultStyles[type],
@@ -213,7 +408,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the `data` section of the context used to construct this chart.
    */
-  createContextData(args /*, chart */) {
+  createContextData(args: ChartArgs /*, chart */): ContextData {
     const series = args.series ?? [{ data: args.data }];
 
     return {
@@ -224,7 +419,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the border and background of the chart.
    */
-  addChartBox(context, config) {
+  addChartBox(context: Context, config: any): Layout {
     const style = resolveStyle(context.styles.chart, context.layout);
 
     mergeAtPaths(
@@ -245,7 +440,7 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the title to `config` if defined in `args` and returns the new
    * context.
    */
-  addTitle(context, config) {
+  addTitle(context: Context, config: any): Layout {
     const { title } = context.args;
 
     if (!title) {
@@ -269,7 +464,7 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the legend to `config` if defined in `args` and returns the new
    * context.
    */
-  addLegend(context, config) {
+  addLegend(context: Context, config: any): Layout {
     const { legend } = context.args;
 
     if (!legend || legend === 'none') {
@@ -306,7 +501,7 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the data zoom slider to `config` if defined in `args` and returns the
    * new context.
    */
-  addDataZoom(context, config) {
+  addDataZoom(context: Context, config: any): Layout {
     const { args, layout, styles } = context;
     const { xAxisZoom, yAxisZoom } = args;
 
@@ -352,10 +547,10 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the border and background of the cells.
    */
-  addCellBoxes(context, config) {
+  addCellBoxes(context: Context, config: any): Layout {
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) => this.generateBoxConfig(cell))
+      layoutCells(context, context.data.series, (info: any, cell: Cell) => this.generateBoxConfig(cell))
     );
 
     return context.layout;
@@ -364,7 +559,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the titles to individual cells.
    */
-  addCellTitles(context, config) {
+  addCellTitles(context: Context, config: any): Layout {
     const series = context.data.series;
 
     if (series.length === 1 && !series[0].label && !series[0].name) {
@@ -375,7 +570,7 @@ export default class AbstractChartModifier extends Modifier {
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info: any, cell: Cell) =>
         this.generateTitleConfig(
           info.label ?? info.name,
           {
@@ -404,14 +599,14 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the plots to individual cells.
    */
-  addCellPlots(context, config) {
+  addCellPlots(context: Context, config: any): Layout {
     // Ensure when using the `grid` config, the correct index is specified. This
     // differs from `context.index` when a cell has no data (and so, no grid)
     let gridIndex = 0;
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) => {
+      layoutCells(context, context.data.series, (info: any, cell: Cell) => {
         const config = this.generatePlotConfig(info, cell, context, gridIndex);
 
         if (config) {
@@ -428,7 +623,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add any cell overlays on top of the chart.
    */
-  addCellTextOverlays(context, config) {
+  addCellTextOverlays(context: Context, config: any): Layout {
     if (!this.generateTextOverlayConfig) {
       return context.layout;
     }
@@ -437,7 +632,7 @@ export default class AbstractChartModifier extends Modifier {
 
     mergeAtPaths(
       config,
-      layoutCells(context, context.data.series, (info, cell) =>
+      layoutCells(context, context.data.series, (info: any, cell: Cell) =>
         this.generateTextOverlayConfig(info, context.args, cell, style)
       )
     );
@@ -448,14 +643,14 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Returns the labels for the legend.
    */
-  getLegendLabels(series, args) {
+  getLegendLabels(series: Series[], args: ChartArgs): string[] {
     return getUniqueDatasetValues(series, args.categoryProperty ?? 'name');
   }
 
   /**
    * Returns the orientation of the legend as either `horizontal` or `vertical`.
    */
-  getLegendOrientation(args) {
+  getLegendOrientation(args: ChartArgs): string {
     const { legend, legendOrientation } = args;
 
     return !['horizontal', 'vertical'].includes(legendOrientation)
@@ -468,7 +663,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for the background and border of a box element.
    */
-  generateBoxConfig(box) {
+  generateBoxConfig(box: Box): any {
     return {
       'graphic.elements': [
         {
@@ -509,8 +704,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a title element.
    */
-  generateTitleConfig(text, layout, style) {
-    const config = {
+  generateTitleConfig(text: string, layout: Layout, style: Style): any {
+    const config: TitleConfig = {
       text,
       top: layout.y + style.marginTop,
       backgroundColor: style.backgroundColor,
@@ -557,36 +752,33 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a legend element.
    */
-  generateLegendConfig(series, args, layout, style) {
+  generateLegendConfig(series: Series[], args: ChartArgs, layout: Layout, style: Style): any {
     const { legend = 'topCenter' } = args;
     const isVertical = this.getLegendOrientation(args) === 'vertical';
-    const config = {
-      legend: {
-        type: 'scroll',
-        data: this.getLegendLabels(series, args).map((label) => ({
-          name: label,
-          icon: 'circle',
-          itemStyle: {
-            color: args?.colorMap?.[label],
-          },
-        })),
-        itemGap: isVertical ? 15 : 40,
-        align: style.textAlign ?? 'left',
-        width: layout.width,
-        orient: isVertical ? 'vertical' : 'horizontal',
-        backgroundColor: style.backgroundColor,
-        // Safari only parses contituent values, so use "top" as a proxy for all
-        borderWidth: style.borderTopWidth,
-        borderColor: style.borderTopColor,
-        borderRadius: style.borderRadius,
-        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
-        textStyle: {
-          color: style.color,
-          fontStyle: style.fontStyle,
-          fontWeight: style.fontWeight,
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
+    const config: LegendConfig = {
+      type: 'scroll',
+      data: this.getLegendLabels(series, args).map((label) => ({
+        name: label,
+        icon: 'circle',
+        itemStyle: {
+          color: args?.colorMap?.[label],
         },
+      })),
+      itemGap: isVertical ? 15 : 40,
+      align: style.textAlign ?? 'left',
+      width: layout.width,
+      orient: isVertical ? 'vertical' : 'horizontal',
+      backgroundColor: style.backgroundColor,
+      borderWidth: style.borderTopWidth,
+      borderColor: style.borderTopColor,
+      borderRadius: style.borderRadius,
+      padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+      textStyle: {
+        color: style.color,
+        fontStyle: style.fontStyle,
+        fontWeight: style.fontWeight,
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
       },
     };
 
@@ -654,7 +846,7 @@ export default class AbstractChartModifier extends Modifier {
    * Generates the configuration for the control that allows a user to zoom in
    * and out of the data.
    */
-  generateXAxisDataZoomConfig(args, layout, style) {
+  generateXAxisDataZoomConfig(args: ChartArgs, layout: Layout, style: Style): any {
     const { xAxisZoom, xAxisZoomBrush } = args;
 
     if (!xAxisZoom) {
@@ -701,7 +893,7 @@ export default class AbstractChartModifier extends Modifier {
    * Generates the configuration for the control that allows a user to zoom in
    * and out of the data.
    */
-  generateYAxisDataZoomConfig(args, layout, style) {
+  generateYAxisDataZoomConfig(args: ChartArgs, layout: Layout, style: Style): any {
     const { yAxisZoom, yAxisZoomBrush } = args;
 
     if (!yAxisZoom) {
@@ -744,7 +936,7 @@ export default class AbstractChartModifier extends Modifier {
    * Generates the base configuration for a single element in the `dataZoom`
    * configuration.
    */
-  generateDataZoomConfigElement(style, brushSelect) {
+  generateDataZoomConfigElement(style: Style, brushSelect?: boolean): DataZoomConfig {
     return {
       type: 'slider',
       brushSelect,
@@ -758,9 +950,9 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a text element.
    */
-  generateTextConfig(text, layout, style) {
+  generateTextConfig(text: string, layout: Layout, style: Style): any {
     const metrics = computeTextMetrics(text, style);
-    const config = {
+    const config: TextConfig = {
       type: 'text',
       style: {
         font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
@@ -835,7 +1027,7 @@ export default class AbstractChartModifier extends Modifier {
    * Computes the width and height of the legend, after the legend has been
    * added into the `config` using the compiled legend `style`.
    */
-  computeLegendMetrics(context, config, style) {
+  computeLegendMetrics(context: Context, config: any, style: Style): LegendMetrics {
     const { layout, data, args } = context;
     const labels = this.getLegendLabels(data.series, args);
     const orientation = this.getLegendOrientation(args);
@@ -844,7 +1036,7 @@ export default class AbstractChartModifier extends Modifier {
     const itemGap = config.legend.itemGap ?? 10;
     // Divide by 2 on border, since it appears to be drawn at the end of the
     // legend rather than inside or outside the legend
-    const metrics = {
+    const metrics: LegendMetrics = {
       width:
         style.paddingLeft +
         style.paddingRight +

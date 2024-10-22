@@ -59,7 +59,7 @@ type TitleConfig = {
 };
 
 export default class GraphChartModifier extends AbstractChartModifier {
-  @tracked drillPath = [];
+  @tracked drillPath: number[] = [];
 
   /**
    * Configures the chart with the provided arguments.
@@ -91,8 +91,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
       const seriesIndex = fromActionPayload['seriesIndex'];
       const dataIndex = fromActionPayload['dataIndexInside'];
       const series = args.series?.[seriesIndex];
-      // @ts-expect-error: TypeScript doesn't know about the structure of `series.data`
-      const name = series.data[dataIndex] ? series.data[dataIndex].name : null;
+      const name = series?.data[dataIndex]?.name ?? null;
 
       if (name) {
         chart.dispatchAction({
@@ -174,9 +173,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
 
     const { layout, args, styles } = context;
     const { drillUpButtonText = '<' } = args;
-    // @ts-expect-error: Need to figure out what these do
     const style = resolveStyle(styles.drillUpButton, layout);
-    // @ts-expect-error: Need to figure out what these do
     const titleStyle = resolveStyle(styles.chartTitle, layout);
     const xMargins = style.marginLeft + style.marginRight;
     const yMargins = style.marginTop + style.marginBottom;
@@ -186,9 +183,7 @@ export default class GraphChartModifier extends AbstractChartModifier {
     style.marginLeft += titleStyle.marginLeft;
 
     const buttonConfig = this.generateDrillUpButtonConfig(drillUpButtonText, layout, style);
-    // @ts-expect-error: Need to figure out what these do
     mergeAtPaths(config, [buttonConfig]);
-    // @ts-expect-error: Need to figure out what these do
     const buttonBox = buttonConfig['graphic.elements'][0].children[0].shape;
 
     return {
@@ -203,61 +198,86 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the configuration for the drill up button.
    */
-  // @ts-expect-error: Need to figure out what these do
-  generateDrillUpButtonConfig(_text, _layout, _style) {
-    // const textMetrics = computeTextMetrics(text, style);
-    // return {
-    //   'graphic.elements': [
-    //     {
-    //       type: 'group',
-    //       left: style.marginLeft,
-    //       top: style.marginTop,
-    //       children: [
-    //         // NOTE: This element is referenced by path in `addDrillUpButton`
-    //         {
-    //           type: 'rect',
-    //           shape: {
-    //             width: textMetrics.width + style.paddingLeft + style.paddingRight,
-    //             height: textMetrics.fontHeight + style.paddingTop + style.paddingBottom,
-    //             r: [
-    //               style.borderTopLeftRadius ?? 0,
-    //               style.borderTopRightRadius ?? 0,
-    //               style.borderBottomRightRadius ?? 0,
-    //               style.borderBottomLeftRadius ?? 0,
-    //             ],
-    //           },
-    //           style: {
-    //             stroke: style.borderColor ?? '#fff',
-    //             fill: style.backgroundColor ?? '#fff',
-    //           },
-    //         },
-    //         {
-    //           type: 'text',
-    //           x: style.paddingLeft,
-    //           y: style.paddingTop,
-    //           style: {
-    //             fill: style.color,
-    //             text,
-    //             font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
-    //           },
-    //           textConfig: {
-    //             distance: 0,
-    //             inside: true,
-    //             position: [10, 0],
-    //           },
-    //         },
-    //       ],
-    //       onclick: () => this.drillPath.popObject(),
-    //     },
-    //   ],
-    // };
+  generateDrillUpButtonConfig(
+    text: string,
+    layout: { width: number; height: number; x: number; y: number },
+    style: {
+      marginLeft: number;
+      marginTop: number;
+      paddingLeft: number;
+      paddingRight: number;
+      paddingTop: number;
+      paddingBottom: number;
+      borderTopLeftRadius?: number;
+      borderTopRightRadius?: number;
+      borderBottomRightRadius?: number;
+      borderBottomLeftRadius?: number;
+      borderColor?: string;
+      backgroundColor?: string;
+      color: string;
+      fontStyle: string;
+      fontWeight: string;
+      fontSize: number;
+      fontFamily: string;
+    }
+  ) {
+    const textMetrics = computeTextMetrics(text, style);
+
+    return {
+      'graphic.elements': [
+        {
+          type: 'group',
+          left: style.marginLeft,
+          top: style.marginTop,
+          children: [
+            {
+              type: 'rect',
+              shape: {
+                width: textMetrics.width + style.paddingLeft + style.paddingRight,
+                height: textMetrics.fontHeight + style.paddingTop + style.paddingBottom,
+                r: [
+                  style.borderTopLeftRadius ?? 0,
+                  style.borderTopRightRadius ?? 0,
+                  style.borderBottomRightRadius ?? 0,
+                  style.borderBottomLeftRadius ?? 0,
+                ],
+              },
+              style: {
+                stroke: style.borderColor ?? '#fff',
+                fill: style.backgroundColor ?? '#fff',
+              },
+            },
+            {
+              type: 'text',
+              x: style.paddingLeft,
+              y: style.paddingTop,
+              style: {
+                fill: style.color,
+                text,
+                font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
+              },
+              textConfig: {
+                distance: 0,
+                inside: true,
+                position: [10, 0],
+              },
+            },
+          ],
+          onclick: () => this.drillPath.pop(),
+        },
+      ],
+    };
   }
 
   /**
    * Generates the plot configuration for the graph chart.
    */
-  // @ts-expect-error: Need to figure out what these do
-  generatePlotConfig(info, _cell, _context, _gridIndex) {
+  generatePlotConfig(
+    info: { data: unknown[]; links: unknown[] },
+    _cell: unknown,
+    _context: unknown,
+    _gridIndex: unknown
+  ) {
     // Implement the logic to generate the plot configuration
     return {
       // Example configuration

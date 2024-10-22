@@ -5,8 +5,8 @@ import type { ECharts, SelectChangedPayload } from 'echarts';
 //       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
 
 type ChartArgs = {
-  series?: unknown[];
-  data?: unknown[];
+  series?: { data: { name: string }[] }[];
+  data?: { name: string }[];
   tooltipFormatter?: (params: unknown) => string;
   onSelect?: (name: string | null) => void;
   variant?: 'pie' | 'donut';
@@ -69,7 +69,6 @@ export default class PieChartModifier extends AbstractChartModifier {
       const seriesIndex = fromActionPayload['seriesIndex'];
       const dataIndex = fromActionPayload['dataIndexInside'];
       const series = allSeries[seriesIndex];
-      // @ts-expect-error: until the abstract is typed this needs to wait
       const name = series.data[dataIndex] ? series.data[dataIndex].name : null;
 
       if (name) {
@@ -86,8 +85,11 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates the plot config for a single plot on this chart.
    */
-  // @ts-expect-error: until the abstract is typed this needs to wait
-  generatePlotConfig(series, layout, context) {
+  generatePlotConfig(
+    series: { data: { name: string }[] },
+    layout: { innerHeight: number; innerWidth: number; innerX: number; innerY: number },
+    context: { args: ChartArgs }
+  ) {
     const { variant, noDataText } = context.args;
 
     return (!series.data || series.data.length == 0) && noDataText
@@ -114,8 +116,12 @@ export default class PieChartModifier extends AbstractChartModifier {
   /**
    * Generates text to overlay on each cell of the chart, if any.
    */
-  // @ts-expect-error: until the abstract is typed this needs to wait
-  generateTextOverlayConfig(series, args, layout, style) {
+  generateTextOverlayConfig(
+    series: { data: { name: string }[] },
+    args: ChartArgs,
+    layout: { innerWidth: number; innerHeight: number; innerX: number; innerY: number },
+    style: { [key: string]: unknown }
+  ) {
     const { noDataText } = args;
 
     return (!series.data || series.data.length == 0) && noDataText

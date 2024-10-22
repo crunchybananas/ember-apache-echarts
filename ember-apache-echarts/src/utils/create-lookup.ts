@@ -14,23 +14,23 @@
  *                  for all elements in the array. If `duplicateKeys` is set,
  *                  then the value property will be an an array of values.
  */
-export default function createLookup(
-  // @ts-expect-error: Return to these as I am not sure what the purpose of this is.
-  array,
-  keyProperty = 'id',
-  valueProperty?: string,
+export default function createLookup<T, K extends keyof T, V extends keyof T>(
+  array: T[],
+  keyProperty: K = 'id' as K,
+  valueProperty?: V,
   duplicateKeys = false
-) {
+): Record<string, T[V] | T[V][]> {
   return !array
     ? {}
-    : // @ts-expect-error: Return to these as I am not sure what the purpose of this is.
-      array.reduce((lookup, item) => {
-        const key = item[keyProperty];
+    : array.reduce((lookup: Record<string, T[V] | T[V][]>, item: T) => {
+        const key = item[keyProperty] as unknown as string;
         const value = valueProperty ? item[valueProperty] : item;
 
         if (duplicateKeys) {
-          lookup[key] = lookup[key] ?? [];
-          lookup[key].push(value);
+          if (!lookup[key]) {
+            lookup[key] = [];
+          }
+          (lookup[key] as T[V][]).push(value);
         } else {
           lookup[key] = value;
         }

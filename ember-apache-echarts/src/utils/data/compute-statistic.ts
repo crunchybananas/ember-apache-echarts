@@ -1,4 +1,3 @@
-// @ts-expect-error: remove lodash
 import { compact } from 'lodash-es';
 import getUniqueDatasetValues from './get-unique-dataset-values.ts';
 
@@ -18,6 +17,6 @@ type Stat = 'min' | 'max';
  *
  * @return {number} The value of the statistic for the dataset
  */
-export default function computeStatistic(dataset: DataSeries[], stat: Stat, property = 'value') {
+export default function computeStatistic(dataset: DataSeries[], stat: Stat, property = 'value'): number {
   return Math[stat](...compact(getUniqueDatasetValues(dataset, property)));
 }

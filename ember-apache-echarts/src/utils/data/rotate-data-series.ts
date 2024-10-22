@@ -1,6 +1,14 @@
-// @ts-expect-error: remove lodash
 import { omit } from 'lodash-es';
-import getUniqueDatasetValues from './get-unique-dataset-values.ts';
+import getUniqueDatasetValues from './get-unique-dataset-values';
+
+interface DataItem {
+  [key: string]: any;
+}
+
+interface Series {
+  label: string;
+  data: DataItem[];
+}
 
 /**
  * Rotates the data series so the data elements in each series become series
@@ -11,21 +19,18 @@ import getUniqueDatasetValues from './get-unique-dataset-values.ts';
  * and the data within each series are the columns in those rows, this swaps the
  * rows for the columns.
  *
- * @param {object[]} data             An array of data objects
+ * @param {Series[]} data             An array of data objects
  * @param {string}   categoryProperty The name of the property in each data
  *                                    object that represents the category
  * @param {string}   valueProperty    The name of the property in each data
  *                                    object that represents the value
  *
- * @return {object[]} data An array of data objects
+ * @return {Series[]} data An array of data objects
  */
-// @ts-expect-error: not sure
-const rotateDataSeries = (data, categoryProperty: string, valueProperty: string) =>
+const rotateDataSeries = (data: Series[], categoryProperty: string, valueProperty: string): Series[] =>
   getUniqueDatasetValues(data, categoryProperty).map((label) => ({
     label,
-    // @ts-expect-error: not sure
     data: data.map((series) => {
-      // @ts-expect-error: not sure
       const item = series.data.find((item) => item[categoryProperty] === label);
 
       return !item
@@ -35,7 +40,7 @@ const rotateDataSeries = (data, categoryProperty: string, valueProperty: string)
             [valueProperty]: item[valueProperty],
             ...omit(series, 'data', 'label'),
           };
-    }),
+    }).filter(Boolean) as DataItem[],
   }));
 
 export default rotateDataSeries;

@@ -12,7 +12,7 @@ type DataSeries = {
  *
  * @return {any[]} An array of unique property values for `property`
  */
-export default function getUniqueDatasetValues(dataset: DataSeries[], property: string) {
+export default function getUniqueDatasetValues(dataset: DataSeries[], property: string): any[] {
   const result = new Map();
 
   for (const series of dataset) {

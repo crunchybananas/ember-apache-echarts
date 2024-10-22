@@ -12,10 +12,7 @@ runs:
           run: pnpm build
           cwd: ./ember-apache-echarts
         expect: |
-          dist/index.mjs
-          dist/index.mjs.map
-          declarations/index.d.ts
-
+          dist/utils/deep-merge.js
 
       ' >> assert-contents.config.yml
       npx assert-folder-contents

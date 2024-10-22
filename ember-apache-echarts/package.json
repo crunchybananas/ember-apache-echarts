@@ -1,6 +1,6 @@
 {
   "name": "ember-apache-echarts",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Echarts for Ember",
   "keywords": [
     "ember-addon"
@@ -13,24 +13,47 @@
     "test": "tests"
   },
   "files": [
-    "addon-main.js",
+    "addon-main.cjs",
+    "declarations",
     "dist"
   ],
   "exports": {
-    "./*": "./dist/*",
-    "./addon-main.js": "./addon-main.js"
+    ".": {
+      "types": "./declarations/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./declarations/*.d.ts",
+      "default": "./dist/*.js"
+    },
+    "./addon-main.js": "./addon-main.cjs"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "declarations/*"
+      ]
+    }
   },
   "scripts": {
-    "build": "rollup --config",
+    "build": "npm-run-all build:*",
+    "build:js": "rollup --config",
+    "build:types": "echo 'skip types build'",
+    "build:glint": "glint --build",
     "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",
     "lint:fix": "npm-run-all --aggregate-output --continue-on-error --parallel lint:*:fix",
-    "lint:hbs": "ember-template-lint .",
-    "lint:hbs:fix": "ember-template-lint . --fix",
+    "lint:hbs": "ember-template-lint . --no-error-on-unmatched-pattern",
     "lint:js": "eslint . --cache",
+    "lint:hbs:fix": "ember-template-lint . --fix --no-error-on-unmatched-pattern",
     "lint:js:fix": "eslint . --fix",
-    "start": "rollup --config --watch",
-    "test": "echo 'Addon does not have tests, run tests in test-app'",
-    "prepare": "pnpm build"
+    "lint:prettier": "prettier ./src -c --plugin prettier-plugin-ember-template-tag",
+    "lint:prettier:fix": "prettier --write ./src --plugin prettier-plugin-ember-template-tag",
+    "lint:types": "glint",
+    "start": "npm-run-all start:*",
+    "start:js": "rollup --config --watch --no-watch.clearScreen",
+    "start:types": "glint --declaration --watch",
+    "test": "echo 'A v2 addon does not have tests, run tests in test-app'",
+    "prepack": "pnpm build:*"
   },
   "dependencies": {
     "@ember/render-modifiers": "^2.1.0",
@@ -47,28 +70,42 @@
   },
   "devDependencies": {
     "@babel/core": "7.22.20",
-    "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.24.7",
+    "@babel/plugin-transform-typescript": "^7.25.2",
+    "@babel/runtime": "^7.25.6",
     "@embroider/addon-dev": "4.3.1",
+    "@glint/core": "^1.4.0",
+    "@glint/environment-ember-loose": "^1.4.0",
+    "@glint/environment-ember-template-imports": "^1.4.0",
+    "@glint/template": "^1.4.0",
     "@optimize-lodash/rollup-plugin": "^4.0.4",
     "@rollup/plugin-babel": "^6.0.4",
+    "@tsconfig/ember": "^3.0.8",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "babel-eslint": "10.1.0",
+    "babel-plugin-ember-template-compilation": "^2.3.0",
+    "decorator-transforms": "^2.0.0",
     "ember-template-lint": "5.13.0",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-ember": "11.12.0",
+    "eslint-plugin-ember": "12.2.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "5.0.1",
-    "eslint-plugin-qunit": "8.0.1",
+    "eslint-plugin-qunit": "8.1.2",
     "npm-run-all": "4.1.5",
-    "rollup": "4.18.1"
+    "prettier": "^3.3.3",
+    "prettier-plugin-ember-template-tag": "^2.0.2",
+    "rollup": "4.21.3",
+    "typescript": "^5.6.2"
   },
   "peerDependencies": {
+    "decorator-transforms": "^2.0.0",
     "@ember/string": ">=4.0.0",
     "ember-source": ">=5.0.0"
   },
   "engines": {
-    "node": ">= 16.15.1",
+    "node": ">= 18",
     "yarn": "use pnpm",
     "npm": "use pnpm"
   },
@@ -82,16 +119,21 @@
   "ember-addon": {
     "version": 2,
     "type": "addon",
-    "main": "addon-main.js",
+    "main": "addon-main.cjs",
     "app-js": {
       "./components/chart/bar.js": "./dist/_app_/components/chart/bar.js",
+      "./components/chart/graph.js": "./dist/_app_/components/chart/graph.js",
       "./components/chart/pie.js": "./dist/_app_/components/chart/pie.js",
       "./components/chart/time-series.js": "./dist/_app_/components/chart/time-series.js",
+      "./components/chart/tree.js": "./dist/_app_/components/chart/tree.js",
       "./helpers/coalesce.js": "./dist/_app_/helpers/coalesce.js",
       "./helpers/css-size.js": "./dist/_app_/helpers/css-size.js",
       "./modifiers/abstract-chart.js": "./dist/_app_/modifiers/abstract-chart.js",
       "./modifiers/bar-chart.js": "./dist/_app_/modifiers/bar-chart.js",
+      "./modifiers/graph-chart.js": "./dist/_app_/modifiers/graph-chart.js",
       "./modifiers/pie-chart.js": "./dist/_app_/modifiers/pie-chart.js",
+      "./modifiers/setup-chart.js": "./dist/_app_/modifiers/setup-chart.js",
+      "./modifiers/tree-chart.js": "./dist/_app_/modifiers/tree-chart.js",
       "./utils/chart/parse-axis-label.js": "./dist/_app_/utils/chart/parse-axis-label.js",
       "./utils/create-lookup.js": "./dist/_app_/utils/create-lookup.js",
       "./utils/data/compute-statistic.js": "./dist/_app_/utils/data/compute-statistic.js",
@@ -99,6 +141,7 @@
       "./utils/data/get-series-totals.js": "./dist/_app_/utils/data/get-series-totals.js",
       "./utils/data/get-unique-dataset-values.js": "./dist/_app_/utils/data/get-unique-dataset-values.js",
       "./utils/data/rotate-data-series.js": "./dist/_app_/utils/data/rotate-data-series.js",
+      "./utils/deep-merge.js": "./dist/_app_/utils/deep-merge.js",
       "./utils/layout/compute-inner-box.js": "./dist/_app_/utils/layout/compute-inner-box.js",
       "./utils/layout/compute-max-text-metrics.js": "./dist/_app_/utils/layout/compute-max-text-metrics.js",
       "./utils/layout/compute-text-height.js": "./dist/_app_/utils/layout/compute-text-height.js",
@@ -109,8 +152,7 @@
       "./utils/on-element-resize.js": "./dist/_app_/utils/on-element-resize.js",
       "./utils/style/format-css-style-value.js": "./dist/_app_/utils/style/format-css-style-value.js",
       "./utils/style/parse-css-style-value.js": "./dist/_app_/utils/style/parse-css-style-value.js",
-      "./utils/style/resolve-style.js": "./dist/_app_/utils/style/resolve-style.js",
-      "./_rollupPluginBabelHelpers-BRnyJ4b7.js": "./dist/_app_/_rollupPluginBabelHelpers-BRnyJ4b7.js"
+      "./utils/style/resolve-style.js": "./dist/_app_/utils/style/resolve-style.js"
     }
   }
 }

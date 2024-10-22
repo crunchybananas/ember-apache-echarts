@@ -2,19 +2,19 @@ import { merge } from 'lodash-es';
 import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
 import Modifier from 'ember-modifier';
-import { init, ECharts, EChartsOption, EChartsType, SetOptionOpts, use } from 'echarts/core';
+import { init, type EChartsCoreOption, type EChartsType, use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { TitleComponent, TitleComponentOption } from 'echarts/components';
-import { LegendComponent, LegendComponentOption } from 'echarts/components';
-import { GridComponent, GridComponentOption } from 'echarts/components';
-import { TooltipComponent, TooltipComponentOption } from 'echarts/components';
-import { DataZoomComponent, DataZoomComponentOption } from 'echarts/components';
-import { GraphicComponent, GraphicComponentOption } from 'echarts/components';
-import { LineChart, LineSeriesOption } from 'echarts/charts';
-import { BarChart, BarSeriesOption } from 'echarts/charts';
-import { PieChart, PieSeriesOption } from 'echarts/charts';
-import { TreeChart, TreeSeriesOption } from 'echarts/charts';
-import { GraphChart, GraphSeriesOption } from 'echarts/charts';
+import { TitleComponent, type TitleComponentOption } from 'echarts/components';
+import { LegendComponent, type LegendComponentOption } from 'echarts/components';
+import { GridComponent, type GridComponentOption } from 'echarts/components';
+import { TooltipComponent, type TooltipComponentOption } from 'echarts/components';
+import { DataZoomComponent, type DataZoomComponentOption } from 'echarts/components';
+import { GraphicComponent, type GraphicComponentOption } from 'echarts/components';
+import { LineChart, type LineSeriesOption } from 'echarts/charts';
+import { BarChart, type BarSeriesOption } from 'echarts/charts';
+import { PieChart, type PieSeriesOption } from 'echarts/charts';
+import { TreeChart, type TreeSeriesOption } from 'echarts/charts';
+import { GraphChart, type GraphSeriesOption } from 'echarts/charts';
 import onElementResize from '../utils/on-element-resize.ts';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values.ts';
 import computeInnerBox from '../utils/layout/compute-inner-box.ts';
@@ -187,31 +187,31 @@ type EChartsConfig = {
   'graphic.elements'?: GraphicElement[];
 };
 
-type EChartsOptionWithGraphic = EChartsOption & {
+type EChartsOptionWithGraphic = EChartsCoreOption & {
   graphic?: GraphicConfig;
 };
 
-type EChartsOptionWithTitle = EChartsOption & {
+type EChartsOptionWithTitle = EChartsCoreOption & {
   title?: TitleComponentOption[];
 };
 
-type EChartsOptionWithLegend = EChartsOption & {
+type EChartsOptionWithLegend = EChartsCoreOption & {
   legend?: LegendComponentOption;
 };
 
-type EChartsOptionWithDataZoom = EChartsOption & {
+type EChartsOptionWithDataZoom = EChartsCoreOption & {
   dataZoom?: DataZoomComponentOption[];
 };
 
-type EChartsOptionWithTooltip = EChartsOption & {
+type EChartsOptionWithTooltip = EChartsCoreOption & {
   tooltip?: TooltipComponentOption;
 };
 
-type EChartsOptionWithGrid = EChartsOption & {
+type EChartsOptionWithGrid = EChartsCoreOption & {
   grid?: GridComponentOption[];
 };
 
-type EChartsOptionWithSeries = EChartsOption & {
+type EChartsOptionWithSeries = EChartsCoreOption & {
   series?: (
     | LineSeriesOption
     | BarSeriesOption

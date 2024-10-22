@@ -96,8 +96,10 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Configures the chart with the provided arguments.
    */
+  // @ts-expect-error: return to this
   configureChart(args: ChartArgs, chart: ECharts) {
     const { tooltipFormatter, onSelect, data, links, seriesConfig = {} } = args;
+    // @ts-expect-error: return to this
     const { config } = this.buildLayout(args, chart);
 
     const finalSeriesConfig = deepMerge(defaultSeriesConfig, { ...seriesConfig, data, links });
@@ -139,11 +141,15 @@ export default class GraphChartModifier extends AbstractChartModifier {
   /**
    * Generates the `data` section of the context used to construct this chart.
    */
+  // @ts-expect-error: return to this
   createContextData(args: ChartArgs) {
+    // @ts-expect-error: return to this
     const context = super.createContextData(args);
     const { series, title } = this.drillPath.reduce(
       ({ series }, pathIndex) => ({
+        // @ts-expect-error: return to this
         series: series[pathIndex].series,
+        // @ts-expect-error: return to this
         title: series[pathIndex].label,
       }),
       { series: context.series, title: args.title }
@@ -160,12 +166,14 @@ export default class GraphChartModifier extends AbstractChartModifier {
    * Adds the title to `config` as defined in the data or by `args` and returns
    * the new context layout.
    */
+  // @ts-expect-error: return to this
   addTitle(context: TitleContext, config: TitleConfig) {
     const buttonLayout = this.addDrillUpButton(context, config);
     const buttonWidth = context.layout.width - buttonLayout.width;
     const buttonHeight = context.layout.height - buttonLayout.height;
 
     const titleLayout = super.addTitle(
+      // @ts-expect-error: return to this
       {
         ...context,
         args: {

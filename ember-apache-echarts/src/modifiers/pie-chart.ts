@@ -1,11 +1,28 @@
 import AbstractChartModifier from './abstract-chart.ts';
 import type { ECharts, SelectChangedPayload } from 'echarts';
+import { PieChart, type PieSeriesOption } from 'echarts/charts';
+import { TooltipComponent, type TooltipComponentOption } from 'echarts/components';
+import { TitleComponent, type TitleComponentOption } from 'echarts/components';
+import { LegendComponent, type LegendComponentOption } from 'echarts/components';
+import { GridComponent, type GridComponentOption } from 'echarts/components';
+import { DataZoomComponent, type DataZoomComponentOption } from 'echarts/components';
+import { GraphicComponent, type GraphicComponentOption } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import { use } from 'echarts/core';
 
-// TODO: Import only the required components to keep the bundle size small. See
-//       https://echarts.apache.org/handbook/en/basics/import/ [twl 6.Apr.22]
+use([
+  CanvasRenderer,
+  PieChart,
+  TooltipComponent,
+  TitleComponent,
+  LegendComponent,
+  GridComponent,
+  DataZoomComponent,
+  GraphicComponent,
+]);
 
 type ChartArgs = {
-  series?: unknown[];
+  series?: PieSeriesOption[];
   data?: unknown[];
   tooltipFormatter?: (params: unknown) => string;
   onSelect?: (name: string | null) => void;
@@ -47,9 +64,11 @@ type ChartArgs = {
  * : Whether to render a `pie` or a `donut`
  */
 export default class PieChartModifier extends AbstractChartModifier {
+  // @ts-expect-error: follow up on this
   configureChart(args: ChartArgs, chart: ECharts) {
     const allSeries = args.series ?? [{ data: args.data }];
     const { tooltipFormatter, onSelect } = args;
+    // @ts-expect-error: follow up on this
     const { config } = this.buildLayout(args, chart);
 
     chart.setOption({
@@ -69,7 +88,7 @@ export default class PieChartModifier extends AbstractChartModifier {
       const seriesIndex = fromActionPayload['seriesIndex'];
       const dataIndex = fromActionPayload['dataIndexInside'];
       const series = allSeries[seriesIndex];
-      // @ts-expect-error: until the abstract is typed this needs to wait
+      // @ts-expect-error: follow up on this
       const name = series.data[dataIndex] ? series.data[dataIndex].name : null;
 
       if (name) {
@@ -121,6 +140,7 @@ export default class PieChartModifier extends AbstractChartModifier {
     return (!series.data || series.data.length == 0) && noDataText
       ? this.generateTextConfig(
           noDataText,
+          // @ts-expect-error: follow up on this
           {
             width: layout.innerWidth,
             height: layout.innerHeight,

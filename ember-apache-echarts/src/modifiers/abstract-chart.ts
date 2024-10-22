@@ -1,7 +1,7 @@
 import { merge } from 'lodash-es';
 import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
-import Modifier from 'ember-modifier';
+import Modifier, { ArgsFor } from 'ember-modifier';
 import * as echarts from 'echarts';
 import onElementResize from '../utils/on-element-resize.ts';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values.ts';
@@ -222,7 +222,12 @@ const baseStyle = {
 
 const Z_OVERLAY = 100;
 
-export default class AbstractChartModifier extends Modifier {
+interface ChartModifierSigniture {
+  Args: {
+    Positional: [string];
+  }
+}
+export default class AbstractChartModifier extends Modifier<ChartModifierSigniture> {
   chart: echarts.ECharts | undefined;
   resizeObserver: ResizeObserver | undefined;
 
@@ -267,7 +272,7 @@ export default class AbstractChartModifier extends Modifier {
     };
   }
   // TODO: This may be the wrong way to register the destructor
-  constructor(...args: any[]) {
+  constructor(owner: unknown, args: ArgsFor<ChartModifierSigniture>) {
     super(...args);
 
     registerDestructor(this, () => this.cleanup());

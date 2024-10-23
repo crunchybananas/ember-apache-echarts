@@ -1,9 +1,22 @@
-// @ts-nocheck - will need to spend real time on this file with types.
+// @ts-expect-error: follow up on this
 import { merge } from 'lodash-es';
+// @ts-expect-error: follow up on this
 import { transform } from 'lodash-es';
 import { registerDestructor } from '@ember/destroyable';
 import Modifier from 'ember-modifier';
-import * as echarts from 'echarts';
+import { init, type EChartsCoreOption, type EChartsType, use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { TitleComponent, type TitleComponentOption } from 'echarts/components';
+import { LegendComponent, type LegendComponentOption } from 'echarts/components';
+import { GridComponent, type GridComponentOption } from 'echarts/components';
+import { TooltipComponent, type TooltipComponentOption } from 'echarts/components';
+import { DataZoomComponent, type DataZoomComponentOption } from 'echarts/components';
+import { GraphicComponent, type GraphicComponentOption } from 'echarts/components';
+import { LineChart, type LineSeriesOption } from 'echarts/charts';
+import { BarChart, type BarSeriesOption } from 'echarts/charts';
+import { PieChart, type PieSeriesOption } from 'echarts/charts';
+import { TreeChart, type TreeSeriesOption } from 'echarts/charts';
+import { GraphChart, type GraphSeriesOption } from 'echarts/charts';
 import onElementResize from '../utils/on-element-resize.ts';
 import getUniqueDatasetValues from '../utils/data/get-unique-dataset-values.ts';
 import computeInnerBox from '../utils/layout/compute-inner-box.ts';
@@ -13,6 +26,225 @@ import computeTextMetrics from '../utils/layout/compute-text-metrics.ts';
 import layoutCells from '../utils/layout/layout-cells.ts';
 import resolveStyle from '../utils/style/resolve-style.ts';
 import mergeAtPaths from '../utils/merge-at-paths.ts';
+
+type ChartArgs = {
+  title?: string;
+  legend?: string;
+  xAxisZoom?: string;
+  yAxisZoom?: string;
+  xAxisZoomBrush?: boolean;
+  yAxisZoomBrush?: boolean;
+  series?: { data: unknown[]; label?: string; name?: string }[];
+  data?: unknown[];
+  colorMap?: Record<string, string>;
+  categoryProperty?: string;
+  [key: string]: unknown;
+};
+
+type Context = {
+  layout: Layout;
+  args: ChartArgs;
+  chart: EChartsType;
+  styles: Record<string, Style>;
+  data: {
+    series: { data: unknown[]; label?: string; name?: string }[];
+  };
+};
+
+type Layout = {
+  chartWidth: number;
+  chartHeight: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+  cell?: {
+    yOffset: number;
+  };
+};
+
+type Style = {
+  [key: string]: string | number;
+};
+
+type BoxConfig = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  marginTop: number;
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+  borderTopWidth: number;
+  borderBottomWidth: number;
+  borderLeftWidth: number;
+  borderRightWidth: number;
+  backgroundColor?: string;
+  borderTopColor?: string;
+  borderBottomColor?: string;
+  borderLeftColor?: string;
+  borderRightColor?: string;
+};
+
+type TitleConfig = {
+  text: string;
+  top: number;
+  left?: number;
+  right?: number;
+  textAlign?: string;
+  backgroundColor?: string;
+  borderWidth?: number;
+  borderColor?: string;
+  borderRadius?: number;
+  padding?: [number, number, number, number];
+  textStyle: {
+    color: string;
+    fontStyle: string;
+    fontWeight: string;
+    fontFamily: string;
+    fontSize: number;
+  };
+};
+
+type LegendConfig = {
+  type: string;
+  data: { name: string; icon: string; itemStyle: { color?: string } }[];
+  itemGap: number;
+  align: string;
+  width: number;
+  orient: string;
+  backgroundColor?: string;
+  borderWidth?: number;
+  borderColor?: string;
+  borderRadius?: number;
+  padding?: [number, number, number, number];
+  textStyle: {
+    color: string;
+    fontStyle: string;
+    fontWeight: string;
+    fontFamily: string;
+    fontSize: number;
+  };
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+type DataZoomConfig = {
+  type: string;
+  brushSelect: boolean;
+  borderColor?: string;
+  show: boolean;
+  start: number;
+  end: number;
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  xAxisIndex?: number[];
+  yAxisIndex?: number[];
+};
+
+type TextConfig = {
+  type: string;
+  style: {
+    font: string;
+    fill: string;
+    text: string;
+  };
+  silent: boolean;
+  z: number;
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+};
+
+type GraphicElement = {
+  type: string;
+  top: number;
+  left: number;
+  shape: {
+    width: number;
+    height: number;
+  };
+  style: {
+    fill: string;
+    stroke: string;
+    lineWidth: number;
+  };
+  silent: boolean;
+};
+
+type GraphicConfig = {
+  'graphic.elements': GraphicElement[];
+};
+
+type EChartsConfig = {
+  title?: TitleConfig[];
+  legend?: LegendConfig;
+  dataZoom?: DataZoomConfig[];
+  'graphic.elements'?: GraphicElement[];
+};
+
+type EChartsOptionWithGraphic = EChartsCoreOption & {
+  graphic?: GraphicConfig;
+};
+
+type EChartsOptionWithTitle = EChartsCoreOption & {
+  title?: TitleComponentOption[];
+};
+
+type EChartsOptionWithLegend = EChartsCoreOption & {
+  legend?: LegendComponentOption;
+};
+
+type EChartsOptionWithDataZoom = EChartsCoreOption & {
+  dataZoom?: DataZoomComponentOption[];
+};
+
+type EChartsOptionWithTooltip = EChartsCoreOption & {
+  tooltip?: TooltipComponentOption;
+};
+
+type EChartsOptionWithGrid = EChartsCoreOption & {
+  grid?: GridComponentOption[];
+};
+
+type EChartsOptionWithSeries = EChartsCoreOption & {
+  series?: (
+    | LineSeriesOption
+    | BarSeriesOption
+    | PieSeriesOption
+    | TreeSeriesOption
+    | GraphSeriesOption
+  )[];
+};
+
+type EChartsOptionWithAll = EChartsOptionWithGraphic &
+  EChartsOptionWithTitle &
+  EChartsOptionWithLegend &
+  EChartsOptionWithDataZoom &
+  EChartsOptionWithTooltip &
+  EChartsOptionWithGrid &
+  EChartsOptionWithSeries;
+
+use([
+  CanvasRenderer,
+  TitleComponent,
+  LegendComponent,
+  GridComponent,
+  TooltipComponent,
+  DataZoomComponent,
+  GraphicComponent,
+  LineChart,
+  BarChart,
+  PieChart,
+  TreeChart,
+  GraphChart,
+]);
 
 // These should be composite properties so they can be overridden either by
 // composite properties or individual constituent properties
@@ -28,8 +260,8 @@ const baseStyle = {
 const Z_OVERLAY = 100;
 
 export default class AbstractChartModifier extends Modifier {
-  chart;
-  resizeObserver;
+  chart: EChartsType | undefined;
+  resizeObserver: ResizeObserver | undefined;
 
   get defaultStyles() {
     return {
@@ -72,23 +304,24 @@ export default class AbstractChartModifier extends Modifier {
     };
   }
 
-  constructor(...args) {
+  constructor(...args: unknown[]) {
+    // @ts-expect-error: follow up on this
     super(...args);
 
     registerDestructor(this, () => this.cleanup());
 
-    if (this.constructor == AbstractChartModifier) {
+    if (this.constructor === AbstractChartModifier) {
       throw new Error("AbstractChartModifier is abstract and can't be instantiated.");
     }
   }
-
-  modify(element, [args], defaultArgs, count = 0) {
+  // @ts-expect-error: follow up on this
+  modify(element: HTMLElement, [args]: [ChartArgs], defaultArgs: ChartArgs, count = 0) {
     if (!element.clientHeight || !element.clientWidth) {
       // Escape hatch if the styling of this element doesn't allow it to have
       // a size within its parent layout
       if (count > 10) {
-        element.style.height = element.clientHeight || '400px';
-        element.style.width = element.clientWidth || '600px';
+        element.style.height = element.clientHeight ? `${element.clientHeight}px` : '400px';
+        element.style.width = element.clientWidth ? `${element.clientWidth}px` : '600px';
       }
 
       onElementResize(element, () => this.modify(element, [args], defaultArgs, count + 1), true);
@@ -105,12 +338,12 @@ export default class AbstractChartModifier extends Modifier {
     this.configureChart(chartArgs, this.chart, element);
   }
 
-  configureChart(_args, _chart, _element) {
+  configureChart(_args: ChartArgs, _chart: EChartsType, _element: HTMLElement) {
     throw new Error('`configureChart` needs to be overridden. No implementation exists.');
   }
 
-  createChart(element, chartArgs) {
-    const chart = echarts.init(element, null, { renderer: 'canvas' });
+  createChart(element: HTMLElement, chartArgs: ChartArgs): EChartsType {
+    const chart = init(element, undefined, { renderer: 'canvas' });
 
     // Initialize the chart model using default options so charts that need to
     // access the locale via the model while being built can do so
@@ -120,8 +353,10 @@ export default class AbstractChartModifier extends Modifier {
     // attached at the same time. This prevents mistakes when coding new charts
     // of forgetting to `off` an event during a reconfigure and then having
     // multiple handlers attached to the chart.
-    chart.handle = (eventName, ...args) => {
+    // @ts-expect-error: follow up on this
+    chart.handle = (eventName: string, ...args: unknown[]) => {
       chart.off(eventName);
+      // @ts-expect-error: follow up on this
       chart.on(eventName, ...args);
     };
 
@@ -150,8 +385,8 @@ export default class AbstractChartModifier extends Modifier {
    * calculate their size and position based on how other components are laid
    * out.
    */
-  buildLayout(args, chart) {
-    const config = {};
+  buildLayout(args: ChartArgs, chart: EChartsType) {
+    const config: EChartsOptionWithAll = {};
     const context = this.createContext(args, chart);
 
     // These must be called in the order from outsidemost layout to innermost
@@ -171,8 +406,8 @@ export default class AbstractChartModifier extends Modifier {
   }
 
   cleanup() {
-    this.resizeObserver.disconnect();
-    this.chart.dispose();
+    this.resizeObserver?.disconnect();
+    this.chart?.dispose();
   }
 
   // ---------------------------------------------------------------------------
@@ -181,8 +416,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Creates the context used when laying out elements on this chart.
    */
-  createContext(args, chart) {
-    const layout = {
+  createContext(args: ChartArgs, chart: EChartsType): Context {
+    const layout: Layout = {
       chartWidth: chart.getWidth(),
       chartHeight: chart.getHeight(),
       width: chart.getWidth(),
@@ -192,10 +427,12 @@ export default class AbstractChartModifier extends Modifier {
     };
     const styles = transform(
       Object.keys(this.defaultStyles),
-      (styles, type) =>
+      (styles: Record<string, Style>, type: string) =>
         (styles[type] = {
           ...baseStyle,
+          // @ts-expect-error: follow up on this
           ...this.defaultStyles[type],
+          // @ts-expect-error: follow up on this
           ...args[`${type}Style`],
         }),
       {}
@@ -206,6 +443,7 @@ export default class AbstractChartModifier extends Modifier {
       args,
       chart,
       styles,
+      // @ts-expect-error: follow up on this
       data: this.createContextData(args, chart),
     };
   }
@@ -213,7 +451,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the `data` section of the context used to construct this chart.
    */
-  createContextData(args /*, chart */) {
+  createContextData(args: ChartArgs /*, chart: EChartsType */) {
     const series = args.series ?? [{ data: args.data }];
 
     return {
@@ -224,7 +462,8 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the border and background of the chart.
    */
-  addChartBox(context, config) {
+  addChartBox(context: Context, config: EChartsOptionWithAll) {
+    // @ts-expect-error: follow up on this
     const style = resolveStyle(context.styles.chart, context.layout);
 
     mergeAtPaths(
@@ -245,13 +484,13 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the title to `config` if defined in `args` and returns the new
    * context.
    */
-  addTitle(context, config) {
+  addTitle(context: Context, config: EChartsOptionWithAll) {
     const { title } = context.args;
 
     if (!title) {
       return context.layout;
     }
-
+    // @ts-expect-error: follow up on this
     const style = resolveStyle(context.styles.chartTitle, context.layout);
 
     mergeAtPaths(config, [this.generateTitleConfig(title, context.layout, style)]);
@@ -269,13 +508,13 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the legend to `config` if defined in `args` and returns the new
    * context.
    */
-  addLegend(context, config) {
+  addLegend(context: Context, config: EChartsOptionWithAll) {
     const { legend } = context.args;
 
     if (!legend || legend === 'none') {
       return context.layout;
     }
-
+    // @ts-expect-error: follow up on this
     const style = resolveStyle(context.styles.legend, context.layout);
 
     mergeAtPaths(config, [
@@ -306,19 +545,22 @@ export default class AbstractChartModifier extends Modifier {
    * Adds the data zoom slider to `config` if defined in `args` and returns the
    * new context.
    */
-  addDataZoom(context, config) {
+  addDataZoom(context: Context, config: EChartsOptionWithAll) {
     const { args, layout, styles } = context;
     const { xAxisZoom, yAxisZoom } = args;
 
     if ((!xAxisZoom || xAxisZoom === 'none') && (!yAxisZoom || yAxisZoom === 'none')) {
       return context.layout;
     }
-
+    // @ts-expect-error: follow up on this
     const xAxisZoomStyle = resolveStyle(styles.xAxisZoom, layout);
+    // @ts-expect-error: follow up on this
     const yAxisZoomStyle = resolveStyle(styles.yAxisZoom, layout);
 
     mergeAtPaths(config, [
+      // @ts-expect-error: follow up on this
       this.generateXAxisDataZoomConfig(args, layout, xAxisZoomStyle),
+      // @ts-expect-error: follow up on this
       this.generateYAxisDataZoomConfig(args, layout, yAxisZoomStyle),
     ]);
 
@@ -326,7 +568,8 @@ export default class AbstractChartModifier extends Modifier {
     const { xAxisZoomBrush, yAxisZoomBrush } = args;
 
     if (xAxisZoom) {
-      const sliderHeight = config.dataZoom[0].height ?? 30;
+      // @ts-expect-error: follow up on this
+      const sliderHeight = config.dataZoom?.[0]?.height ?? 30;
       const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
       const xAxisZoomHeight =
         sliderHeight + brushSelectHeight + xAxisZoomStyle.marginTop + xAxisZoomStyle.marginBottom;
@@ -336,8 +579,9 @@ export default class AbstractChartModifier extends Modifier {
     }
 
     if (yAxisZoom) {
-      const yAxisConfig = xAxisZoom ? config.dataZoom[1] : config.dataZoom[0];
-      const sliderWidth = yAxisConfig.height ?? 30;
+      const yAxisConfig = xAxisZoom ? config.dataZoom?.[1] : config.dataZoom?.[0];
+      // @ts-expect-error: follow up on this
+      const sliderWidth = yAxisConfig?.height ?? 30;
       const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
       const yAxisZoomWidth =
         sliderWidth + brushSelectWidth + yAxisZoomStyle.marginLeft + yAxisZoomStyle.marginRight;
@@ -352,9 +596,10 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the border and background of the cells.
    */
-  addCellBoxes(context, config) {
+  addCellBoxes(context: Context, config: EChartsOptionWithAll) {
     mergeAtPaths(
       config,
+      // @ts-expect-error: follow up on this
       layoutCells(context, context.data.series, (info, cell) => this.generateBoxConfig(cell))
     );
 
@@ -364,17 +609,18 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the titles to individual cells.
    */
-  addCellTitles(context, config) {
+  addCellTitles(context: Context, config: EChartsOptionWithAll) {
     const series = context.data.series;
-
+    // @ts-expect-error: follow up on this
     if (series.length === 1 && !series[0].label && !series[0].name) {
       return context.layout;
     }
-
+    // @ts-expect-error: follow up on this
     const style = resolveStyle(context.styles.cellTitle, context.layout);
 
     mergeAtPaths(
       config,
+      // @ts-expect-error: follow up on this
       layoutCells(context, context.data.series, (info, cell) =>
         this.generateTitleConfig(
           info.label ?? info.name,
@@ -404,21 +650,23 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add the plots to individual cells.
    */
-  addCellPlots(context, config) {
+  addCellPlots(context: Context, config: EChartsOptionWithAll) {
     // Ensure when using the `grid` config, the correct index is specified. This
     // differs from `context.index` when a cell has no data (and so, no grid)
     let gridIndex = 0;
 
     mergeAtPaths(
       config,
+      // @ts-expect-error: follow up on this
       layoutCells(context, context.data.series, (info, cell) => {
-        const config = this.generatePlotConfig(info, cell, context, gridIndex);
+        // @ts-expect-error: follow up on this
+        const plotConfig = this.generatePlotConfig(info, cell, context, gridIndex);
 
-        if (config) {
+        if (plotConfig) {
           gridIndex++;
         }
 
-        return config;
+        return plotConfig;
       })
     );
 
@@ -428,16 +676,19 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Add any cell overlays on top of the chart.
    */
-  addCellTextOverlays(context, config) {
+  addCellTextOverlays(context: Context, config: EChartsOptionWithAll) {
+    // @ts-expect-error: follow up on this
     if (!this.generateTextOverlayConfig) {
       return context.layout;
     }
-
+    // @ts-expect-error: follow up on this
     const style = resolveStyle(context.styles.cellTextOverlay, context.layout);
 
     mergeAtPaths(
       config,
+      // @ts-expect-error: follow up on this
       layoutCells(context, context.data.series, (info, cell) =>
+        // @ts-expect-error: follow up on this
         this.generateTextOverlayConfig(info, context.args, cell, style)
       )
     );
@@ -448,18 +699,19 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Returns the labels for the legend.
    */
-  getLegendLabels(series, args) {
+  getLegendLabels(series: { data: unknown[] }[], args: ChartArgs) {
+    // @ts-expect-error: follow up on this
     return getUniqueDatasetValues(series, args.categoryProperty ?? 'name');
   }
 
   /**
    * Returns the orientation of the legend as either `horizontal` or `vertical`.
    */
-  getLegendOrientation(args) {
+  getLegendOrientation(args: ChartArgs) {
     const { legend, legendOrientation } = args;
-
-    return !['horizontal', 'vertical'].includes(legendOrientation)
-      ? legend.startsWith('top') || legend.startsWith('bottom')
+  // @ts-expect-error: follow up on this
+    return !['horizontal', 'vertical'].includes(legendOrientation ?? '')
+      ? legend?.startsWith('top') || legend?.startsWith('bottom')
         ? 'horizontal'
         : 'vertical'
       : legendOrientation;
@@ -468,7 +720,7 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for the background and border of a box element.
    */
-  generateBoxConfig(box) {
+  generateBoxConfig(box: BoxConfig): GraphicConfig {
     return {
       'graphic.elements': [
         {
@@ -497,7 +749,7 @@ export default class AbstractChartModifier extends Modifier {
             // will render a few pixels to the right and down [twl 2.Jun.22]
             fill: box.backgroundColor ?? '#fff0',
             // Safari only parses contituent values, so use "top" as a proxy for all
-            stroke: box.borderTopColor,
+            stroke: box.borderTopColor ?? '',
             lineWidth: box.borderTopWidth ?? 0,
           },
           silent: true,
@@ -509,25 +761,36 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a title element.
    */
-  generateTitleConfig(text, layout, style) {
-    const config = {
+  generateTitleConfig(text: string, layout: Layout, style: Style): EChartsOptionWithTitle {
+    const config: TitleConfig = {
       text,
+      // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
       top: layout.y + style.marginTop,
+      // @ts-expect-error: Type 'string | number | undefined' is not assignable to type 'string | undefined'. Type 'number' is not assignable to type 'string'
       backgroundColor: style.backgroundColor,
       // Safari only parses contituent values, so use "top" as a proxy for all
+      // @ts-expect-error: Property 'borderTopWidth' comes from an index signature, so it must be accessed with ['borderTopWidth'].
       borderWidth: style.borderTopWidth,
+      // @ts-expect-error: Property 'borderTopColor' comes from an index signature, so it must be accessed with ['borderTopColor']
       borderColor: style.borderTopColor,
+      // @ts-expect-error: Property 'borderRadius' comes from an index signature, so it must be accessed with ['borderRadius'].
       borderRadius: style.borderRadius,
+      // @ts-expect-error: Type 'string | number | undefined' is not assignable to type 'number'. Type 'undefined' is not assignable to type 'number'.
       padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
       textStyle: {
-        color: style.color,
-        fontStyle: style.fontStyle,
-        fontWeight: style.fontWeight,
-        fontFamily: style.fontFamily,
-        fontSize: style.fontSize,
+        // @ts-expect-error: Property 'color' comes from an index signature, so it must be accessed with ['color']
+        color: style.color as string,
+        // @ts-expect-error: Property 'fontStyle' comes from an index signature, so it must be accessed with ['fontStyle']
+        fontStyle: style.fontStyle as string,
+        // @ts-expect-error: Property 'fontWeight' comes from an index signature, so it must be accessed with ['fontWeight']
+        fontWeight: style.fontWeight as string,
+        // @ts-expect-error: Property 'fontFamily' comes from an index signature, so it must be accessed with ['fontFamily']
+        fontFamily: style.fontFamily as string,
+        // @ts-expect-error: Property 'fontSize' comes from an index signature, so it must be accessed with ['fontSize']
+        fontSize: style.fontSize as number,
       },
     };
-
+    // @ts-expect-error: Property 'textAlign' comes from an index signature, so it must be accessed with ['textAlign'].
     switch (style.textAlign) {
       case 'center':
         merge(config, {
@@ -538,18 +801,21 @@ export default class AbstractChartModifier extends Modifier {
 
       case 'right':
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.glint(2365)
           right: layout.chartWidth - (layout.x + layout.width) + style.marginRight,
         });
         break;
 
       default:
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.glint(2365)
           left: layout.x + style.marginLeft,
         });
         break;
     }
 
     return {
+      // @ts-expect-error: follow up on this
       title: [config],
     };
   }
@@ -557,36 +823,50 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a legend element.
    */
-  generateLegendConfig(series, args, layout, style) {
+  generateLegendConfig(
+    series: { data: unknown[] }[],
+    args: ChartArgs,
+    layout: Layout,
+    style: Style
+  ): EChartsOptionWithLegend {
     const { legend = 'topCenter' } = args;
     const isVertical = this.getLegendOrientation(args) === 'vertical';
-    const config = {
-      legend: {
-        type: 'scroll',
-        data: this.getLegendLabels(series, args).map((label) => ({
-          name: label,
-          icon: 'circle',
-          itemStyle: {
-            color: args?.colorMap?.[label],
-          },
-        })),
-        itemGap: isVertical ? 15 : 40,
-        align: style.textAlign ?? 'left',
-        width: layout.width,
-        orient: isVertical ? 'vertical' : 'horizontal',
-        backgroundColor: style.backgroundColor,
-        // Safari only parses contituent values, so use "top" as a proxy for all
-        borderWidth: style.borderTopWidth,
-        borderColor: style.borderTopColor,
-        borderRadius: style.borderRadius,
-        padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
-        textStyle: {
-          color: style.color,
-          fontStyle: style.fontStyle,
-          fontWeight: style.fontWeight,
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
+    const config: LegendConfig = {
+      type: 'scroll',
+      data: this.getLegendLabels(series, args).map((label) => ({
+        name: label,
+        icon: 'circle',
+        itemStyle: {
+          color: args?.colorMap?.[label],
         },
+      })),
+      itemGap: isVertical ? 15 : 40,
+      // @ts-expect-error: Property 'textAlign' comes from an index signature, so it must be accessed with ['textAlign'].glint(4111)
+      align: style.textAlign as string,
+      width: layout.width,
+      orient: isVertical ? 'vertical' : 'horizontal',
+      // @ts-expect-error: Property 'backgroundColor' comes from an index signature, so it must be accessed with ['backgroundColor'].glint(4111)
+      backgroundColor: style.backgroundColor as string,
+      // Safari only parses contituent values, so use "top" as a proxy for all
+      // @ts-expect-error: Property 'borderTopWidth' comes from an index signature, so it must be accessed with ['borderTopWidth'].glint(4111)
+      borderWidth: style.borderTopWidth as number,
+      // @ts-expect-error: Property 'borderTopColor' comes from an index signature, so it must be accessed with ['borderTopColor'].glint(4111)
+      borderColor: style.borderTopColor as string,
+      // @ts-expect-error: Property 'borderRadius' comes from an index signature, so it must be accessed with ['borderRadius'].glint(4111)
+      borderRadius: style.borderRadius as number,
+      // @ts-expect-error: return to this
+      padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft],
+      textStyle: {
+        // @ts-expect-error: Property 'color' comes from an index signature, so it must be accessed with ['color']
+        color: style.color as string,
+        // @ts-expect-error: Property 'fontStyle' comes from an index signature, so it must be accessed with ['fontStyle']
+        fontStyle: style.fontStyle as string,
+        // @ts-expect-error: Property 'fontWeight' comes from an index signature, so it must be accessed with ['fontWeight']
+        fontWeight: style.fontWeight as string,
+        // @ts-expect-error: Property 'fontFamily' comes from an index signature, so it must be accessed with ['fontFamily']
+        fontFamily: style.fontFamily as string,
+        // @ts-expect-error: Property 'fontSize' comes from an index signature, so it must be accessed with ['fontSize']
+        fontSize: style.fontSize as number,
       },
     };
 
@@ -594,7 +874,8 @@ export default class AbstractChartModifier extends Modifier {
 
     if (legend.startsWith('top') || legend.endsWith('Top')) {
       yLayout = {
-        top: layout.y + style.marginTop + style.borderTopWidth / 2,
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        top: layout.y + (style.marginTop as number) + (style.borderTopWidth as number) / 2,
       };
     } else if (legend.startsWith('bottom') || legend.endsWith('Bottom')) {
       // NOTE: Not sure why I need the +1, but if it's missing and the legend
@@ -605,8 +886,10 @@ export default class AbstractChartModifier extends Modifier {
           layout.height -
           layout.y +
           1 +
-          style.marginBottom +
-          style.borderBottomWidth / 2,
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+          (style.marginBottom as number) +
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+          (style.borderBottomWidth as number) / 2,
       };
     } else {
       // NOTE: Technically this positions the legend in the vertical center of
@@ -622,7 +905,8 @@ export default class AbstractChartModifier extends Modifier {
 
     if (legend.startsWith('left') || legend.endsWith('Left')) {
       xLayout = {
-        left: layout.x + style.marginLeft + style.borderLeftWidth / 2,
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        left: layout.x + (style.marginLeft as number) + (style.borderLeftWidth as number) / 2,
       };
     } else if (legend.startsWith('right') || legend.endsWith('Right')) {
       // NOTE: Not sure why I need the +1, but if it's missing and the legend
@@ -633,8 +917,10 @@ export default class AbstractChartModifier extends Modifier {
           layout.width -
           layout.x +
           1 +
-          style.marginRight +
-          style.borderRightWidth / 2,
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+          (style.marginRight as number) +
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+          (style.borderRightWidth as number) / 2,
       };
     } else {
       xLayout = {
@@ -642,38 +928,48 @@ export default class AbstractChartModifier extends Modifier {
       };
     }
 
-    merge(config.legend, {
+    merge(config, {
       ...xLayout,
       ...yLayout,
     });
 
-    return config;
+    return {
+      // @ts-expect-error: follow up on this
+      legend: config,
+    };
   }
 
   /**
    * Generates the configuration for the control that allows a user to zoom in
    * and out of the data.
    */
-  generateXAxisDataZoomConfig(args, layout, style) {
+  generateXAxisDataZoomConfig(
+    args: ChartArgs,
+    layout: Layout,
+    style: Style
+  ): EChartsOptionWithDataZoom | undefined {
     const { xAxisZoom, xAxisZoomBrush } = args;
 
     if (!xAxisZoom) {
       return undefined;
     }
-
+    // @ts-expect-error: follow up on this
     const config = this.generateDataZoomConfigElement(style, xAxisZoomBrush);
     const brushSelectHeight = xAxisZoomBrush ? 7 : 0;
 
     if (xAxisZoom === 'top') {
-      config.top = layout.y + style.marginTop + style.borderTopWidth / 2;
+      // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+      config.top = layout.y + (style.marginTop as number) + (style.borderTopWidth as number) / 2;
     } else {
       config.bottom =
         layout.chartHeight -
         layout.height -
         layout.y +
         brushSelectHeight +
-        style.marginBottom +
-        style.borderBottomWidth / 2;
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        (style.marginBottom as number) +
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        (style.borderBottomWidth as number) / 2;
     }
 
     return {
@@ -701,26 +997,33 @@ export default class AbstractChartModifier extends Modifier {
    * Generates the configuration for the control that allows a user to zoom in
    * and out of the data.
    */
-  generateYAxisDataZoomConfig(args, layout, style) {
+  generateYAxisDataZoomConfig(
+    args: ChartArgs,
+    layout: Layout,
+    style: Style
+  ): EChartsOptionWithDataZoom | undefined {
     const { yAxisZoom, yAxisZoomBrush } = args;
 
     if (!yAxisZoom) {
       return undefined;
     }
-
+    // @ts-expect-error: follow up on this
     const config = this.generateDataZoomConfigElement(style, yAxisZoomBrush);
     const brushSelectWidth = yAxisZoomBrush ? 7 : 0;
 
     if (yAxisZoom === 'left') {
-      config.left = layout.x + style.marginLeft + style.borderLeftWidth / 2;
+      // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+      config.left = layout.x + (style.marginLeft as number) + (style.borderLeftWidth as number) / 2;
     } else {
       config.right =
         layout.chartWidth -
         layout.width -
         layout.x +
         brushSelectWidth +
-        style.marginRight +
-        style.borderRightWidth / 2;
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        (style.marginRight as number) +
+        // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
+        (style.borderRightWidth as number) / 2;
     }
 
     return {
@@ -744,11 +1047,12 @@ export default class AbstractChartModifier extends Modifier {
    * Generates the base configuration for a single element in the `dataZoom`
    * configuration.
    */
-  generateDataZoomConfigElement(style, brushSelect) {
+  generateDataZoomConfigElement(style: Style, brushSelect: boolean): DataZoomConfig {
     return {
       type: 'slider',
       brushSelect,
-      borderColor: style.borderTopColor,
+      // @ts-expect-error: follow up on this
+      borderColor: style.borderTopColor as string,
       show: true,
       start: 0,
       end: 100,
@@ -758,17 +1062,21 @@ export default class AbstractChartModifier extends Modifier {
   /**
    * Generates the configuration for a text element.
    */
-  generateTextConfig(text, layout, style) {
+  generateTextConfig(text: string, layout: Layout, style: Style): EChartsOptionWithGraphic {
+    // @ts-expect-error: follow up on this
     const metrics = computeTextMetrics(text, style);
-    const config = {
+    const config: TextConfig = {
       type: 'text',
       style: {
+        // @ts-expect-error: follow up on this
         font: `${style.fontStyle} ${style.fontWeight} ${style.fontSize}px ${style.fontFamily}`,
-        fill: style.color,
+        // @ts-expect-error: follow up on this
+        fill: style.color as string,
         text,
       },
       silent: true,
-      z: style.zIndex,
+      // @ts-expect-error: follow up on this
+      z: style.zIndex as number,
       // TODO: Support these properties by allowing multiple graphics objects to
       //       be returned from this method and then returning both a `text` and
       //       a `rect` element. [twl 7.Jun.22]
@@ -785,7 +1093,7 @@ export default class AbstractChartModifier extends Modifier {
       //   style.paddingLeft,
       // ],
     };
-
+    // @ts-expect-error: follow up on this
     switch (style.textAlign) {
       case 'center':
         merge(config, {
@@ -795,17 +1103,19 @@ export default class AbstractChartModifier extends Modifier {
 
       case 'right':
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
           right: layout.chartWidth - (layout.x + layout.width) + style.marginRight,
         });
         break;
 
       default:
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
           left: layout.x + style.marginLeft,
         });
         break;
     }
-
+    // @ts-expect-error: follow up on this
     switch (style.verticalAlign) {
       case 'middle':
         merge(config, {
@@ -815,12 +1125,14 @@ export default class AbstractChartModifier extends Modifier {
 
       case 'bottom':
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
           bottom: layout.y + layout.height - style.marginBottom,
         });
         break;
 
       default:
         merge(config, {
+          // @ts-expect-error: Operator '+' cannot be applied to types 'number' and 'string | number'.
           top: layout.y + style.marginTop,
         });
         break;
@@ -835,35 +1147,48 @@ export default class AbstractChartModifier extends Modifier {
    * Computes the width and height of the legend, after the legend has been
    * added into the `config` using the compiled legend `style`.
    */
-  computeLegendMetrics(context, config, style) {
+  computeLegendMetrics(context: Context, config: EChartsOptionWithAll, style: Style) {
     const { layout, data, args } = context;
     const labels = this.getLegendLabels(data.series, args);
     const orientation = this.getLegendOrientation(args);
     // hardcoded values are the defaults for `itemWidth` and `itemGap`
-    const markerWidth = config.legend.itemWidth ?? 25;
-    const itemGap = config.legend.itemGap ?? 10;
+    const markerWidth = config.legend?.itemWidth ?? 25;
+    const itemGap = config.legend?.itemGap ?? 10;
     // Divide by 2 on border, since it appears to be drawn at the end of the
     // legend rather than inside or outside the legend
     const metrics = {
       width:
-        style.paddingLeft +
-        style.paddingRight +
-        style.borderLeftWidth / 2 +
-        style.borderRightWidth / 2 +
-        style.marginLeft +
-        style.marginRight,
+        // @ts-expect-error: Property 'paddingLeft' comes from an index signature, so it must be accessed with ['paddingLeft'].glint(4111)
+        (style.paddingLeft as number) +
+        // @ts-expect-error: Property 'paddingRight' comes from an index signature, so it must be accessed with ['paddingRight'].glint(4111)
+        (style.paddingRight as number) +
+        // @ts-expect-error: Property 'borderLeftWidth' comes from an index signature, so it must be accessed with ['borderLeftWidth'].glint(4111)
+        (style.borderLeftWidth as number) / 2 +
+        // @ts-expect-error: Property 'borderRightWidth' comes from an index signature, so it must be accessed with ['borderRightWidth'].glint(4111)
+        (style.borderRightWidth as number) / 2 +
+        // @ts-expect-error: Property 'marginLeft' comes from an index signature, so it must be accessed with ['marginLeft'].glint(4111)
+        (style.marginLeft as number) +
+        // @ts-expect-error: Property 'marginRight' comes from an index signature, so it must be accessed with ['marginRight'].glint(4111)
+        (style.marginRight as number),
       height:
-        style.paddingTop +
-        style.paddingBottom +
-        style.borderTopWidth / 2 +
-        style.borderBottomWidth / 2 +
-        style.marginTop +
-        style.marginBottom,
+        // @ts-expect-error: Property 'paddingTop' comes from an index signature, so it must be accessed with ['paddingTop']
+        (style.paddingTop as number) +
+        // @ts-expect-error: Property 'paddingBottom' comes from an index signature, so it must be accessed with ['paddingBottom']
+        (style.paddingBottom as number) +
+        // @ts-expect-error: Property 'borderTopWidth' comes from an index signature, so it must be accessed with ['borderTopWidth']
+        (style.borderTopWidth as number) / 2 +
+        // @ts-expect-error: Property 'borderBottomWidth' comes from an index signature, so it must be accessed with ['borderBottomWidth']
+        (style.borderBottomWidth as number) / 2 +
+        // @ts-expect-error: Property 'marginTop' comes from an index signature, so it must be accessed with ['marginTop']
+        (style.marginTop as number) +
+        // @ts-expect-error: Property 'marginBottom' comes from an index signature, so it must be accessed with ['marginBottom']
+        (style.marginBottom as number),
     };
 
     if (orientation === 'horizontal') {
       const labelMetrics = labels.reduce(
         (result, label) => {
+          // @ts-expect-error: follow up on this
           const textMetrics = computeTextMetrics(label, style);
 
           result.width += markerWidth + textMetrics.width;

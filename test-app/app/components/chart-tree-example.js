@@ -161,127 +161,131 @@ const chartData = {
       '11',
       '12',
       '13',
-      '14',
       '15',
       '16',
       '17',
       '18',
     ],
   },
-  1: {
+  '1': {
     annual_amount: 525000,
     level: 3,
-    label: '50% Restaurant Program',
+    label: 'Fry',
     children: [],
   },
-  2: {
+  '2': {
     annual_amount: 525000,
     level: 3,
-    label: 'All Approval Workflow - DEMO',
+    label: 'Leela',
     children: [],
   },
-  3: {
+  '3': {
     annual_amount: 525000,
     level: 3,
-    label: 'Certificate Program',
+    label: 'Bender',
     children: [],
   },
-  4: {
+  '4': {
     annual_amount: 525000,
     level: 3,
-    label: 'Some Financial Program',
-    children: [],
+    label: 'Professor Farnsworth',
+    children: ['14'],
   },
-  5: {
+  '5': {
     annual_amount: 350000,
     level: 3,
-    label: 'Continuing Education - PART_TIME',
+    label: 'Amy Wong',
     children: [],
   },
-  6: {
+  '6': {
     annual_amount: 525000,
     level: 3,
-    label: 'Course Receipt Date',
+    label: 'Dr. Zoidberg',
     children: [],
   },
-  7: {
+  '7': {
     annual_amount: 525000,
     level: 3,
-    label: 'Course Start Date Test',
+    label: 'Hermes Conrad',
+    children: ['19'],
+  },
+  '8': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Zapp Brannigan',
     children: [],
   },
-  8: {
+  '9': {
     annual_amount: 525000,
     level: 3,
-    label: 'Dependent Program',
+    label: 'Kif Kroker',
     children: [],
   },
-  9: {
+  '10': {
     annual_amount: 525000,
     level: 3,
-    label: 'Educational Assistance Program',
+    label: 'Nibbler',
     children: [],
   },
-  10: {
+  '11': {
     annual_amount: 525000,
     level: 3,
-    label: 'Multiple Course Approvers',
+    label: 'Mom',
     children: [],
   },
-  11: {
+  '12': {
     annual_amount: 525000,
     level: 3,
-    label: 'No Approvals Needed',
+    label: 'Scruffy',
     children: [],
   },
-  12: {
+  '13': {
     annual_amount: 525000,
     level: 3,
-    label: 'A Fun Certification',
+    label: 'Calculon',
     children: [],
   },
-  13: {
+  '14': {
     annual_amount: 525000,
     level: 3,
-    label: 'Prepaid test program',
+    label: 'Cubert Farnsworth',
     children: [],
   },
-  14: {
+  '15': {
     annual_amount: 525000,
     level: 3,
-    label: 'Program Major Text Test',
+    label: 'Morbo',
+    children: ['20'],
+  },
+  '16': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Lrrr',
     children: [],
   },
-  '1440663828509492175': {
+  '17': {
     annual_amount: 525000,
     level: 3,
-    label: 'Semester Code',
+    label: 'Hypnotoad',
     children: [],
   },
-  15: {
-    annual_amount: 525000,
-    level: 3,
-    label: 'My Plan Key ',
-    children: ['1440663828509492175'],
-  },
-  16: {
-    annual_amount: 525000,
-    level: 3,
-    label: 'Type 2 Template 1',
-    children: [],
-  },
-  17: {
-    annual_amount: 525000,
-    level: 3,
-    label: 'University Course PDF Test',
-    children: [],
-  },
-  18: {
+  '18': {
     amount: 0,
     annual_amount: 200000,
     level: 3,
-    label:
-      'University - Educational Assistance Program - PART_TIME - Long Label',
+    label: 'Robot Devil',
+    children: [],
+  },
+  '19': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Dwight Conrad',
+    children: [],
+  },
+  '20': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Linda',
     children: [],
   },
 };

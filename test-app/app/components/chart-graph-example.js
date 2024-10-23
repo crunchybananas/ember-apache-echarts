@@ -93,9 +93,6 @@ export default class ChartGraphExample extends Component {
 
 const chartData = {
   ROOT_NODE: {
-    amount: null,
-    annual_amount: null,
-    level: null,
     label: null,
     children: [
       '1',
@@ -111,143 +108,132 @@ const chartData = {
       '11',
       '12',
       '13',
-      '14',
       '15',
       '16',
       '17',
       '18',
     ],
   },
-  1: {
+  '1': {
     annual_amount: 525000,
     level: 3,
-    label: 'Plan Ex - Education Plan',
+    label: 'Fry',
     children: [],
   },
-  2: {
+  '2': {
     annual_amount: 525000,
     level: 3,
-    label: 'All Approval Workflow - DEMO',
+    label: 'Leela',
     children: [],
   },
-  3: {
-    amount: null,
+  '3': {
     annual_amount: 525000,
     level: 3,
-    label: 'Certificate Program',
+    label: 'Bender',
     children: [],
   },
-  4: {
-    amount: null,
+  '4': {
     annual_amount: 525000,
     level: 3,
-    label: 'Some Financial Program',
-    children: [],
+    label: 'Professor Farnsworth',
+    children: ['14'],
   },
-  5: {
-    amount: null,
+  '5': {
     annual_amount: 350000,
     level: 3,
-    label: 'Continuing Education - PART_TIME',
+    label: 'Amy Wong',
     children: [],
   },
-  6: {
-    amount: null,
+  '6': {
     annual_amount: 525000,
     level: 3,
-    label: 'Course Receipt Date',
+    label: 'Dr. Zoidberg',
     children: [],
   },
-  7: {
-    amount: null,
+  '7': {
     annual_amount: 525000,
     level: 3,
-    label: 'Course Start Date Test',
+    label: 'Hermes Conrad',
+    children: ['19'],
+  },
+  '8': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Zapp Brannigan',
     children: [],
   },
-  8: {
-    amount: null,
+  '9': {
     annual_amount: 525000,
     level: 3,
-    label: 'Dependent Program',
+    label: 'Kif Kroker',
     children: [],
   },
-  9: {
-    amount: null,
+  '10': {
     annual_amount: 525000,
     level: 3,
-    label: 'Educational Assistance Program',
+    label: 'Nibbler',
     children: [],
   },
-  10: {
-    amount: null,
+  '11': {
     annual_amount: 525000,
     level: 3,
-    label: 'Multiple Course Approvers',
+    label: 'Mom',
     children: [],
   },
-  11: {
-    amount: null,
+  '12': {
     annual_amount: 525000,
     level: 3,
-    label: 'No Approvals Needed',
+    label: 'Scruffy',
     children: [],
   },
-  12: {
-    amount: null,
+  '13': {
     annual_amount: 525000,
     level: 3,
-    label: 'A Fun Certification',
+    label: 'Calculon',
     children: [],
   },
-  13: {
-    amount: null,
+  '14': {
     annual_amount: 525000,
     level: 3,
-    label: 'Prepaid test program',
+    label: 'Cubert Farnsworth',
     children: [],
   },
-  14: {
-    amount: null,
+  '15': {
     annual_amount: 525000,
     level: 3,
-    label: 'Program Major Text Test',
+    label: 'Morbo',
+    children: ['20'],
+  },
+  '16': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Lrrr',
     children: [],
   },
-  '1440663828509492175': {
-    amount: null,
+  '17': {
     annual_amount: 525000,
     level: 3,
-    label: 'Semester Code',
+    label: 'Hypnotoad',
     children: [],
   },
-  15: {
-    amount: null,
-    annual_amount: 525000,
-    level: 3,
-    label: 'My Plan Key ',
-    children: ['1440663828509492175'],
-  },
-  16: {
-    amount: null,
-    annual_amount: 525000,
-    level: 3,
-    label: 'Type 2 Template 1',
-    children: [],
-  },
-  17: {
-    amount: null,
-    annual_amount: 525000,
-    level: 3,
-    label: 'University Course PDF Test',
-    children: [],
-  },
-  18: {
+  '18': {
     amount: 0,
     annual_amount: 200000,
     level: 3,
-    label:
-      'University - Educational Assistance Program - PART_TIME - Long Label',
+    label: 'Robot Devil',
+    children: [],
+  },
+  '19': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Dwight Conrad',
+    children: [],
+  },
+  '20': {
+    annual_amount: 525000,
+    level: 3,
+    label: 'Linda',
     children: [],
   },
 };
+

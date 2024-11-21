@@ -124,4 +124,4 @@ jobs:
         with:
           branch: dist
           token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: ember-composable-helpers
+          working-directory: ember-apache-echarts

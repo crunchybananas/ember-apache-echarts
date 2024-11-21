@@ -1,0 +1,130 @@
+{{!
+By default, if you provide multiple series, the chart library renders those as small multiples.
+But if you want to see all series on a single chart, you can use groupedLine or groupedBar.
+If you want to show the relative contribution to the whole, then use stackedBar or stackedArea
+to show a stacked representation. groupedArea is not available for the same reason that
+stackedLine is not—while it can technically be rendered, it’s a bad data viz pattern
+that leads to misinterpretation.
+}}
+<h2>Bar Charts</h2>
+
+<h3>Simple</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @data={{this.chartData}}
+  @noDataText="No data"
+/>
+
+<h3>Series</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @valueAxisScale="shared"
+/>
+
+<h3>Grouped</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="groupedBar"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @legend="bottom"
+/>
+
+<h3>Stacked</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="stackedBar"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @legend="right"
+/>
+
+<h3>Stacked Horizontal</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="stackedBar"
+  @orientation="horizontal"
+  @cellStyle={{hash border="solid 1px rgb(229, 231, 235)" margin=2}}
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @legend="bottom"
+/>
+
+<h2>Line Charts</h2>
+
+<h3>Simple</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="line"
+  @data={{this.chartData}}
+  @noDataText="No data"
+/>
+
+<h3>Series</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="line"
+  @series={{this.seriesData}}
+  @seriesConfig={{hash smooth=true}}
+  @noDataText="No data"
+  @valueAxisScale="shared"
+/>
+
+<h3>Grouped</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="groupedLine"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+/>
+
+<h2>Area Charts</h2>
+
+<h3>Simple</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="area"
+  @data={{this.chartData}}
+  @noDataText="No data"
+/>
+
+<h3>Series</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="area"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+  @valueAxisScale="shared"
+/>
+
+<h3>Stacked</h3>
+<Chart::Bar
+  class="border"
+  @width="100%"
+  @height="200"
+  @variant="stackedArea"
+  @series={{this.seriesData}}
+  @noDataText="No data"
+/>

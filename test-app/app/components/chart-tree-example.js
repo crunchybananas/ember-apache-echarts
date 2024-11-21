@@ -167,122 +167,122 @@ const chartData = {
       '18',
     ],
   },
-  '1': {
+  1: {
     annual_amount: 525000,
     level: 3,
     label: 'Fry',
     children: [],
   },
-  '2': {
+  2: {
     annual_amount: 525000,
     level: 3,
     label: 'Leela',
     children: [],
   },
-  '3': {
+  3: {
     annual_amount: 525000,
     level: 3,
     label: 'Bender',
     children: [],
   },
-  '4': {
+  4: {
     annual_amount: 525000,
     level: 3,
     label: 'Professor Farnsworth',
     children: ['14'],
   },
-  '5': {
+  5: {
     annual_amount: 350000,
     level: 3,
     label: 'Amy Wong',
     children: [],
   },
-  '6': {
+  6: {
     annual_amount: 525000,
     level: 3,
     label: 'Dr. Zoidberg',
     children: [],
   },
-  '7': {
+  7: {
     annual_amount: 525000,
     level: 3,
     label: 'Hermes Conrad',
     children: ['19'],
   },
-  '8': {
+  8: {
     annual_amount: 525000,
     level: 3,
     label: 'Zapp Brannigan',
     children: [],
   },
-  '9': {
+  9: {
     annual_amount: 525000,
     level: 3,
     label: 'Kif Kroker',
     children: [],
   },
-  '10': {
+  10: {
     annual_amount: 525000,
     level: 3,
     label: 'Nibbler',
     children: [],
   },
-  '11': {
+  11: {
     annual_amount: 525000,
     level: 3,
     label: 'Mom',
     children: [],
   },
-  '12': {
+  12: {
     annual_amount: 525000,
     level: 3,
     label: 'Scruffy',
     children: [],
   },
-  '13': {
+  13: {
     annual_amount: 525000,
     level: 3,
     label: 'Calculon',
     children: [],
   },
-  '14': {
+  14: {
     annual_amount: 525000,
     level: 3,
     label: 'Cubert Farnsworth',
     children: [],
   },
-  '15': {
+  15: {
     annual_amount: 525000,
     level: 3,
     label: 'Morbo',
     children: ['20'],
   },
-  '16': {
+  16: {
     annual_amount: 525000,
     level: 3,
     label: 'Lrrr',
     children: [],
   },
-  '17': {
+  17: {
     annual_amount: 525000,
     level: 3,
     label: 'Hypnotoad',
     children: [],
   },
-  '18': {
+  18: {
     amount: 0,
     annual_amount: 200000,
     level: 3,
     label: 'Robot Devil',
     children: [],
   },
-  '19': {
+  19: {
     annual_amount: 525000,
     level: 3,
     label: 'Dwight Conrad',
     children: [],
   },
-  '20': {
+  20: {
     annual_amount: 525000,
     level: 3,
     label: 'Linda',

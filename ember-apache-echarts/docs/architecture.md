@@ -1,25 +1,23 @@
-Chart Architecture
-==================
+# Chart Architecture
 
 Each chart is composed of an Ember component and a modifier that is used to
 render the chart into that component.
 
 The chart components serve two purposes:
 
- - **Determine Chart Size**
-   Each chart component renders a `div` whose size determines the size of the
-   chart instance rendered within that `div`. A resize observer monitors changes
-   to this `div` and resizes the chart accordingly.
+- **Determine Chart Size**
+  Each chart component renders a `div` whose size determines the size of the
+  chart instance rendered within that `div`. A resize observer monitors changes
+  to this `div` and resizes the chart accordingly.
 
- - **Render Custom Tooltips**
-   Tooltips are rendered via named blocks, allowing the end user of the chart to
-   define custom toolips. Once activated, the tooltips are removed from the
-   container `div` and absolutely positioned over the appropriate place on the
-   chart.
+- **Render Custom Tooltips**
+  Tooltips are rendered via named blocks, allowing the end user of the chart to
+  define custom toolips. Once activated, the tooltips are removed from the
+  container `div` and absolutely positioned over the appropriate place on the
+  chart.
 
 Each chart component also has a modifier that performs the work of creating and
 rendering the chart via Apache eCharts.
-
 
 ### Modifier Architecture
 
@@ -41,16 +39,16 @@ outside inward. This is the "build pipeline".
 
 Currently, the default build pipeline consists of the following steps:
 
- - *Chart Box*: The background, border, margin & padding for the entire chart
- - *Title*: The title of the chart, if any
- - *Legend*: The legend of the chart, if any
- - *Cell Boxes*: The background, border, margin & padding for each of the plots
-   used it this chart. By default, when multiple series are provided as data,
-   the chart is rendered using "small multiples", with one chart per series
- - *Cell Titles*: The title for each plot, taken from the series name, if any
- - *Cell Plots*: The chart plots themselves
- - *Cell Text Overlays*: Text overlaid on top of each plot, such as "No Data"
-   text when no data is provided or no data exists for a specific series
+- _Chart Box_: The background, border, margin & padding for the entire chart
+- _Title_: The title of the chart, if any
+- _Legend_: The legend of the chart, if any
+- _Cell Boxes_: The background, border, margin & padding for each of the plots
+  used it this chart. By default, when multiple series are provided as data,
+  the chart is rendered using "small multiples", with one chart per series
+- _Cell Titles_: The title for each plot, taken from the series name, if any
+- _Cell Plots_: The chart plots themselves
+- _Cell Text Overlays_: Text overlaid on top of each plot, such as "No Data"
+  text when no data is provided or no data exists for a specific series
 
 As mentioned, this order adds parts from the outside inward. If you imagine that
 the chart box is the outermost rectangle, then the title, legend and cell boxes
@@ -73,7 +71,6 @@ by the layout algorithm without access to the actual render metrics, this can
 sometimes be off by a few pixels, so it's best not to lay things out too
 tightly).
 
-
 #### `addXXX` vs `generateXXXConfig` methods
 
 Each of the steps in the build pipline calls an `addXXX` method whose job is to
@@ -86,7 +83,6 @@ actual Apache eCharts configuration.
 
 Roughly, the `add` methods map to the layout framework described above, while
 the `generate` methods map to the Apache eCharts options.
-
 
 ### Configuring Styles
 
@@ -108,7 +104,6 @@ Each style is merged with a default style defined by the `defaultStyles`
 property of either `AbstractChartModifier` or a modifer for a specific chart
 type. Default styles set the font, margins and text alignment to reasonable
 values so these don't have to be specified for every chart part.
-
 
 ### Small Multiple Charts
 

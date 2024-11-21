@@ -1,12 +1,12 @@
 import AbstractChartModifier from './abstract-chart.ts';
 import type { ECharts, SelectChangedPayload } from 'echarts';
 import { PieChart, type PieSeriesOption } from 'echarts/charts';
-import { TooltipComponent, type TooltipComponentOption } from 'echarts/components';
-import { TitleComponent, type TitleComponentOption } from 'echarts/components';
-import { LegendComponent, type LegendComponentOption } from 'echarts/components';
-import { GridComponent, type GridComponentOption } from 'echarts/components';
-import { DataZoomComponent, type DataZoomComponentOption } from 'echarts/components';
-import { GraphicComponent, type GraphicComponentOption } from 'echarts/components';
+import { TooltipComponent /*, type TooltipComponentOption */ } from 'echarts/components';
+import { TitleComponent /*, type TitleComponentOption */ } from 'echarts/components';
+import { LegendComponent /*, type LegendComponentOption */ } from 'echarts/components';
+import { GridComponent /*, type GridComponentOption */ } from 'echarts/components';
+import { DataZoomComponent /*, type DataZoomComponentOption */ } from 'echarts/components';
+import { GraphicComponent /*, type GraphicComponentOption */ } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { use } from 'echarts/core';
 

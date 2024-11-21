@@ -60,8 +60,8 @@ const computeData = (data, categories, args) => {
 
   return categoryAxisType !== 'time'
     ? series
-    // @ts-expect-error: follow up on this
-    : series.map((item) => ({
+    : // @ts-expect-error: follow up on this
+      series.map((item) => ({
         ...item,
         value: orientation === 'horizontal' ? [item.value, item.name] : [item.name, item.value],
       }));
@@ -454,8 +454,8 @@ export default class BarChartModifier extends AbstractChartModifier {
                 params.length != null
                   ? params.map((param) => this.formatTooltipParams(args, param, 'axisTooltip'))
                   : this.formatTooltipParams(args, params, 'itemTooltip'),
-                  // @ts-expect-error: follow up on this
-                  context.data.dataset
+                // @ts-expect-error: follow up on this
+                context.data.dataset
               ),
           }),
         },
@@ -481,13 +481,13 @@ export default class BarChartModifier extends AbstractChartModifier {
       //       on how the axis is being rendered. [twl 20.Jul.22]
       const name =
         categoryAxisScale === 'shared'
-          // @ts-expect-error: follow up on this
-          ? context.data.categories[dataIndex]
-          // @ts-expect-error: follow up on this
-          : series.data[dataIndex]
-          // @ts-expect-error: follow up on this
-          ? series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
-          : null;
+          ? // @ts-expect-error: follow up on this
+            context.data.categories[dataIndex]
+          : // @ts-expect-error: follow up on this
+            series.data[dataIndex]
+            ? // @ts-expect-error: follow up on this
+              series.data[dataIndex][args.categoryProperty ?? DEFAULT_CATEGORY_PROPERTY]
+            : null;
 
       if (name) {
         chart.dispatchAction({
@@ -908,9 +908,10 @@ export default class BarChartModifier extends AbstractChartModifier {
             ? valueAxisMax
             : undefined,
       axisLabel: {
-        ...(valueAxisFormatter && {
-          // formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
-        }),
+        ...(valueAxisFormatter &&
+          {
+            // formatter: (value, axisIndex) => valueAxisFormatter(value, 'axis', axisIndex),
+          }),
         // margin between the axis label and the axis line
         margin: isHorizontal ? valueAxisStyle.marginTop : valueAxisStyle.marginRight,
         ...this.generateAxisLabelConfig(layout, valueAxisStyle),
@@ -928,9 +929,10 @@ export default class BarChartModifier extends AbstractChartModifier {
         data: categoryInfo.categories,
       }),
       axisLabel: {
-        ...(categoryAxisFormatter && {
-          // formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
-        }),
+        ...(categoryAxisFormatter &&
+          {
+            // formatter: (value, axisIndex) => categoryAxisFormatter(value, 'axis', axisIndex),
+          }),
         // Determine how many categories are shown on the axis
         interval:
           categoryAxisMaxLabelCount && categoryInfo.count > categoryAxisMaxLabelCount
@@ -1059,8 +1061,8 @@ export default class BarChartModifier extends AbstractChartModifier {
               }),
             },
           ]
-        // @ts-expect-error: follow up on this
-        : series.data.map((info) => ({
+        : // @ts-expect-error: follow up on this
+          series.data.map((info) => ({
             ...seriesBaseConfig,
             name: info.label,
             // @ts-expect-error: follow up on this
@@ -1197,9 +1199,10 @@ export default class BarChartModifier extends AbstractChartModifier {
             show: false,
           }
         : {
-            ...(formatter && {
-              // formatter: (params) => formatter(params.value),
-            }),
+            ...(formatter &&
+              {
+                // formatter: (params) => formatter(params.value),
+              }),
             color: labelStyle.color,
             fontStyle: labelStyle.fontStyle,
             fontWeight: labelStyle.fontWeight,

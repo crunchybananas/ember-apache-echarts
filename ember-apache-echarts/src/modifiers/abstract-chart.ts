@@ -11,7 +11,7 @@ import { LegendComponent, type LegendComponentOption } from 'echarts/components'
 import { GridComponent, type GridComponentOption } from 'echarts/components';
 import { TooltipComponent, type TooltipComponentOption } from 'echarts/components';
 import { DataZoomComponent, type DataZoomComponentOption } from 'echarts/components';
-import { GraphicComponent, type GraphicComponentOption } from 'echarts/components';
+import { GraphicComponent } from 'echarts/components';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { BarChart, type BarSeriesOption } from 'echarts/charts';
 import { PieChart, type PieSeriesOption } from 'echarts/charts';
@@ -182,12 +182,12 @@ type GraphicConfig = {
   'graphic.elements': GraphicElement[];
 };
 
-type EChartsConfig = {
-  title?: TitleConfig[];
-  legend?: LegendConfig;
-  dataZoom?: DataZoomConfig[];
-  'graphic.elements'?: GraphicElement[];
-};
+// type EChartsConfig = {
+//   title?: TitleConfig[];
+//   legend?: LegendConfig;
+//   dataZoom?: DataZoomConfig[];
+//   'graphic.elements'?: GraphicElement[];
+// };
 
 type EChartsOptionWithGraphic = EChartsCoreOption & {
   graphic?: GraphicConfig;
@@ -709,7 +709,7 @@ export default class AbstractChartModifier extends Modifier {
    */
   getLegendOrientation(args: ChartArgs) {
     const { legend, legendOrientation } = args;
-  // @ts-expect-error: follow up on this
+    // @ts-expect-error: follow up on this
     return !['horizontal', 'vertical'].includes(legendOrientation ?? '')
       ? legend?.startsWith('top') || legend?.startsWith('bottom')
         ? 'horizontal'

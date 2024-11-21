@@ -1,0 +1,1 @@
+{"version":3,"file":"get-series-data.d.ts","sourceRoot":"","sources":["../../../src/utils/data/get-series-data.ts"],"names":[],"mappings":"AAIA,KAAK,IAAI,GAAG;IACV,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO,CAAC;CACxB,CAAC;AAEF;;;;;;;;;;;GAWG;AACH,MAAM,CAAC,OAAO,UAAU,aAAa,CACnC,IAAI,EAAE,IAAI,EAAE,EACZ,UAAU,EAAE,MAAM,EAAE,EACpB,gBAAgB,EAAE,MAAM,EACxB,aAAa,EAAE,MAAM,OAKtB"}

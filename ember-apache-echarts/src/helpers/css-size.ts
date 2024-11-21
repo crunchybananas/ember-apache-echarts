@@ -2,7 +2,7 @@ import { helper } from '@ember/component/helper';
 
 const numberRegEx = /^\d+$/;
 
-const isNumeric = (value: unknown) =>
+const isNumeric = (value?: string | number) =>
   typeof value === 'number' || (typeof value === 'string' && value.match(numberRegEx) != null);
 
 /**
@@ -17,12 +17,12 @@ const isNumeric = (value: unknown) =>
  * @return {string} The value formatted as a CSS size
  */
 
-export default helper(function cssSize(positional: [string?, string?] /*, named*/): string {
+export default helper(function cssSize(positional: [(string | number)?, (string | number)?] /*, named*/): string {
   const size = positional[0] != null && positional[0] !== '' ? positional[0] : positional[1];
 
   return isNumeric(size) || size === ''
     ? size?.toString() !== '0'
       ? `${size}px`
       : '0'
-    : (size ?? '0');
+    : (`${size ?? '0'}`);
 });

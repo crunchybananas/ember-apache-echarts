@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
 import { or } from 'ember-truth-helpers';
+// @ts-expect-error
 import { pick } from 'lodash-es';
 import { tracked } from '@glimmer/tracking';
 import barChart from '../../modifiers/bar-chart.ts';
@@ -46,6 +46,7 @@ import style from 'ember-style-modifier';
  * `series`
  * : The series object for the series this item belongs to.
  */
+// @ts-expect-error
 const toTooltipItem = (param, dataset) => ({
   ...pick(param, 'value', 'marker', 'dataIndex', 'data', 'seriesIndex'),
   label: param.name,
@@ -69,6 +70,7 @@ type ToolTipAxis = {
  * Converts an axis EChart tooltip param into an object describing the axis the
  * tooltip is for.
  */
+// @ts-expect-error
 const toTooltipAxis = ([firstParam]) => ({
   id: firstParam.axisId,
   index: firstParam.axisIndex,
@@ -80,8 +82,8 @@ const toTooltipAxis = ([firstParam]) => ({
 
 interface S {
   Args: {
-    width?: string;
-    height?: string;
+    width?: string | number;
+    height?: string | number;
     series?: unknown[];
     data?: unknown;
     variant?: string;
@@ -92,7 +94,7 @@ interface S {
     chartStyle?: unknown;
     chartTitleStyle?: unknown;
     maxColumns?: number;
-    orientation?: string;
+    orientation?: 'horizontal' | 'vertical';
     colorMap?: unknown;
     cellStyle?: unknown;
     cellTitleStyle?: unknown;
@@ -140,11 +142,15 @@ interface S {
 }
 
 export default class BarChartComponent extends Component<S> {
+  // @ts-expect-error
   axisTooltipElement;
+  // @ts-expect-error
   itemTooltipElement;
-
+  // @ts-expect-error
   @tracked tooltipItem;
+  // @ts-expect-error
   @tracked tooltipItems;
+  // @ts-expect-error
   @tracked tooltipAxis;
 
   // HACK: The way we're currently transforming the data for the grouped or
@@ -158,15 +164,17 @@ export default class BarChartComponent extends Component<S> {
   }
 
   @action
-  setup(element) {
+  setup(element: HTMLElement) {
     this.axisTooltipElement = element.querySelector('[data-role=axisTooltip]');
     this.itemTooltipElement = element.querySelector('[data-role=itemTooltip]');
   }
 
   @action
+  // @ts-expect-error
   tooltipFormatter(params, dataset) {
     if (params.length) {
       this.tooltipAxis = toTooltipAxis(params);
+      // @ts-expect-error
       this.tooltipItems = params.map((param) => toTooltipItem(param, dataset));
 
       return this.axisTooltipElement;
@@ -182,6 +190,7 @@ export default class BarChartComponent extends Component<S> {
       <div
         ...attributes
         {{style width=(cssSize @width "100%") height=(cssSize @height "400")}}
+        {{! @glint-expect-error}}
         {{barChart
           this.args
           tooltipFormatter=(if

@@ -3,8 +3,10 @@
     "ember-apache-echarts",
     "test-app"
   ],
-  "private": true,
-  "repository": "https://github.com/crunchybananas/ember-apache-echarts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crunchybananas/ember-apache-echarts.git"
+  },
   "license": "MIT",
   "author": "crunchybananas",
   "scripts": {
@@ -35,5 +37,6 @@
     "prettier": "3.3.3"
   },
   "packageManager": "pnpm@9.5.0",
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "name": "ember-apache-echarts"
 }

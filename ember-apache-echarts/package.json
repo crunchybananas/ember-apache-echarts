@@ -5,7 +5,10 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "https://github.com/crunchybananas/ember-apache-echarts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crunchybananas/ember-apache-echarts.git"
+  },
   "license": "MIT",
   "author": "Crunchy Bananas",
   "directories": {

@@ -1,8 +1,4 @@
 {
-  "workspaces": [
-    "ember-apache-echarts",
-    "test-app"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/crunchybananas/ember-apache-echarts.git"
